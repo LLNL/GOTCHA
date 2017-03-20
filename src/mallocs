@@ -1,0 +1,7 @@
+ADBG: malloc 2aaaaacce000
+ADBG: dog_malloc 2aaaaacce72c
+ADBG: malloc 2aaaaaac1810
+malloc 0 0
+malloc 2aaaaacce000 0
+malloc 2aaaaaf81ba0 7aba0
+malloc 2aaaaaac1810 16810

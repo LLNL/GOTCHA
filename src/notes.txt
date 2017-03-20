@@ -1,0 +1,129 @@
+struct link_map* last_lm;
+struct gotcha_addr_list{
+  ElfW(Addr)* list;
+  int length;
+  int capacity;
+};
+struct gotcha_addr_list* gotcha_list_alloc(size_t size){
+  struct gotcha_addr_list* listy = (struct gotcha_addr_list*)gotcha_malloc(sizeof(struct gotcha_addr_list));
+  listy->list = (ElfW(Addr)*)gotcha_malloc(sizeof(ElfW(Addr))*size);
+  listy->length = 0;
+  listy->capacity = size;
+  return listy;
+}
+struct gotcha_addr_list* malloc_addresses;
+void gotcha_list_append(struct gotcha_addr_list *list, ElfW(Addr) app){
+  if(list->length == list->capacity){
+     char** swv = list->list;
+     list->list = (ElfW(Addr)*)malloc(sizeof(ElfW(Addr))*list->capacity*2);
+     gotcha_memcpy(list->list,gotcha_free,sizeof(ElfW(Addr))*list->length);
+     gotcha_free((void**)swv);
+     list->capacity *= 2;
+  }
+  list->list[list->length++] = app;
+}
+
+
+ElfW(Addr) dog_malloc_addr, malloc_addr;
+ElfW(Addr) test_symbol = 0;
+ElfW(Addr) mein_got = 0x0;
+void printSym(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset){
+  ElfW(Addr) sect = symbol->st_value;                                         
+  if(mprotect(BOUNDARY_BEFORE((unsigned long*)(offset + test_symbol),4096), 4096, PROT_READ | PROT_WRITE)){
+    int errorCode = errno;
+    if(errorCode == EACCES){
+      printf("DBG: Invalid access permissions on memory\n");
+    }
+    if(errorCode == EINVAL){
+      printf("DBG: Invalid pointer to mprotect\n");
+    }
+    if(errorCode == ENOMEM){
+      printf("DBG: Internal mprotect error\n");
+    }
+    printf("Error error error\n");
+  }
+  else{
+    printf("DBG: Successful mprotect call\n");
+  }
+  if (strcmp(name, "retX") == 0){
+    printf("DBG: Rewriting in %lx\n", test_symbol); 
+    *((unsigned long *) (offset + test_symbol)) = dog_malloc;
+  }
+  printf("%s %lx %lx\n", name, (test_symbol+offset) , symbol->st_value);     
+}                                                                             
+int doggieRetX(int x){
+  printf("DOG SAYS BORK %i\n",x+5);
+  return retX(x+5);
+}
+void printSymbol(ElfW(Sym) toPrint){
+  printf("%u %lx %hu", toPrint.st_name, toPrint.st_value, toPrint.st_shndx);
+}
+void dogifyMallocs(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset){
+  //dog_malloc(0);
+  static int numcalls = 0;
+  ElfW(Addr) sect = symbol->st_value;                                         
+  printf("Ptr symbol: %p %lx\n",symbol, symbol->st_value);
+  if(!gotcha_strncmp(name, "malloc",6)){
+    //symbol->st_value = test_symbol + symbol->st_value;
+     
+    numcalls++;
+    printf("DBG: This is call %i to mprotect on target %p\n",numcalls, symbol);
+    dbg();
+    void* mprotect_addr = BOUNDARY_BEFORE(symbol,4096);
+    if(mprotect(mprotect_addr, 1048576, PROT_READ | PROT_WRITE | PROT_EXEC)){
+      int errorCode = errno;
+      if(errorCode == EACCES){
+        printf("DBG: Invalid access permissions on memory\n");
+      }
+      if(errorCode == EINVAL){
+        printf("DBG: Invalid pointer to mprotect\n");
+      }
+      if(errorCode == ENOMEM){
+        printf("DBG: Internal mprotect error\n");
+      }
+      printf("Error error error\n");
+    }
+    else{
+      printf("DBG: Successful mprotect call\n");
+      ElfW(Addr) prev_val = symbol->st_value;
+    }
+    printf("Remapping st_value from %lx to %lx\n",symbol->st_value,dog_malloc_addr);
+    //symbol->st_value = dog_malloc_addr;
+    
+    //dog_malloc_addr = test_symbol + symbol->st_value;
+  } 
+  printf("%s %lx %lx\n", name, (test_symbol+symbol->st_value) , symbol->st_value);
+}
+ElfW(Sym) * table = NULL;
+void analyzeSym(ElfW(Sym)* sym, char* name){
+  if(!gotcha_strncmp(name,"dog_malloc",10)){
+    dog_malloc_addr = test_symbol + sym->st_value;
+  }
+  printf("ADBG: %s %lx\n",name, (test_symbol + sym->st_value));
+}
+struct wrapper_action {
+  char* wrappee_name;
+  void* wrappee_pointer;
+};
+struct wrapper_action gotcha_wrap_actions[100];
+int gotcha_wrap_num = 0;
+void gotcha_init(){
+}
+struct gotcha_binding_t* found_syms; 
+int wrap_plz(ElfW(Sym)* symb, char* symName, ElfW(Addr) offset, struct link_map* iter, char** nameList, int num_names, struct gotcha_binding_t* bindings){
+  int i =0;
+  for(i=0;i<num_names;i++){
+    if(gotcha_strcmp(symName, nameList[i])==0){
+      *(void**)(iter->l_addr+offset) = bindings[i].function_address_pointer;
+    } 
+  }
+  return 0;
+}
+int gotcha_wrap_calls(char** names, char** wrap_names, int num_names, struct gotcha_binding_t* bindings){
+   struct link_map* lib_iter = _r_debug.r_map;
+   for(;lib_iter!=0;lib_iter=lib_iter->l_next){
+      FOR_EACH_PLTREL(lib_iter, wrap_plz, lib_iter, wrap_names, num_names, bindings);
+   }
+   return 0;
+}
+
