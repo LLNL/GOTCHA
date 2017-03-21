@@ -4,6 +4,8 @@
 #include <elf.h>
 #include <link.h>
 #include "gotcha_utils.h"
+//#define CHECK_VISIBILITY(sym)((sym.st_info & 0x3) < 2)
+#define CHECK_VISIBILITY(sym)((sym.st_size>0))
 struct gnu_hash_header {
    uint32_t nbuckets;
    uint32_t symndx;
@@ -13,6 +15,7 @@ struct gnu_hash_header {
 struct gotcha_binding_t {
   char* name;
   void* function_address_pointer;
+  void* wrapper_pointer;
 };
 uint32_t gnu_hash_func(const char *str);
 static signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, char *symnames, struct gnu_hash_header *header);

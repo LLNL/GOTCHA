@@ -14,9 +14,6 @@ int gotcha_wrap(struct gotcha_binding_t* names, void** wrappers, int num_actions
   for(;lib_iter != 0 ; lib_iter = lib_iter->l_next){
     FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, names, wrappers, num_actions);
   }
-  for(i = 0; i< num_actions;i++){
-      
-  } 
   return 0;
 }
 
@@ -106,9 +103,8 @@ struct gotcha_binding_t* gotcha_prepare_symbols(char** symbol_names, int num_nam
    {
       
       INIT_DYNAMIC(libc);
-      printf("Hahaoops %s %lx %lx %lx\n",libc->l_name, libc->l_addr, gnu_hash, elf_hash);
       gotcha_assert(gnu_hash || elf_hash);
-      if(elf_hash & 0xf00000000000){
+      if(elf_hash & 0x800000000000){
         continue;
       }
       int binding_check = 0;
@@ -126,7 +122,7 @@ struct gotcha_binding_t* gotcha_prepare_symbols(char** symbol_names, int num_nam
             printf("Warning, Could not bind symbol %s in libc\n", binding->name);
             not_found++;
          }
-         else {
+         else if(CHECK_VISIBILITY(symtab[result])) {
             binding->function_address_pointer = (void *) (symtab[result].st_value + libc->l_addr);
             found++;
          }
