@@ -13,9 +13,7 @@ int dummyRetX(int foo){
  //never called
  return foo;
 }
-#define MAKE_FUNCTION_PTR(name, ret_type, ...)(ret_type(*name)(__VA_ARGS__))
 int retX(int x){return x;}
-MAKE_FUNCTION_PTR(someRetX, int, int)
 int dogRetX(int x){
   printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n",x);
   return ((int(*)(int))(bindings[0].function_address_pointer))(x);
