@@ -14,7 +14,7 @@ int dummyRetX(int foo){
  return foo;
 }
 int retX(int x){return x;}
-GOTCHA_MAKE_FUNCTION_PTR(someRetX, int, int)
+
 int dogRetX(int x){
   printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n",x);
   return origRetX ? origRetX(x) : 0;
