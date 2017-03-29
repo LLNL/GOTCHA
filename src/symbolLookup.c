@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "sampleLib.h"
+#include <gotcha/sampleLib.h>
 
 #include <sys/mman.h>
 #include <stdio.h>

@@ -1,7 +1,6 @@
 add_library(wrap_me SHARED sampleLib.c)
-add_library(mein_got SHARED  gotcha_utils.c gnuy_lookups.c)
+add_library(mein_got SHARED  gotcha_utils.c gotcha.c)
 target_link_libraries(wrap_me mein_got)
 add_executable(symb_look symbolLookup.c)
 target_link_libraries(symb_look wrap_me mein_got)
 install(TARGETS mein_got DESTINATION lib)
-install(FILES gnuy_lookups.h DESTINATION include)

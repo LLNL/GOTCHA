@@ -1,6 +1,7 @@
 #ifndef GOTCHA_UTILS_H
 #define GOTCHA_UTILS_H
 #include <sys/mman.h>
+#include "gotcha_types.h"
 // TODO: remove these includes
 #include <string.h>
 #include <stdlib.h>
@@ -20,6 +21,19 @@
 #ifndef NULL
 #define NULL 0
 #endif
+#define GOTCHA_CHECK_VISIBILITY(sym)((sym.st_size>0))
+struct gnu_hash_header {
+   uint32_t nbuckets;
+   uint32_t symndx;
+   uint32_t maskwords;
+   uint32_t shift2;
+};
+uint32_t gnu_hash_func(const char *str);
+signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, char *symnames, struct gnu_hash_header *header);
+unsigned long elf_hash(const unsigned char *name);
+signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symnames, ElfW(Word) *header);
+struct gotcha_binding_t* get_bindings(char** symbol_names, int num_names);
+int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct link_map* lmap, struct gotcha_binding_t* syms, void** wrappers, int num_actions);
 #define INIT_DYNAMIC(lmap)                                      \
    ElfW(Dyn) *dynsec = NULL, *dentry = NULL;                    \
    ElfW(Rela) *rela = NULL;                                     \
