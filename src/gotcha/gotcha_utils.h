@@ -25,7 +25,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #ifndef GOTCHA_UTILS_H
 #define GOTCHA_UTILS_H
 #include <sys/mman.h>
-#include "gotcha_types.h"
+#include <gotcha/gotcha_types.h>
 // TODO: remove these includes
 #include <string.h>
 #include <stdlib.h>

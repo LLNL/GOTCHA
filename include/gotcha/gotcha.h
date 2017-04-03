@@ -30,8 +30,8 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #include <stdint.h>
 #include <elf.h>
 #include <link.h>
-#include "gotcha_utils.h"
-#include "gotcha_types.h"
+#include <gotcha/gotcha_utils.h>
+#include <gotcha/gotcha_types.h>
 
 /*!
  ******************************************************************************
