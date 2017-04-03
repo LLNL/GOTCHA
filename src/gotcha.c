@@ -1,4 +1,5 @@
 #include <gotcha/gotcha.h>
+#include <gotcha/gotcha_utils.h>
 int gotcha_wrap(struct gotcha_binding_t* names, void** wrappers, void*** originals, int num_actions){
   int i =0;
   struct link_map * lib_iter = _r_debug.r_map;
