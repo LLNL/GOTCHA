@@ -2,14 +2,57 @@
 void* gotcha_malloc(size_t size){
   return malloc(size);
 }
-int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct link_map* lmap, struct gotcha_binding_t* syms, void** wrappers, int num_actions){
+int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct link_map* lmap, struct gotcha_binding_t* syms, int num_actions){
   int i=0;
   for(i =0 ; i < num_actions;i++){
     if(gotcha_strcmp(name,syms[i].name)==0){
-      (*((void**)(lmap->l_addr + offset))) = wrappers[i];
+      (*((void**)(lmap->l_addr + offset))) = syms[i].wrapper_pointer;
     }
   }
   return 0;
+}
+
+int gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names)
+{
+   struct link_map *libc;
+   struct gotcha_binding_t *binding_iter;
+   signed long result;
+   int found = 0, not_found = 0;
+   libc = _r_debug.r_map;
+   int iter = 0;
+   for(iter = 0; iter < num_names; iter++){
+      *(void**)(bindings[iter].function_address_pointer) = NULL;  
+   }
+   INIT_DYNAMIC(libc);
+   for(;libc!=0;libc=libc->l_next)
+   {
+      
+      INIT_DYNAMIC(libc);
+      gotcha_assert(gnu_hash || elf_hash);
+      if(elf_hash & 0x800000000000){
+        continue;
+      }
+      int binding_check = 0;
+      for (binding_check = 0, binding_iter = bindings;binding_check<num_names;binding_iter++,binding_check++) {
+         if (*(void**)(binding_iter->function_address_pointer) != 0x0)
+            continue;
+
+         result = -1;
+         if (gnu_hash)
+            result = lookup_gnu_hash_symbol(binding_iter->name, symtab, strtab, (struct gnu_hash_header *) gnu_hash);
+         if (elf_hash && result == -1)
+            result = lookup_elf_hash_symbol(binding_iter->name, symtab, strtab, (ElfW(Word) *) elf_hash);
+
+         if (result == -1) {
+            not_found++;
+         }
+         else if(GOTCHA_CHECK_VISIBILITY(symtab[result])) {
+            *(void**)(binding_iter->function_address_pointer) = (void *) (symtab[result].st_value + libc->l_addr);
+            found++;
+         }
+      }
+   }
+   return 0;
 }
 uint32_t gnu_hash_func(const char *str) {
    uint32_t hash = 5381;

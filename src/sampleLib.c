@@ -1,12 +1,10 @@
 #include <gotcha/sampleLib.h>
-struct gotcha_binding_t* bindings;
 int (*origRetX)(int) = NULL;
+struct gotcha_binding_t bindings[] = {
+                                       {"retX", dogRetX, &origRetX}
+                                     };
 int sample_init(){
-   char* sample_names[1] = {"retX"};
-   bindings = gotcha_prepare_symbols(sample_names,1);
-   void* wrap_these[1] = {&dogRetX};
-   void** original_calls[1] = {&origRetX};
-   gotcha_wrap(bindings, wrap_these, original_calls, 1);
+   gotcha_wrap(bindings, 1);
    return 0;
 }
 int dummyRetX(int foo){

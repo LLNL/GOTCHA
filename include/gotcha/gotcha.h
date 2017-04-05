@@ -49,22 +49,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 /*!
  ******************************************************************************
  *
- * \fn struct gotcha_binding_t* gotcha_prepare_symbols(char** symbol_names, int num_names);
- *
- * \brief Given a list of function names, create the gotcha structure used to
- *				wrap functions
- *
- * \param symbol_names The names of the symbols to be wrapped
- * \param num_names 	 The number of symbol names in symbol_names
- *
- ******************************************************************************
- */
-struct gotcha_binding_t* gotcha_prepare_symbols(char** symbol_names, int num_names);
-
-/*!
- ******************************************************************************
- *
- * \fn int gotcha_wrap(struct gotcha_binding_t* bindings, void** wrappers, void*** originals, int num_actions);
+ * \fn enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, void** wrappers, void*** originals, int num_actions);
  *
  * \brief Makes GOTCHA wrap the functions picked in gotcha_prepare_symbols
  *
@@ -76,5 +61,5 @@ struct gotcha_binding_t* gotcha_prepare_symbols(char** symbol_names, int num_nam
  *
  ******************************************************************************
  */
-int gotcha_wrap(struct gotcha_binding_t* bindings, void** wrappers, void*** originals, int num_actions);
+enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions);
 #endif

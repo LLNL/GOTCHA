@@ -88,6 +88,22 @@ struct gnu_hash_header {
 /*!
  ******************************************************************************
  *
+ * \fn void gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names)
+ *
+ * \brief Given a list of function names, create the gotcha structure used to
+ *				wrap functions
+ *
+ * \param bindings     The GOTCHA wrap actions
+ * \param num_names 	 The number of symbol names in symbol_names
+ *
+ ******************************************************************************
+ */
+int gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names);
+
+
+/*!
+ ******************************************************************************
+ *
  * \fn uint32_t gnu_hash_func(const char* str);
  *
  * \brief Given a function name, computes its GNU Hash value 
@@ -191,7 +207,7 @@ struct gotcha_binding_t* get_bindings(char** symbol_names, int num_names);
  *
  ******************************************************************************
  */
-int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct link_map* lmap, struct gotcha_binding_t* syms, void** wrappers, int num_actions);
+int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct link_map* lmap, struct gotcha_binding_t* syms, int num_actions);
 
 /*!
  ******************************************************************************

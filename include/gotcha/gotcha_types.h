@@ -29,7 +29,15 @@ Place, Suite 330, Boston, MA 02111-1307 USA
  */
 struct gotcha_binding_t {
   char* name;                     //!< The name of the function being wrapped
-  void* function_address_pointer; //!< A pointer to the function being wrapped
   void* wrapper_pointer;          //!< A pointer to the wrapper function
+  void* function_address_pointer; //!< A pointer to the function being wrapped
+};
+
+/*!
+ * The representation of an error (or success) of a GOTCHA action
+ */
+enum gotcha_error_t {
+  GOTCHA_SUCCESS = 0,             //!< The call succeeded
+  GOTCHA_FUNCTION_NOT_FOUND       //!< The call looked up a function which could not be found
 };
 #endif
