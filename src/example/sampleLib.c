@@ -17,14 +17,13 @@ int (*origRetX)(int) = NULL;
   * Note that the place to store the original function is passed
   * by reference, this is required for us to be able to change it
   */
-struct gotcha_binding_t bindings[] = {
-                                       {"retX", dogRetX, &origRetX}
-                                     };
+struct gotcha_binding_t bindings[] = {{"retX", dogRetX, &origRetX}};
 
 // This is like a tool library's initialization function
-int sample_init(){
-   gotcha_wrap(bindings, 1);
-   return 0;
+int sample_init()
+{
+  gotcha_wrap(bindings, 1);
+  return 0;
 }
 
 /**
@@ -32,16 +31,15 @@ int sample_init(){
   * For convenience, it's in the same library, but this
   * isn't a requirement imposed by GOTCHA
   */
-int retX(int x){
-  return x;
-}
+int retX(int x) { return x; }
 
 /** 
   * This is our wrapper function. All GOTCHA wrappers *must*
   * reference dogs somewhere in the code. I didn't write the
   * rules (yes I did)
   */
-int dogRetX(int x){
-  printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n",x);
+int dogRetX(int x)
+{
+  printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n", x);
   return origRetX ? origRetX(x) : 0;
 }
