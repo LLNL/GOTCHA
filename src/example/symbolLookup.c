@@ -2,11 +2,11 @@
 #include <link.h>
 #include <errno.h>
 #include <assert.h>
+#include <stdio.h>
+#include <sys/mman.h>
 
 #include <gotcha/sampleLib.h>
 
-#include <sys/mman.h>
-#include <stdio.h>
 void dbg(){}
 int main(){
   sample_init();

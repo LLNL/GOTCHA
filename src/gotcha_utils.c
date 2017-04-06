@@ -34,14 +34,17 @@ int gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names)
       }
       int binding_check = 0;
       for (binding_check = 0, binding_iter = bindings;binding_check<num_names;binding_iter++,binding_check++) {
-         if (*(void**)(binding_iter->function_address_pointer) != 0x0)
+         if (*(void**)(binding_iter->function_address_pointer) != 0x0){
             continue;
+         }
 
          result = -1;
-         if (gnu_hash)
+         if (gnu_hash){
             result = lookup_gnu_hash_symbol(binding_iter->name, symtab, strtab, (struct gnu_hash_header *) gnu_hash);
-         if (elf_hash && result == -1)
+         }
+         if (elf_hash && result == -1){
             result = lookup_elf_hash_symbol(binding_iter->name, symtab, strtab, (ElfW(Word) *) elf_hash);
+         }
 
          if (result == -1) {
             not_found++;
@@ -56,8 +59,9 @@ int gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names)
 }
 uint32_t gnu_hash_func(const char *str) {
    uint32_t hash = 5381;
-   for (; *str != '\0'; str++)
+   for (; *str != '\0'; str++){
       hash = hash * 33 + *str;
+   }
    return hash;
 }
 
@@ -72,17 +76,20 @@ signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
    
    hash_val = gnu_hash_func(name);
    cur_sym = buckets[hash_val % header->nbuckets];
-   if (cur_sym == 0)
+   if (cur_sym == 0){
       return -1;
+   }
 
    hash_val &= ~1;
    for (;;) {
       cur_sym_hashval = vals[cur_sym - header->symndx];
       if (((cur_sym_hashval & ~1) == hash_val) && 
-          (gotcha_strcmp(name, symnames + syms[cur_sym].st_name) == 0))
+          (gotcha_strcmp(name, symnames + syms[cur_sym].st_name) == 0)){
          return (signed long) cur_sym;
-      if (cur_sym_hashval & 1)
+      }
+      if (cur_sym_hashval & 1){
          return -1;
+      }
       cur_sym++;
    }
 }
@@ -92,8 +99,9 @@ unsigned long elf_hash(const unsigned char *name)
    unsigned long h = 0, g;
    while (*name) {
       h = (h << 4) + *name++;
-      if ((g = h & 0xf0000000))
+      if ((g = h & 0xf0000000)){
          h ^= h >> 24;
+      }
       h &= ~g;
    }
    return h;
@@ -109,8 +117,9 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
    unsigned int hash_idx = elf_hash((const unsigned char *) name) % *nbucket;
    signed long idx = (signed long) buckets[hash_idx];
    while (idx != STN_UNDEF) {
-      if (gotcha_strcmp(name, symnames + syms[idx].st_name) == 0)
+      if (gotcha_strcmp(name, symnames + syms[idx].st_name) == 0){
          return idx;
+      }
       idx = chains[idx];
    }
    
