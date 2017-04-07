@@ -16,6 +16,23 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol,
   return 0;
 }
 
+
+int debug_print_impl(ElfW(Sym) * symbol,
+                     char *name,
+                     ElfW(Addr) offset,
+                     char* filter){
+  if(gotcha_strstr(name,filter)){
+    printf("Symbol name: %s, offset %lu, size %lu\n",name, offset, symbol->st_size);
+  }
+  return 0;
+}
+int debug_print(struct link_map* libc, char* filter){
+  FOR_EACH_PLTREL(libc, debug_print_impl, filter);
+  return 0;
+}
+
+
+
 int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names)
 {
   struct link_map *libc;
