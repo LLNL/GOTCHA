@@ -1,12 +1,8 @@
 #include <gotcha/gotcha_utils.h>
 void *gotcha_malloc(size_t size) { return malloc(size); }
-int gotcha_wrap_impl(ElfW(Sym) * symbol,
-                     char *name,
-                     ElfW(Addr) offset,
-                     struct link_map *lmap,
-                     struct gotcha_binding_t *syms,
-                     int num_actions)
-{
+int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
+                     struct link_map *lmap, struct gotcha_binding_t *syms,
+                     int num_actions) {
   int i = 0;
   for (i = 0; i < num_actions; i++) {
     if (gotcha_strcmp(name, syms[i].name) == 0) {
@@ -16,25 +12,20 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol,
   return 0;
 }
 
-
-int debug_print_impl(ElfW(Sym) * symbol,
-                     char *name,
-                     ElfW(Addr) offset,
-                     char* filter){
-  if(gotcha_strstr(name,filter)){
-    printf("Symbol name: %s, offset %lu, size %lu\n",name, offset, symbol->st_size);
+int debug_print_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
+                     char *filter) {
+  if (gotcha_strstr(name, filter)) {
+    printf("Symbol name: %s, offset %lu, size %lu\n", name, offset,
+           symbol->st_size);
   }
   return 0;
 }
-int debug_print(struct link_map* libc, char* filter){
+int debug_print(struct link_map *libc, char *filter) {
   FOR_EACH_PLTREL(libc, debug_print_impl, filter);
   return 0;
 }
 
-
-
-int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names)
-{
+int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names) {
   struct link_map *libc;
   struct gotcha_binding_t *binding_iter;
   signed long result;
@@ -46,10 +37,9 @@ int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names)
   }
   INIT_DYNAMIC(libc);
   for (; libc != 0; libc = libc->l_next) {
-
     INIT_DYNAMIC(libc);
     gotcha_assert(gnu_hash || elf_hash);
-    if (elf_hash & 0x800000000000) {
+    if (elf_hash & 0x800000000000 && !*libc->l_name) {
       continue;
     }
     int binding_check = 0;
@@ -61,15 +51,11 @@ int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names)
 
       result = -1;
       if (gnu_hash) {
-        result = lookup_gnu_hash_symbol(binding_iter->name,
-                                        symtab,
-                                        strtab,
+        result = lookup_gnu_hash_symbol(binding_iter->name, symtab, strtab,
                                         (struct gnu_hash_header *)gnu_hash);
       }
       if (elf_hash && result == -1) {
-        result = lookup_elf_hash_symbol(binding_iter->name,
-                                        symtab,
-                                        strtab,
+        result = lookup_elf_hash_symbol(binding_iter->name, symtab, strtab,
                                         (ElfW(Word) *)elf_hash);
       }
 
@@ -84,8 +70,7 @@ int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names)
   }
   return 0;
 }
-uint32_t gnu_hash_func(const char *str)
-{
+uint32_t gnu_hash_func(const char *str) {
   uint32_t hash = 5381;
   for (; *str != '\0'; str++) {
     hash = hash * 33 + *str;
@@ -93,17 +78,15 @@ uint32_t gnu_hash_func(const char *str)
   return hash;
 }
 
-signed long lookup_gnu_hash_symbol(const char *name,
-                                   ElfW(Sym) * syms,
+signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) * syms,
                                    char *symnames,
-                                   struct gnu_hash_header *header)
-{
+                                   struct gnu_hash_header *header) {
   uint32_t *buckets, *vals;
   uint32_t hash_val;
   uint32_t cur_sym, cur_sym_hashval;
 
-  buckets = (uint32_t *)(((unsigned char *)(header + 1))
-                         + (header->maskwords * sizeof(ElfW(Addr))));
+  buckets = (uint32_t *)(((unsigned char *)(header + 1)) +
+                         (header->maskwords * sizeof(ElfW(Addr))));
   vals = buckets + header->nbuckets;
 
   hash_val = gnu_hash_func(name);
@@ -115,8 +98,8 @@ signed long lookup_gnu_hash_symbol(const char *name,
   hash_val &= ~1;
   for (;;) {
     cur_sym_hashval = vals[cur_sym - header->symndx];
-    if (((cur_sym_hashval & ~1) == hash_val)
-        && (gotcha_strcmp(name, symnames + syms[cur_sym].st_name) == 0)) {
+    if (((cur_sym_hashval & ~1) == hash_val) &&
+        (gotcha_strcmp(name, symnames + syms[cur_sym].st_name) == 0)) {
       return (signed long)cur_sym;
     }
     if (cur_sym_hashval & 1) {
@@ -126,46 +109,40 @@ signed long lookup_gnu_hash_symbol(const char *name,
   }
 }
 
-unsigned long elf_hash(const unsigned char *name)
-{
-  unsigned long h = 0, g;
-  while (*name) {
+unsigned long elf_hash(const unsigned char *name) {
+  unsigned int h = 0, g;
+  while (*name != '\0') {
     h = (h << 4) + *name++;
     if ((g = h & 0xf0000000)) {
-      h ^= h >> 24;
+      h ^= g >> 24;
     }
     h &= ~g;
   }
   return h;
 }
 
-signed long lookup_elf_hash_symbol(const char *name,
-                                   ElfW(Sym) * syms,
-                                   char *symnames,
-                                   ElfW(Word) * header)
-{
+signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) * syms,
+                                   char *symnames, ElfW(Word) * header) {
   ElfW(Word) *nbucket = header + 0;
   ElfW(Word) *buckets = header + 2;
   ElfW(Word) *chains = buckets + *nbucket;
 
-  unsigned int hash_idx = elf_hash((const unsigned char *)name) % *nbucket;
-  signed long idx = (signed long)buckets[hash_idx];
-  while (idx != STN_UNDEF) {
-    if (gotcha_strcmp(name, symnames + syms[idx].st_name) == 0) {
-      return idx;
+  unsigned int x = elf_hash((const unsigned char *)name);
+  signed long y = (signed long)buckets[x % *nbucket];
+  while (y != STN_UNDEF) {
+    if (gotcha_strcmp(name, symnames + syms[y].st_name) == 0) {
+      return y;
     }
-    idx = chains[idx];
+    y = chains[y];
   }
 
   return -1;
 }
 
-
-struct gotcha_binding_t *get_bindings(char **symbol_names, int num_names)
-{
+struct gotcha_binding_t *get_bindings(char **symbol_names, int num_names) {
   struct gotcha_binding_t *binding_list =
-      (struct gotcha_binding_t *)gotcha_malloc(sizeof(struct gotcha_binding_t)
-                                               * num_names);
+      (struct gotcha_binding_t *)gotcha_malloc(sizeof(struct gotcha_binding_t) *
+                                               num_names);
   int i = 0;
   for (i = 0; i < num_names; i++) {
     binding_list[i].function_address_pointer = 0x0;
@@ -174,12 +151,10 @@ struct gotcha_binding_t *get_bindings(char **symbol_names, int num_names)
   return binding_list;
 }
 void gotcha_free(void **free_me) { free(free_me); }
-void gotcha_memcpy(void *dest, void *src, size_t size)
-{
+void gotcha_memcpy(void *dest, void *src, size_t size) {
   memcpy(dest, src, size);
 }
-int gotcha_strncmp(const char *in_one, const char *in_two, int max_length)
-{
+int gotcha_strncmp(const char *in_one, const char *in_two, int max_length) {
   int i = 0;
   for (; i < max_length; i++) {
     if (in_one[i] == '\0') {
@@ -191,14 +166,12 @@ int gotcha_strncmp(const char *in_one, const char *in_two, int max_length)
   }
   return 0;
 }
-char *gotcha_strstr(char *searchIn, char *searchFor)
-{
+char *gotcha_strstr(char *searchIn, char *searchFor) {
   return strstr(searchIn, searchFor);
 }
 void gotcha_assert(int assertion) { assert(assertion); }
 
-int gotcha_strcmp(const char *in_one, const char *in_two)
-{
+int gotcha_strcmp(const char *in_one, const char *in_two) {
   int i = 0;
   for (;; i++) {
     if (in_one[i] == '\0') {
