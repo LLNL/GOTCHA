@@ -7,5 +7,11 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actio
   for (; lib_iter != 0; lib_iter = lib_iter->l_next) {
     FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings, num_actions);
   }
-  return GOTCHA_SUCCESS;
+  enum gotcha_error_t ret_code = GOTCHA_SUCCESS;
+  for(i = 0; i<num_actions;i++){
+    if(bindings[i].function_address_pointer==0){
+      ret_code = GOTCHA_FUNCTION_NOT_FOUND;
+    }
+  }
+  return ret_code;
 }
