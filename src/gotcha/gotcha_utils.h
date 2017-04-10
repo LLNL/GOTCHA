@@ -355,6 +355,20 @@ int gotcha_wrap_impl(ElfW(Sym)* symbol, char* name, ElfW(Addr) offset, struct li
  ******************************************************************************
  */
 void* gotcha_malloc(size_t size);
+
+/*!
+ ******************************************************************************
+ *
+ * \fn void* gotcha_realloc(void* buffer, size_t size);
+ *
+ * \brief A gotcha wrapper around malloc to avoid libc dependencies
+ *
+ * \param buffer The buffer to 
+ * \param size The number of bytes to allocate
+ *
+ ******************************************************************************
+ */
+void *gotcha_realloc(void* buffer, size_t size);
 /*!
  ******************************************************************************
  *

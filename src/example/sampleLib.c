@@ -22,7 +22,7 @@ struct gotcha_binding_t bindings[] = {{"retX", dogRetX, &origRetX}};
 // This is like a tool library's initialization function
 int sample_init()
 {
-  gotcha_wrap(bindings, 1);
+  gotcha_wrap(bindings, 1, "gotcha_internal_sample_tool");
   return 0;
 }
 
