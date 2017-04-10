@@ -65,8 +65,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *									  pass a reference to a pointer to that function in this 
                       list
  * \param num_actions The number of functions being wrapped
+ * \param name        A name you use to represent your library, useful for
+ *                    multiple wrappings of the same base function.
  *
  ******************************************************************************
  */
-enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions);
+enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* library_name);
 #endif
