@@ -1,5 +1,5 @@
 add_library(wrap_me SHARED example/sampleLib.c)
-add_library(mein_got SHARED  gotcha_utils.c gotcha.c)
+add_library(mein_got SHARED  gotcha_utils.c gotcha.c gotcha_auxv.c)
 target_link_libraries(wrap_me mein_got)
 add_executable(symb_look example/symbolLookup.c)
 target_link_libraries(symb_look wrap_me mein_got)

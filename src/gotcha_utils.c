@@ -40,7 +40,7 @@ int gotcha_prepare_symbols(struct gotcha_binding_t *bindings, int num_names) {
   for (; libc != 0; libc = libc->l_next) {
     INIT_DYNAMIC(libc);
     gotcha_assert(gnu_hash || elf_hash);
-    if (elf_hash & 0x800000000000 && !*libc->l_name) {
+    if (is_vdso(libc)) {
       continue;
     }
     int binding_check = 0;
