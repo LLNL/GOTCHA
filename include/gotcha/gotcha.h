@@ -28,7 +28,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 #ifndef GOTCHA_H
 #define GOTCHA_H
-#include <gotcha/gotcha_types.h>
+
+#include "gotcha/gotcha_types.h"
+
 
 /*!
  ******************************************************************************

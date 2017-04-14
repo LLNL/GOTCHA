@@ -1,4 +1,4 @@
-#include <gotcha/sampleLib.h>
+#include "gotcha/sampleLib.h"
 //We need a place to store the pointer to the function we've wrapped
 int (*origRetX)(int) = NULL;
 

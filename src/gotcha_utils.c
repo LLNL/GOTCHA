@@ -1,4 +1,5 @@
-#include <gotcha/gotcha_utils.h>
+#include "gotcha/gotcha_utils.h"
+
 void *gotcha_malloc(size_t size) { return malloc(size); }
 void *gotcha_realloc(void* buffer, size_t size) { return realloc(buffer,size); }
 int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
