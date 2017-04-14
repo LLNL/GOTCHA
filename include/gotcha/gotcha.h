@@ -56,19 +56,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * \brief Makes GOTCHA wrap the functions picked in gotcha_prepare_symbols
  *
- * \param bindings    A list of bindings to do wrapping on, should be 
- *                    returned by a call to gotcha_prepare_symbols
- * \param wrappers 	  A list of pointers to wrapper functions the chosen 
- *                    bindings should redirect to
- * \param originals   A list of pointers to original functions to be wrapped 
-                      from, if you need to call the function you wrapped,
- *									  pass a reference to a pointer to that function in this 
-                      list
- * \param num_actions The number of functions being wrapped
- * \param name        A name you use to represent your library, useful for
- *                    multiple wrappings of the same base function.
+ * \param bindings    A list of bindings to wrap
+ * \param num_actions The number of items in the bindings table
+ * \param tool_name   A name you use to represent your tool when
+ *                    stacking multiple tools (currently unused).
  *
  ******************************************************************************
  */
-enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* library_name);
+enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* tool_name);
+
 #endif

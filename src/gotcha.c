@@ -1,6 +1,6 @@
 #include <gotcha/gotcha.h>
 #include <gotcha/gotcha_utils.h>
-enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* library_name){
+enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* tool_name){
   gotcha_prepare_symbols(bindings, num_actions);
   int i = 0;
   struct link_map* lib_iter = _r_debug.r_map;
