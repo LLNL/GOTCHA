@@ -31,7 +31,7 @@ static ElfW(auxv_t) *get_auxv_contents()
          if (errno == EINTR)
             continue;
          close(fd);
-         gotcha_free(&buffer);
+         gotcha_free(buffer);
          return NULL;
       }
       if (result == 0) {

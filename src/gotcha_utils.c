@@ -151,7 +151,11 @@ struct gotcha_binding_t *get_bindings(char **symbol_names, int num_names) {
   }
   return binding_list;
 }
-void gotcha_free(void **free_me) { free(free_me); }
+
+void gotcha_free(void *free_me) { 
+   free(free_me); 
+}
+
 void gotcha_memcpy(void *dest, void *src, size_t size) {
   memcpy(dest, src, size);
 }
