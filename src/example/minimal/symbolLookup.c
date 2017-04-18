@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
-#include <gotcha/sampleLib.h>
+#include "sampleLib.h"
 
 void dbg() {}
 int main()
