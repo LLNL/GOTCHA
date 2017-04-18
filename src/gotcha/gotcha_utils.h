@@ -372,7 +372,7 @@ void *gotcha_realloc(void* buffer, size_t size);
 /*!
  ******************************************************************************
  *
- * \fn void gotcha_free(void** free_me);
+ * \fn void gotcha_free(void* free_me);
  *
  * \brief A gotcha wrapper around free to avoid libc dependencies
  *
@@ -380,7 +380,8 @@ void *gotcha_realloc(void* buffer, size_t size);
  *
  ******************************************************************************
  */
-void gotcha_free(void** free_me);
+void gotcha_free(void* free_me);
+
 /*!
  ******************************************************************************
  *
