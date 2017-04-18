@@ -14,7 +14,6 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #ifndef SAMPLE_LIB_H
 #define SAMPLE_LIB_H
-#include "gotcha/gotcha_utils.h"
 #include "gotcha/gotcha.h"
 int sample_init();
 int retX(int x);

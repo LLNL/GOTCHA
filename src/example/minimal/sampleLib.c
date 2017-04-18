@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "sampleLib.h"
 
 //We need a place to store the pointer to the function we've wrapped

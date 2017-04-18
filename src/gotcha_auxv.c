@@ -1,5 +1,6 @@
-#include "gotcha/gotcha_auxv.h"
-#include "gotcha/gotcha_utils.h"
+#include "gotcha_auxv.h"
+#include "gotcha_utils.h"
+#include "libc_wrappers.h"
 
 #include <elf.h>
 #include <link.h>
