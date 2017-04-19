@@ -99,19 +99,4 @@ do {                                                       \
   (void*)(((ElfW(Addr))ptr) & (-pagesize))
 
 
-/*!
- ******************************************************************************
- *
- * \fn void gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names)
- *
- * \brief Given a list of function names, create the gotcha structure used to
- *				wrap functions
- *
- * \param bindings     The GOTCHA wrap actions
- * \param num_names 	 The number of symbol names in symbol_names
- *
- ******************************************************************************
- */
-int gotcha_prepare_symbols(struct gotcha_binding_t* bindings, int num_names);
-
 #endif
