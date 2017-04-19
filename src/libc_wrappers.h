@@ -126,4 +126,8 @@ void gotcha_assert(int assertion);
  */
 int gotcha_strcmp(const char* in_one, const char* in_two);
 
+char *gotcha_getenv(const char *env);
+pid_t gotcha_getpid();
+pid_t gotcha_gettid();
+
 #endif
