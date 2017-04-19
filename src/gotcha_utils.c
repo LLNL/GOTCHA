@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "libc_wrappers.h"
 #include "elf_ops.h"
 #include "gotcha/gotcha.h"
+#include <stdlib.h>
 
 int debug_print_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
                      char *filter)
@@ -32,4 +33,29 @@ int debug_print(struct link_map *libc, char *filter)
 {
   FOR_EACH_PLTREL(libc, debug_print_impl, filter);
   return 0;
+}
+
+int debug_level;
+FILE *debug_io;
+void debug_init()
+{
+   static int debug_initialized = 0;
+
+   char *debug_str;
+   int debug_val;
+   if (debug_initialized) {
+      return;
+   }
+   debug_initialized = 1;
+   
+   debug_str = gotcha_getenv(GOTCHA_DEBUG_ENV);
+   if (!debug_str) {
+      return;
+   }
+
+   debug_level = atoi(debug_str);
+   if (debug_level <= 0)
+      debug_level = 1;
+   
+   debug_io = stderr;
 }

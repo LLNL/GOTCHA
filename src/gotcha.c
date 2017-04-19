@@ -85,6 +85,8 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actio
   enum gotcha_error_t ret_code;
   struct link_map *lib_iter;
 
+  debug_init();
+
   gotcha_prepare_symbols(bindings, num_actions);
 
   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {

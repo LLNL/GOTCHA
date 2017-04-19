@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <syscall.h>
 
 void *gotcha_malloc(size_t size) 
 {
@@ -74,4 +75,19 @@ int gotcha_strcmp(const char *in_one, const char *in_two)
     }
   }
   return 0;
+}
+
+char *gotcha_getenv(const char *name) 
+{
+   return getenv(name);
+}
+
+pid_t gotcha_getpid()
+{
+   return getpid();
+}
+
+pid_t gotcha_gettid()
+{
+   return syscall(SYS_gettid);
 }

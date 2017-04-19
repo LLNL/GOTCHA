@@ -35,13 +35,32 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 // END TODO
 #include <elf.h>
 #include <link.h>
-/*!
- ******************************************************************************
- * \def GOTCHA_FALSE
- * \brief This is GOTCHA's internal false, to avoid needing additional includes
- ******************************************************************************
- */
-#define GOTCHA_FALSE 0
+#include <string.h>
+
+
+#define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
+extern int debug_level;
+extern FILE *debug_io;
+void debug_init();
+
+#define debug_bare_printf(lvl, format, ...)       \
+   do {                                           \
+     if (debug_level >= lvl) {                    \
+       fprintf(debug_io, format, ## __VA_ARGS__); \
+     }                                            \
+   } while (0);
+
+#define SHORT_FILE__ ((strrchr(__FILE__, '/') ? : __FILE__ - 1) + 1)
+
+#define debug_printf(lvl, format, ...)               \
+   do {                                              \
+     if (debug_level >= lvl) {                       \
+       fprintf(debug_io, "[%d/%d][%s:%u] - " format, \
+               gotcha_gettid(), gotcha_getpid(),     \
+               SHORT_FILE__, __LINE__,               \
+               ## __VA_ARGS__);                      \
+     }                                               \
+   } while (0);
 
 
 /*!
