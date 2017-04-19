@@ -62,6 +62,16 @@ void debug_init();
      }                                               \
    } while (0);
 
+#define error_printf(format, ...)                          \
+do {                                                       \
+     if (debug_level) {                                    \
+       fprintf(debug_io, "ERROR [%d/%d][%s:%u] - " format, \
+               gotcha_gettid(), gotcha_getpid(),           \
+               SHORT_FILE__, __LINE__,                     \
+               ## __VA_ARGS__);                            \
+     }                                                     \
+   } while (0);
+
 #define LIB_NAME(X) (!X->l_name ? "[NULL]" : (!*X->l_name ? "[EMPTY]" : X->l_name))
 
 /*!

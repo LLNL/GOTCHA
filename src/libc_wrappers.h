@@ -16,6 +16,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #if !defined(LIBC_WRAPPERS_H_)
 #define LIBC_WRAPPERS_H_
 
+#include <stdlib.h>
+
 /*!
  ******************************************************************************
  *
@@ -129,5 +131,6 @@ int gotcha_strcmp(const char* in_one, const char* in_two);
 char *gotcha_getenv(const char *env);
 pid_t gotcha_getpid();
 pid_t gotcha_gettid();
+int gotcha_getpagesize();
 
 #endif
