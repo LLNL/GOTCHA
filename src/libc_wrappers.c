@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <string.h>
 #include <assert.h>
 #include <syscall.h>
+#include <unistd.h>
 
 void *gotcha_malloc(size_t size) 
 {
@@ -90,4 +91,9 @@ pid_t gotcha_getpid()
 pid_t gotcha_gettid()
 {
    return syscall(SYS_gettid);
+}
+
+int gotcha_getpagesize()
+{
+   return getpagesize();
 }
