@@ -194,7 +194,7 @@ hash_hashvalue_t strhash(const char *str)
    unsigned long hash = 5381;
    int c;
 
-   while (c = *str++)
+   while ((c = *str++))
       hash = hash * 33 + c;
 
    return (hash_hashvalue_t) hash;
