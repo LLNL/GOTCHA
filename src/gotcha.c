@@ -107,13 +107,21 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
 
   return 0;
 }
-
+#define MAX(a,b) (a>b?a:b)
 enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, char* tool_name){
   int i;
   enum gotcha_error_t ret_code;
   struct link_map *lib_iter;
   tool_t *tool;
-
+  for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
+    INIT_DYNAMIC(lib_iter);
+    if(got){
+      int res = mprotect(BOUNDARY_BEFORE(got,4096),MAX(rel_count*rel_size,4096),PROT_WRITE|PROT_READ|PROT_EXEC);
+      if(!res){
+        debug_printf(1, "GOTCHA attempted to mark the GOT table as writable and was unable to do so, calls to wrapped functions will likely fail\n");
+      }
+    }
+  } 
   debug_init();
   debug_printf(1, "User called gotcha_wrap for tool %s with %d bindings\n",
                tool_name, num_actions);
