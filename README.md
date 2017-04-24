@@ -22,13 +22,14 @@ also means bugs may exist, and some functionality may not yet be implemented, in
 Quick Start
 -----------
 
-*Building GOTCHA* is trivial. In the root directory
+*Building GOTCHA* is trivial. In the root directory of the repo
 
+```
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX = <where you want the sofware> ..
 make install
-
+```
 *Usage* is fairly simple. For us to wrap a function, we need to know its name, what you want it wrapped with (the wrapper), and we need to give you some ability to call the function you wrapped (wrappee). GOTCHA works on triplets containing this information. We have [small sample uses](src/example/autotee/autotee.c), but the standard workflow looks like
 
 
