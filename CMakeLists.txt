@@ -1,5 +1,8 @@
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 project(gotcha)
+if(GOTCHA_ENABLE_TESTS)
+  add_definitions("-DGOTCHA_ENABLE_TESTING")
+endif()
 cmake_minimum_required(VERSION 2.8)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(include)
