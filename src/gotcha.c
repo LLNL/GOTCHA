@@ -107,23 +107,9 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
 
   return 0;
 }
-size_t get_page_size(void)
-{
-  size_t n;
-  char *p;
-  int u;
-  for (n = 1; n; n *= 2) {
-    p = mmap(0, n * 2, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    if (p == MAP_FAILED) return -1;
-    u = munmap(p + n, n);
-    munmap(p, n * 2);
-    if (!u) return n;
-  }
-  return -1;
-}
 #define MAX(a,b) (a>b?a:b)
 enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, char* tool_name){
-  int page_size = get_page_size();
+  int page_size = gotcha_getpagesize();
   int i;
   enum gotcha_error_t ret_code;
   struct link_map *lib_iter;
