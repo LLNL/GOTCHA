@@ -1,5 +1,7 @@
 add_library(internal_unit_sample SHARED testing_lib.c)
 include(ExternalProject)
+set(CMAKE_C_FLAGS_OLD "${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 find_package(Git REQUIRED)
 ExternalProject_Add(
     check_project
