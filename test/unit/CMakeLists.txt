@@ -1,7 +1,5 @@
 add_library(internal_unit_sample SHARED testing_lib.c)
 include(ExternalProject)
-set(CMAKE_C_FLAGS_OLD "${CMAKE_C_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 find_package(Git REQUIRED)
 ExternalProject_Add(
     check_project
@@ -17,3 +15,8 @@ ExternalProject_Add(
 find_library(check NAME libcheck.a)
 add_executable(unit_tests gotcha_unit_tests.c)
 target_link_libraries(unit_tests check gotcha internal_unit_sample)
+set_source_files_properties(testing_lib.c PROPERTIES LINK_FLAGS -Wl,--hash-style=sysv)
+add_library(internal_unit_sample_elf SHARED testing_lib.c)
+set_target_properties(internal_unit_sample_elf PROPERTIES LINK_FLAGS -Wl,--hash-style=sysv)
+add_executable(unit_tests_elf gotcha_unit_tests.c)
+target_link_libraries(unit_tests_elf check gotcha internal_unit_sample_elf)
