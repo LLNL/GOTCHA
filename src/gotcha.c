@@ -26,9 +26,6 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct gotcha_binding_t *user_bindings = bindings->user_binding;
 
   int iter = 0;
-  for (iter = 0; iter < num_names; iter++) {
-    *(void **)(user_bindings[iter].function_address_pointer) = NULL;
-  }
 
   debug_printf(1, "Looking up exported symbols for %d table entries\n", num_names);
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
@@ -114,6 +111,12 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_
   enum gotcha_error_t ret_code;
   struct link_map *lib_iter;
   tool_t *tool;
+
+  //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
+  for (i = 0; i < num_actions; i++) {
+    *(void **)(user_bindings[i].function_address_pointer) = NULL;
+  }
+
   for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
     INIT_DYNAMIC(lib_iter);
     if(got){
@@ -159,7 +162,7 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_
 
   ret_code = GOTCHA_SUCCESS;
   for(i = 0; i<num_actions;i++){
-    if(user_bindings[i].function_address_pointer==0){
+    if(*(void**)(user_bindings[i].function_address_pointer)==0){
        debug_printf(1, "Returning GOTCHA_FUNCTION_NOT_FOUND from gotcha_wrap" 
                     "because of entry %d\n", i);
       ret_code = GOTCHA_FUNCTION_NOT_FOUND;

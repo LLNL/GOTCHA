@@ -46,6 +46,16 @@ int wrap_sample_func(){
   return orig_func()+5;
 }
 
+START_TEST(auto_tool_creation){
+  int(*my_main)(int argc, char* argv[]) = 0;
+  struct gotcha_binding_t bindings[] = {
+    { "main", &dummy_main, &my_main  }
+  };
+  gotcha_wrap(bindings,1,"sample_autocreate_tool");
+  ck_assert_msg(1,"Should never fail unless segfault on tool creation");
+}
+END_TEST
+
 START_TEST(symbol_wrap_test){
   struct gotcha_binding_t bindings[] = {
     { "simpleFunc", &wrap_sample_func, &orig_func }
@@ -56,15 +66,27 @@ START_TEST(symbol_wrap_test){
 }
 END_TEST
 
+START_TEST(bad_lookup_test){
+  struct gotcha_binding_t bindings[] = {
+    { "this_is_the_story_of_a_function_we_shouldnt_find", &wrap_sample_func, &orig_func }
+  };
+  enum gotcha_error_t errcode = gotcha_wrap(bindings,1,"internal_test_tool");
+  ck_assert_msg((errcode==GOTCHA_FUNCTION_NOT_FOUND),"Looked up a function that shouldn't be found and did not get correct error code");
+}
+END_TEST
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
   TCase* core_case = tcase_create("Wrapping");
   tcase_add_checked_fixture(core_case, setup_infrastructure, teardown_infrastructure);
   tcase_add_test(core_case, symbol_prep_test);
   tcase_add_test(core_case, symbol_wrap_test);
+  tcase_add_test(core_case, bad_lookup_test);
+  tcase_add_test(core_case, auto_tool_creation);
   suite_add_tcase(s, core_case);
   return s;
 }
+
+
 
 int main(){
   int num_fails;
