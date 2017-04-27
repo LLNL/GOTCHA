@@ -108,10 +108,49 @@ START_TEST(gotcha_malloc_test){
 }
 END_TEST
 
+START_TEST(gotcha_realloc_test){
+  int* x = (int*)gotcha_malloc(sizeof(int)*10);
+  x[9] = 5;
+  x = (int*)gotcha_realloc(x,sizeof(int)*5);
+  x[4] = 5;
+  x = (int*)gotcha_realloc(x,sizeof(int)*15);
+  x[14] = 5;
+}
+END_TEST
+
+START_TEST(gotcha_memcpy_test){
+  int* x = (int*)gotcha_malloc(sizeof(int)*10);
+  int* y = (int*)gotcha_malloc(sizeof(int)*10);
+  int i =0;
+  for(i =0 ;i<10;i++){
+    x[i] = i;
+    y[i] = 999;
+  }
+  gotcha_memcpy(y,x,sizeof(int)*10);
+  for(i =0 ;i<10;i++){
+    ck_assert_msg(y[i] == i, "Target for gotcha_memcpy doesn't have the correct data");
+  }
+}
+END_TEST
+
+START_TEST(gotcha_strcmp_test){
+  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",4)==0, "gotcha_strncmp is examining too many characters, marking matching prefixes as not matching");
+  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",5)!=0, "gotcha_strncmp is examining too few characters, marking nonmatching prefixes as matching");
+  ck_assert_msg(gotcha_strncmp("dogs","pups",999)!=0, "gotcha_strncmp fails on nonmatching strings of smaller lengths than the declared string length");
+  ck_assert_msg(gotcha_strncmp("dogs","dogs",999)==0, "gotcha_strncmp fails on matching strings of smaller lengths than the declared string length");
+  ck_assert_msg(gotcha_strcmp("dogs","pups")!=0, "gotcha_strcmp fails on nonmatching strings");
+  ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
+}
+END_TEST
+
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
   TCase* libc_case = tcase_create("Basic tests");
   tcase_add_test(libc_case, debug_print_test);
+  tcase_add_test(libc_case, gotcha_malloc_test);
+  tcase_add_test(libc_case, gotcha_realloc_test);
+  tcase_add_test(libc_case, gotcha_memcpy_test);
+  tcase_add_test(libc_case, gotcha_strcmp_test);
   suite_add_tcase(s, libc_case);
   return s;
 }
