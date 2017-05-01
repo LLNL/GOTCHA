@@ -108,6 +108,13 @@ START_TEST(gotcha_malloc_test){
 }
 END_TEST
 
+START_TEST(gotcha_free_test){
+  int* x = (int*)gotcha_malloc(sizeof(int)*10);
+  gotcha_free(x);
+
+}
+END_TEST
+
 START_TEST(gotcha_realloc_test){
   int* x = (int*)gotcha_malloc(sizeof(int)*10);
   x[9] = 5;
@@ -148,6 +155,7 @@ Suite* gotcha_libc_suite(){
   TCase* libc_case = tcase_create("Basic tests");
   tcase_add_test(libc_case, debug_print_test);
   tcase_add_test(libc_case, gotcha_malloc_test);
+  tcase_add_test(libc_case, gotcha_free_test);
   tcase_add_test(libc_case, gotcha_realloc_test);
   tcase_add_test(libc_case, gotcha_memcpy_test);
   tcase_add_test(libc_case, gotcha_strcmp_test);
