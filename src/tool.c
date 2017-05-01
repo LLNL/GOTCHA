@@ -60,7 +60,7 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
                              (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    if (result != 0) {
       error_printf("Could not create hash table for %s\n", tool->tool_name);
-      goto error;
+      goto error; // error is a label which frees allocated resources and returns NULL
    }
 
    ref_table = (binding_ref_t *) gotcha_malloc(sizeof(binding_ref_t) * user_binding_size);
@@ -72,7 +72,7 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
       if (result != 0) {
          error_printf("Could not add hash entry for %s to table for tool %s\n", 
                       ref_table[i].symbol_name, tool->tool_name);
-         goto error;
+         goto error; // error is a label which frees allocated resources and returns NULL
       }
    }
 
