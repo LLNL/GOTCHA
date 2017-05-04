@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * as it passes through the pipeline
  */
 struct gotcha_binding_t {
-  char* name;                      //!< The name of the function being wrapped
+  const char* name;                      //!< The name of the function being wrapped
   void* wrapper_pointer;           //!< A pointer to the wrapper function
   void* function_address_pointer;  //!< A pointer to the function being wrapped
 };
