@@ -14,6 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #include "gotcha/gotcha.h"
+#include "gotcha/gotcha_types.h"
 #include "gotcha_utils.h"
 #include "elf_ops.h"
 #include "tool.h"

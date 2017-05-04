@@ -43,6 +43,7 @@ tool_t *get_tool(char *tool_name)
          return t;
       }
    }
+   int x = 0 ;
    return NULL;
 }
 
