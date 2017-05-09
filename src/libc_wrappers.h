@@ -25,23 +25,23 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #if defined(GOTCHA_USE_LIBC) && !defined(BUILDING_LIBC_WRAPPERS)
 
-#define gotcha_malloc(A)          malloc(A)
-#define gotcha_realloc(A, B)      realloc(A, B)
-#define gotcha_free(A)            free(A)
-#define gotcha_memcpy(A, B, C)    memcpy(A, B, C)
-#define gotcha_strncmp(A, B, C)   strncmp(A, B, C)
-#define gotcha_strstr(A, B)       strstr(A, B)
-#define gotcha_assert(A)          assert(A)
-#define gotcha_strcmp(A, B)       strcmp(A, B)
-#define gotcha_getenv(A)          getenv(A)
-#define gotcha_getpid()           getpid()
-#define gotcha_getpagesize()      getpagesize()
-#define gotcha_open(A, B, ...)    open(A, B, __VA_ARGS__)
-#define gotcha_mmap(A, B, C, D, E, F) mmap(A, B, C, D, E, F)
-#define gotcha_atoi(A)            atoi(A)
-#define gotcha_close(A)           close(A)
-#define gotcha_mprotect(A, B, C)  mprotect(A, B, C)
-#define gotcha_read(A, B, C)      read(A, B, C)
+#define gotcha_malloc             malloc
+#define gotcha_realloc            realloc
+#define gotcha_free               free
+#define gotcha_memcpy             memcpy
+#define gotcha_strncmp            strncmp
+#define gotcha_strstr             strstr
+#define gotcha_assert             assert
+#define gotcha_strcmp             strcmp
+#define gotcha_getenv             getenv
+#define gotcha_getpid             getpid
+#define gotcha_getpagesize        getpagesize
+#define gotcha_open               open
+#define gotcha_mmap               mmap
+#define gotcha_atoi               atoi
+#define gotcha_close              close
+#define gotcha_mprotect           mprotect
+#define gotcha_read               read
 #define gotcha_dbg_printf(A, ...) fprintf(stderr, A, __VA_ARGS__)
 pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
 
