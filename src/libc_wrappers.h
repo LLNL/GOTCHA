@@ -17,120 +17,64 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define LIBC_WRAPPERS_H_
 
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/mman.h>
 
-/*!
- ******************************************************************************
- *
- * \fn void* gotcha_malloc(size_t size);
- *
- * \brief A gotcha wrapper around malloc to avoid libc dependencies
- *
- * \param size The number of bytes to allocate
- *
- ******************************************************************************
- */
-void* gotcha_malloc(size_t size);
+#if defined(GOTCHA_USE_LIBC) && !defined(BUILDING_LIBC_WRAPPERS)
 
-/*!
- ******************************************************************************
- *
- * \fn void* gotcha_realloc(void* buffer, size_t size);
- *
- * \brief A gotcha wrapper around malloc to avoid libc dependencies
- *
- * \param buffer The buffer to 
- * \param size The number of bytes to allocate
- *
- ******************************************************************************
- */
+#define gotcha_malloc(A)          malloc(A)
+#define gotcha_realloc(A, B)      realloc(A, B)
+#define gotcha_free(A)            free(A)
+#define gotcha_memcpy(A, B, C)    memcpy(A, B, C)
+#define gotcha_strncmp(A, B, C)   strncmp(A, B, C)
+#define gotcha_strstr(A, B)       strstr(A, B)
+#define gotcha_assert(A)          assert(A)
+#define gotcha_strcmp(A, B)       strcmp(A, B)
+#define gotcha_getenv(A)          getenv(A)
+#define gotcha_getpid()           getpid()
+#define gotcha_getpagesize()      getpagesize()
+#define gotcha_open(A, B, ...)    open(A, B, __VA_ARGS__)
+#define gotcha_mmap(A, B, C, D, E, F) mmap(A, B, C, D, E, F)
+#define gotcha_atoi(A)            atoi(A)
+#define gotcha_close(A)           close(A)
+#define gotcha_mprotect(A, B, C)  mprotect(A, B, C)
+#define gotcha_read(A, B, C)      read(A, B, C)
+#define gotcha_dbg_printf(A, ...) fprintf(stderr, A, __VA_ARGS__)
+pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
+
+#else
+
+void *gotcha_malloc(size_t size);
 void *gotcha_realloc(void* buffer, size_t size);
-/*!
- ******************************************************************************
- *
- * \fn void gotcha_free(void* free_me);
- *
- * \brief A gotcha wrapper around free to avoid libc dependencies
- *
- * \param free_me A pointer to the pointer we wish to free
- *
- ******************************************************************************
- */
 void gotcha_free(void* free_me);
-
-/*!
- ******************************************************************************
- *
- * \fn void gotcha_memcpy(void* dest, void* src, size_t size);
- *
- * \brief A gotcha wrapper around memcpy to avoid libc dependencies
- *
- * \param dest Where memory should be copied to
- * \param src  Where memory should be copied from
- * \param size How many bytes to copy
- *
- ******************************************************************************
- */
 void gotcha_memcpy(void* dest, void* src, size_t size);
-
-/*!
- ******************************************************************************
- *
- * \fn int gotcha_strncmp(const char* in_one, const char* in_two, int max_length);
- *
- * \brief A gotcha wrapper around strmcmp to avoid libc dependencies
- *
- * \param in_one The first string to be checked
- * \param in_two The second string to be checked
- * \param max_length The maximum number of characters to compare
- *
- ******************************************************************************
- */
-
 int gotcha_strncmp(const char* in_one, const char* in_two, int max_length);
-/*!
- ******************************************************************************
- *
- * \fn char* gotcha_strstr(char* searchIn, char* searchFor);
- *
- * \brief A gotcha wrapper around strstr to avoid libc dependencies
- *
- * \param searchIn  A string to search in
- * \param searchFor A substring to search for
- *
- ******************************************************************************
- */
-char* gotcha_strstr(char* searchIn, char* searchFor);
-
-/*!
- ******************************************************************************
- *
- * \fn void gotcha_assert(int assertion);
- *
- * \brief A gotcha wrapper around assert to avoid libc dependencies
- *
- * \param assertion Something the programmer says should not equal false
- *
- ******************************************************************************
- */
-void gotcha_assert(int assertion);
-
-/*!
- ******************************************************************************
- *
- * \fn int gotcha_strcmp(const char* in_one, const char* in_two);
- *
- * \brief A gotcha wrapper around strcmp to avoid libc dependencies
- *
- * \param in_one The first string to compare
- * \param in_two The second string to compare
- *
- ******************************************************************************
- */
+char *gotcha_strstr(char* searchIn, char* searchFor);
 int gotcha_strcmp(const char* in_one, const char* in_two);
-
 char *gotcha_getenv(const char *env);
 pid_t gotcha_getpid();
 pid_t gotcha_gettid();
 int gotcha_getpagesize();
+int gotcha_open(const char *pathname, int flags, ...);
+void *gotcha_mmap(void *addr, size_t length, int prot, int flags,
+                  int fd, off_t offset);
+int atoi(const char *nptr);
+int close(int fd);
+int gotcha_mprotect(void *addr, size_t len, int prot);
+ssize_t gotcha_read(int fd, void *buf, size_t count);
+ssize_t gotcha_write(int fd, const void *buf, size_t count);
+int gotcha_int_printf(int fd, const char *format, ...);
+#define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, __VA_ARGS__)
+
+#define gotcha_assert(A)                                          \
+   do {                                                           \
+      if (! (A) )                                                 \
+         gotcha_assert_fail("" #A, __FILE__, __LINE__, __func__); \
+   } while (0); 
+
+#endif
 
 #endif

@@ -33,4 +33,6 @@ static struct link_map *get_vdso_from_auxv();
 static struct link_map *get_vdso_from_aliases();
 static struct link_map *get_vdso_from_maps();
 int is_vdso(struct link_map *map);
+int get_auxv_pagesize();
+
 #endif
