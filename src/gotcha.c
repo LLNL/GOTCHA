@@ -114,6 +114,8 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_
   struct link_map *lib_iter;
   tool_t *tool;
 
+  debug_init();
+
   //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
   for (i = 0; i < num_actions; i++) {
     *(void **)(user_bindings[i].function_address_pointer) = NULL;
@@ -128,7 +130,6 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_
       }
     }
   } 
-  debug_init();
   debug_printf(1, "User called gotcha_wrap for tool %s with %d bindings\n",
                tool_name, num_actions);
 
