@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <unistd.h>
 #include <sys/mman.h>
 
+#define GOTCHA_USE_LIBC
+
 #if defined(GOTCHA_USE_LIBC) && !defined(BUILDING_LIBC_WRAPPERS)
 
 #define gotcha_malloc             malloc
