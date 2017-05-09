@@ -143,27 +143,109 @@ static struct link_map *get_vdso_from_aliases()
    return NULL;
 }
 
+static int read_line(char *line, int size, int fd)
+{
+   int i, result;
+   for (i = 0; i < size - 1; i++) {
+      int result = gotcha_read(fd, line + i, 1);
+      if (result == -1 && errno == EINTR)
+         continue;
+      if (result == -1 || result == 0) {
+         line[i] = '\0';
+         return -1;
+      }
+      if (line[i] == '\n') {
+         line[i + 1] = '\0';
+         return 0;
+      }
+   }
+   line[size-1] = '\0';
+   return 0;
+}
+
+static int read_hex(char *str, unsigned long *val)
+{
+   unsigned long local_val = 0, len = 0;
+   for (;;) {
+      if (*str >= '0' && *str <= '9') {
+         local_val = (local_val * 16) + (*str - '0');
+         len++;
+      }
+      else if (*str >= 'a' && *str <= 'f') {
+         local_val = (local_val * 16) + (*str - 'a' + 10);
+         len++;
+      }
+      else if (*str >= 'A' && *str <= 'F') {
+         local_val = (local_val * 16) + (*str - 'A' + 10);
+         len++;
+      }
+      else {
+         *val = local_val;
+         return len;
+      }
+      str++;
+   }
+}
+
+static int read_word(char *str, char *word, int word_size) 
+{
+   int word_cur = 0;
+   int len = 0;
+   while (*str == ' ' || *str == '\t' || *str == '\n') {
+      str++;
+      len++;
+   }
+   if (*str == '\0') {
+      *word = '\0';
+      return len;
+   }
+   while (*str != ' ' && *str != '\t' && *str != '\n' && *str != '\0') {
+      if (word && word_cur >= word_size) {
+         if (word_size > 0 && word)
+            word[word_size-1] = '\0';
+         return word_cur;
+      }
+      if (word)
+         word[word_cur] = *str;
+      word_cur++;
+      str++;
+      len++;
+   }
+   if (word_cur >= word_size)
+      word_cur--;
+   if (word)
+      word[word_cur] = '\0';
+   return len;
+}
+
 static struct link_map *get_vdso_from_maps()
 {
-   FILE *maps = fopen("/proc/self/maps", "r");
+   int maps, hit_eof;
    ElfW(Addr) addr_begin, addr_end, dynamic;
-   char name[4096], line[4096];
+   char name[4096], line[4096], *line_pos;
    struct link_map *m;
    int result;
-   
+   maps = gotcha_open("/proc/self/maps", O_RDONLY);
    for (;;) {
-      fgets(line, 4097, maps);
-      result = sscanf(line, "%lx-%lx %*s %*s %*s %*s %4096s\n", &addr_begin, &addr_end, name);
-      if (result != 3) {
-         continue;
-      }
-      if (strcmp(name, "[vdso]") == 0) {
-         fclose(maps);
-         break;
-      }
-      if (feof(maps)) {
-         fclose(maps);
+      hit_eof = read_line(line, 4097, maps);
+      if (hit_eof) {
+         gotcha_close(maps);
          return NULL;
+      }
+      line_pos = line;
+      line_pos += read_hex(line_pos, &addr_begin);
+      if (*line_pos != '-')
+         continue;
+      line_pos++;
+      line_pos += read_hex(line_pos, &addr_end);
+      line_pos += read_word(line_pos, NULL, 0);
+      line_pos += read_word(line_pos, NULL, 0);
+      line_pos += read_word(line_pos, NULL, 0);
+      line_pos += read_word(line_pos, NULL, 0);
+      line_pos += read_word(line_pos, name, sizeof(name));
+      if (gotcha_strcmp(name, "[vdso]") == 0) {
+         gotcha_close(maps);
+         break;
       }
    }
 
