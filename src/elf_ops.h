@@ -95,7 +95,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
    ElfW(Addr) gnu_hash = 0x0, elf_hash = 0x0;                   \
    ElfW(Addr) got = 0x0;                                        \
    char *strtab = NULL;                                         \
-   unsigned int rel_size = 0, rel_count, is_rela = 0, i;        \
+   unsigned int rel_size = 0, rel_count = 0, is_rela = 0, i;    \
    dynsec = lmap->l_ld;                                         \
    if (!dynsec)                                                 \
       return -1;                                                \
@@ -135,6 +135,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
          }                                                      \
       }                                                         \
    }                                                            \
+   rel_count = rel_size / (is_rela ? sizeof(ElfW(Rela)) : sizeof(ElfW(Rel))); \
    (void) rela;                                                 \
    (void) rel;                                                  \
    (void) jmprel;                                               \
@@ -163,7 +164,6 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
  ******************************************************************************
  */
 #define FOR_EACH_PLTREL_INT(relptr, op, ...)                        \
-   rel_count = rel_size / sizeof(*relptr);                     \
    for (i = 0; i < rel_count; i++) {                           \
       ElfW(Addr) offset = relptr[i].r_offset;                  \
       unsigned long symidx = R_SYM(relptr[i].r_info);          \
@@ -189,6 +189,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
 #define FOR_EACH_PLTREL(lmap, op, ...) {                            \
       INIT_DYNAMIC(lmap)                                       \
       ElfW(Addr) offset = lmap->l_addr;                        \
+      (void) offset;                                           \
       if (is_rela) {                                           \
          rela = (ElfW(Rela) *) jmprel;                         \
          FOR_EACH_PLTREL_INT(rela, op, ## __VA_ARGS__);                        \

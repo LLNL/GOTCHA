@@ -14,6 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #include "elf_ops.h"
+#include "libc_wrappers.h"
 #include <elf.h>
 
 struct gnu_hash_header {

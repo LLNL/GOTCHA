@@ -145,7 +145,7 @@ static struct link_map *get_vdso_from_aliases()
 
 static int read_line(char *line, int size, int fd)
 {
-   int i, result;
+   int i;
    for (i = 0; i < size - 1; i++) {
       int result = gotcha_read(fd, line + i, 1);
       if (result == -1 && errno == EINTR)
@@ -224,7 +224,6 @@ static struct link_map *get_vdso_from_maps()
    ElfW(Addr) addr_begin, addr_end, dynamic;
    char name[4096], line[4096], *line_pos;
    struct link_map *m;
-   int result;
    maps = gotcha_open("/proc/self/maps", O_RDONLY);
    for (;;) {
       hit_eof = read_line(line, 4097, maps);

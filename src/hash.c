@@ -33,7 +33,7 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
                      hash_cmp_t keycmp)
 {
    hash_entry_t *newtable;
-   int pagesize, entries_per_page;
+   int entries_per_page;
 
    entries_per_page = gotcha_getpagesize() / sizeof(hash_entry_t);
    if (initial_size % entries_per_page)

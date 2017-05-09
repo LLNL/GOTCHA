@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha/gotcha.h"
 #include "gotcha/gotcha_types.h"
 #include "gotcha_utils.h"
+#include "gotcha_auxv.h"
 #include "elf_ops.h"
 #include "tool.h"
 
@@ -26,8 +27,6 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   signed long result;
   int found = 0, not_found = 0;
   struct gotcha_binding_t *user_bindings = bindings->user_binding;
-
-  int iter = 0;
 
   debug_printf(1, "Looking up exported symbols for %d table entries\n", num_names);
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {

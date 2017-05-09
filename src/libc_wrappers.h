@@ -61,12 +61,13 @@ int gotcha_getpagesize();
 int gotcha_open(const char *pathname, int flags, ...);
 void *gotcha_mmap(void *addr, size_t length, int prot, int flags,
                   int fd, off_t offset);
-int atoi(const char *nptr);
-int close(int fd);
+int gotcha_atoi(const char *nptr);
+int gotcha_close(int fd);
 int gotcha_mprotect(void *addr, size_t len, int prot);
 ssize_t gotcha_read(int fd, void *buf, size_t count);
 ssize_t gotcha_write(int fd, const void *buf, size_t count);
 int gotcha_int_printf(int fd, const char *format, ...);
+void gotcha_assert_fail(const char *s, const char *file, unsigned int line, const char *function);
 #define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, __VA_ARGS__)
 
 #define gotcha_assert(A)                                          \
