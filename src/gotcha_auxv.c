@@ -28,59 +28,73 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <sys/types.h>
 #include <sys/stat.h>
 
-static ElfW(auxv_t) *get_auxv_contents()
+
+static ElfW(Ehdr) *vdso_ehdr = NULL;
+static int auxv_pagesz = 0;
+
+static int parse_auxv_contents()
 {
    char name[] = "/proc/self/auxv";
-   int fd;
-   char *buffer = NULL;
-   ssize_t buffer_size = 0x1000, offset = 0, result;
-   
-   fd = open(name, O_RDONLY);
+   int fd, done = 0;
+   char buffer[4096];
+   ssize_t buffer_size = 4096, offset = 0, result;
+   ElfW(auxv_t) *auxv, *a;
+   static int parsed_auxv = 0;
+
+   if (parsed_auxv)
+      return parsed_auxv == -1 ? parsed_auxv : 0;
+   parsed_auxv = 1;
+
+   fd = gotcha_open(name, O_RDONLY);
    if (fd == -1) {
-      return NULL;
+      parsed_auxv = -1;
+      return -1;
    }
 
-   buffer = gotcha_malloc(buffer_size);
-   for (;;) {
-      result = read(fd, buffer+offset, buffer_size-offset);
-      if (result == -1) {
-         if (errno == EINTR)
-            continue;
-         close(fd);
-         gotcha_free(buffer);
-         return NULL;
+   do {
+      for (;;) {
+         result = gotcha_read(fd, buffer+offset, buffer_size-offset);
+         if (result == -1) {
+            if (errno == EINTR)
+               continue;
+            gotcha_close(fd);
+            parsed_auxv = -1;
+            return -1;
+         }
+         if (result == 0) {
+            gotcha_close(fd);
+            done = 1;
+            break;
+         }
+         if (offset == buffer_size) {
+            break;
+         }
+         offset += result;
       }
-      if (result == 0) {
-         close(fd);
-         break;
-      }
-      offset += result;
-      if (offset == buffer_size) {
-         buffer_size *= 2;
-         buffer = gotcha_realloc(buffer, buffer_size);
-      }
-   }
 
-   return (ElfW(auxv_t) *) buffer;
+      auxv = (ElfW(auxv_t) *) buffer;
+      for (a = auxv; a->a_type != AT_NULL; a++) {
+         if (a->a_type == AT_SYSINFO_EHDR) {
+            vdso_ehdr = (ElfW(Ehdr) *) a->a_un.a_val;
+         }
+         else if (a->a_type == AT_PAGESZ) {
+            auxv_pagesz = (int) a->a_un.a_val;
+         }
+      }
+   } while (!done);
+
+   return 0;
 }
 
 static struct link_map *get_vdso_from_auxv()
 {
    struct link_map *m;
-   ElfW(auxv_t) *auxv, *a;
-   ElfW(Ehdr) *vdso_ehdr = NULL;
+
    ElfW(Phdr) *vdso_phdrs = NULL;
    ElfW(Half) vdso_phdr_num, p;
    ElfW(Addr) vdso_dynamic;
 
-   auxv = get_auxv_contents();
-   for (a = auxv; a->a_type != AT_NULL; a++) {
-      if (a->a_type == AT_SYSINFO_EHDR) {
-         vdso_ehdr = (ElfW(Ehdr) *) a->a_un.a_val;
-         break;
-      }
-   }
-   free(auxv);
+   parse_auxv_contents();
    if (!vdso_ehdr)
       return NULL;
    
@@ -99,6 +113,15 @@ static struct link_map *get_vdso_from_auxv()
       }
    }
    return NULL;
+}
+
+int get_auxv_pagesize()
+{
+   int result;
+   result = parse_auxv_contents();
+   if (result == -1)
+      return 0;
+   return auxv_pagesz;
 }
 
 static char* vdso_aliases[] = { "linux-vdso.so",
@@ -172,16 +195,17 @@ int is_vdso(struct link_map *map)
       return (map == vdso);
    }
 
+   result = get_vdso_from_auxv();
+   if (result) {
+      vdso = result;
+      return (map == vdso);
+   }
+
    result = get_vdso_from_maps();
    if (result) {
       vdso = result;
       return (map == vdso);
    }
 
-   result = get_vdso_from_auxv();
-   if (result) {
-      vdso = result;
-      return (map == vdso);
-   }
    return 0;
 }
