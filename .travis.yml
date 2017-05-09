@@ -1,0 +1,75 @@
+sudo: required
+dist: trusty
+language: cpp
+
+matrix:
+  include:
+   - compiler: gcc-4
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-4.9
+     env: COMPILER=gcc-4.9
+   - compiler: gcc-5
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: COMPILER=gcc-5
+   - compiler: gcc-6
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-6
+     env: COMPILER=gcc-6
+   - compiler: clang-3.6
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang
+         - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+   - compiler: clang-3.7
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang
+         - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+   - compiler: clang-3.8
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang
+         - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
+         - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+cache:
+    directories:
+        - $HOME/llvm
+before_install:
+  - sudo apt-get update -qq
+  - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ; fi
+  - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
+  - cd $HOME && curl -o cmake-tarball.tar.gz ${CMAKE_URL} && mkdir -p $HOME/cmake && cd $HOME/cmake && tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 && export PATH=${PWD}/bin:${PATH}
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir travis-build && cd travis-build
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE -DGOTCHA_ENABLE_COVERAGE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
+  - make -j
+  - make test 
