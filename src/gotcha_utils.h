@@ -40,13 +40,12 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;
-extern FILE *debug_io;
 void debug_init();
 
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \
      if (debug_level >= lvl) {                    \
-       fprintf(debug_io, format, ## __VA_ARGS__); \
+        gotcha_dbg_printf(format, ## __VA_ARGS__); \
      }                                            \
    } while (0);
 
@@ -55,7 +54,7 @@ void debug_init();
 #define debug_printf(lvl, format, ...)               \
    do {                                              \
      if (debug_level >= lvl) {                       \
-       fprintf(debug_io, "[%d/%d][%s:%u] - " format, \
+        gotcha_dbg_printf("[%d/%d][%s:%u] - " format, \
                gotcha_gettid(), gotcha_getpid(),     \
                SHORT_FILE__, __LINE__,               \
                ## __VA_ARGS__);                      \
@@ -65,7 +64,7 @@ void debug_init();
 #define error_printf(format, ...)                          \
 do {                                                       \
      if (debug_level) {                                    \
-       fprintf(debug_io, "ERROR [%d/%d][%s:%u] - " format, \
+        gotcha_dbg_printf("ERROR [%d/%d][%s:%u] - " format, \
                gotcha_gettid(), gotcha_getpid(),           \
                SHORT_FILE__, __LINE__,                     \
                ## __VA_ARGS__);                            \

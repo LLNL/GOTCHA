@@ -135,7 +135,7 @@ static struct link_map *get_vdso_from_aliases()
 
    for (m = _r_debug.r_map; m; m = m->l_next) {
       for (aliases = vdso_aliases; *aliases; aliases++) {
-         if (m->l_name && strcmp(m->l_name, *aliases) == 0) {
+         if (m->l_name && gotcha_strcmp(m->l_name, *aliases) == 0) {
             return m;
          }
       }

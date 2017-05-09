@@ -23,8 +23,8 @@ int debug_print_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
                      char *filter)
 {
   if (gotcha_strstr(name, filter)) {
-    printf("Symbol name: %s, offset %lu, size %lu\n", name, offset,
-           symbol->st_size);
+     debug_printf(1, "Symbol name: %s, offset %lu, size %lu\n", name, offset,
+                  symbol->st_size);
   }
   return 0;
 }
@@ -36,7 +36,6 @@ int debug_print(struct link_map *libc, char *filter)
 }
 
 int debug_level;
-FILE *debug_io;
 void debug_init()
 {
    static int debug_initialized = 0;
@@ -53,9 +52,9 @@ void debug_init()
       return;
    }
 
-   debug_level = atoi(debug_str);
+   debug_level = gotcha_atoi(debug_str);
    if (debug_level <= 0)
       debug_level = 1;
-   
-   debug_io = stderr;
+
+   debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }

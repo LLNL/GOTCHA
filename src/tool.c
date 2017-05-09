@@ -39,7 +39,7 @@ tool_t *get_tool(char *tool_name)
 {
    tool_t *t;
    for (t = tools; t; t = t->next_tool) {
-      if (strcmp(tool_name, t->tool_name) == 0) {
+      if (gotcha_strcmp(tool_name, t->tool_name) == 0) {
          return t;
       }
    }

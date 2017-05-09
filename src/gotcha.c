@@ -13,6 +13,7 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#include "libc_wrappers.h"
 #include "gotcha/gotcha.h"
 #include "gotcha/gotcha_types.h"
 #include "gotcha_utils.h"
@@ -121,7 +122,7 @@ enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_
   for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
     INIT_DYNAMIC(lib_iter);
     if(got){
-      int res = mprotect(BOUNDARY_BEFORE(got,page_size),MAX(rel_count*rel_size,page_size),PROT_WRITE|PROT_READ|PROT_EXEC);
+      int res = gotcha_mprotect(BOUNDARY_BEFORE(got,page_size),MAX(rel_count*rel_size,page_size),PROT_WRITE|PROT_READ|PROT_EXEC);
       if(!res){
         debug_printf(1, "GOTCHA attempted to mark the GOT table as writable and was unable to do so, calls to wrapped functions will likely fail\n");
       }
