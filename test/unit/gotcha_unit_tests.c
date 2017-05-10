@@ -26,12 +26,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct tool* new_tool;
-void setup_infrastructure(){
-  new_tool = create_tool("internal_test_tool");
+tool_t* new_tool;
+void setup_infrastructure()
+{
+   if (!new_tool)
+      new_tool = create_tool("internal_test_tool");
 }
-void teardown_infrastructure(){
-  free(new_tool);
+
+void teardown_infrastructure()
+{
 }
 
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
