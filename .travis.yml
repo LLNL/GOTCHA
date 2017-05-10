@@ -11,6 +11,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-4.9
+           - check
      env: COMPILER=gcc-4.9
    - compiler: gcc-5
      addons:
@@ -19,6 +20,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
+           - check
      env: COMPILER=gcc-5
    - compiler: gcc-6
      addons:
@@ -27,6 +29,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-6
+           - check
      env: COMPILER=gcc-6
    - compiler: clang-3.6
      addons:
@@ -35,6 +38,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
+           - check
      env: 
          - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang
          - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -45,6 +49,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
+           - check
      env: 
          - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang
          - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -55,6 +60,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
+           - check
      env: 
          - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang
          - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
