@@ -117,7 +117,61 @@ END_TEST
 START_TEST(gotcha_free_test){
   int* x = (int*)gotcha_malloc(sizeof(int)*10);
   gotcha_free(x);
+}
+END_TEST
 
+#define HEAP_TEST_SIZE 4096
+static int check_heap_test(int **allocations)
+{
+   int i, j;
+   for (i = 0; i < HEAP_TEST_SIZE; i++)
+   {
+      if (!allocations[i])
+         continue;
+      for (j = 0; j < i; j++) {
+         if (allocations[i][j] != i+j)
+            return -1;
+      }
+   }
+   return 0;
+}
+
+START_TEST(gotcha_heap_test)
+{
+   int i, j, k, l;
+   int **allocations;
+
+   //Do this test 10 times
+   for (l = 0; l < 10; l++) {
+      //Initialize allocations array to empty
+      allocations = (int **) gotcha_malloc(sizeof(int*) * HEAP_TEST_SIZE);
+      for (i = 0; i < HEAP_TEST_SIZE; i++) {
+         allocations[i] = NULL;
+      }
+      ck_assert(check_heap_test(allocations) == 0);
+
+      //Allocate each allocations[x] to be size x, and
+      //allocations[x][y] to be x+y.  Do in sets of x%3.
+      for (i = 0; i < 3; i++) {
+         for (j = i; j < HEAP_TEST_SIZE; j += 3) {
+            allocations[j] = (int *) gotcha_malloc(sizeof(int) * j);
+            for (k = 0; k < j; k++) {
+               allocations[j][k] = j+k;
+            }
+         }
+         ck_assert(check_heap_test(allocations) == 0);
+      }
+
+      //Free allocations in sets of x%5
+      for (i = 0; i < 5; i++) {
+         for (j = i; j < HEAP_TEST_SIZE; j += 5) {
+            gotcha_free(allocations[j]);
+            allocations[j] = NULL;
+         }
+         ck_assert(check_heap_test(allocations) == 0);
+      }
+      gotcha_free(allocations);
+   }
 }
 END_TEST
 
@@ -148,10 +202,11 @@ END_TEST
 
 START_TEST(gotcha_strcmp_test){
   ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",4)==0, "gotcha_strncmp is examining too many characters, marking matching prefixes as not matching");
-  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",5)!=0, "gotcha_strncmp is examining too few characters, marking nonmatching prefixes as matching");
-  ck_assert_msg(gotcha_strncmp("dogs","pups",999)!=0, "gotcha_strncmp fails on nonmatching strings of smaller lengths than the declared string length");
+  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",5)<0, "gotcha_strncmp is examining too few characters, marking nonmatching prefixes as matching");
+  ck_assert_msg(gotcha_strncmp("dogs","pups",999)<0, "gotcha_strncmp fails on nonmatching strings of smaller lengths than the declared string length");
   ck_assert_msg(gotcha_strncmp("dogs","dogs",999)==0, "gotcha_strncmp fails on matching strings of smaller lengths than the declared string length");
-  ck_assert_msg(gotcha_strcmp("dogs","pups")!=0, "gotcha_strcmp fails on nonmatching strings");
+  ck_assert_msg(gotcha_strcmp("dogs","pups")<0, "gotcha_strcmp fails on nonmatching strings");
+  ck_assert_msg(gotcha_strcmp("pups","dogs")>0, "gotcha_strcmp fails on reversed nonmatching strings");
   ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
 }
 END_TEST
@@ -163,6 +218,7 @@ Suite* gotcha_libc_suite(){
   tcase_add_test(libc_case, gotcha_malloc_test);
   tcase_add_test(libc_case, gotcha_free_test);
   tcase_add_test(libc_case, gotcha_realloc_test);
+  tcase_add_test(libc_case, gotcha_heap_test);
   tcase_add_test(libc_case, gotcha_memcpy_test);
   tcase_add_test(libc_case, gotcha_strcmp_test);
   suite_add_tcase(s, libc_case);
