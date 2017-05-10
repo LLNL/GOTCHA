@@ -7,11 +7,12 @@ ExternalProject_Add(
     GIT_REPOSITORY https://github.com/libcheck/check
     TIMEOUT 10
     UPDATE_COMMAND ${GIT_EXECUTABLE} pull
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/tpl"
+    BUILD_COMMAND "make"
+    INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
 )
+
 find_library(check NAME libcheck.a)
 add_executable(unit_tests gotcha_unit_tests.c)
 target_link_libraries(unit_tests check gotcha internal_unit_sample)
