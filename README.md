@@ -1,6 +1,9 @@
 GOTCHA v0.0.1 (alpha)
 ============
 
+[![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/RAJA)
+
+
 Gotcha is a library that wraps functions.  Tools can use gotcha to install hooks into other libraries, for example putting a wrapper function around libc's malloc.  
 It is similar to LD_PRELOAD, but operates via a programable API.
 This enables easy methods of accomplishing tasks like code instrumentation or wholesale replacement of mechanisms in programs
