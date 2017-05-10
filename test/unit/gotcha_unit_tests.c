@@ -193,6 +193,7 @@ Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
   TCase* libc_case = tcase_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
+  tcase_add_test(libc_case, vdso_pagesize_test);
   suite_add_tcase(s, libc_case);
   return s;
 }

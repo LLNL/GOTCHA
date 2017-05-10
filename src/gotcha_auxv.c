@@ -144,7 +144,7 @@ TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases()
    return NULL;
 }
 
-TEST_ONLY_VISIBILITY int read_line(char *line, int size, int fd)
+static int read_line(char *line, int size, int fd)
 {
    int i;
    for (i = 0; i < size - 1; i++) {
@@ -164,7 +164,7 @@ TEST_ONLY_VISIBILITY int read_line(char *line, int size, int fd)
    return 0;
 }
 
-TEST_ONLY_VISIBILITY int read_hex(char *str, unsigned long *val)
+static int read_hex(char *str, unsigned long *val)
 {
    unsigned long local_val = 0, len = 0;
    for (;;) {
@@ -188,7 +188,7 @@ TEST_ONLY_VISIBILITY int read_hex(char *str, unsigned long *val)
    }
 }
 
-TEST_ONLY_VISIBILITY int read_word(char *str, char *word, int word_size) 
+static int read_word(char *str, char *word, int word_size) 
 {
    int word_cur = 0;
    int len = 0;

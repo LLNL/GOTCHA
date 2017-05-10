@@ -35,9 +35,6 @@ int get_auxv_pagesize();
 TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_auxv();
 TEST_ONLY_VISIBILITY int parse_auxv_contents();
 TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases();
-TEST_ONLY_VISIBILITY int read_line(char *line, int size, int fd);
-TEST_ONLY_VISIBILITY int read_hex(char *str, unsigned long *val);
-TEST_ONLY_VISIBILITY int read_word(char *str, char *word, int word_size);
 TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_maps();
 #endif
 
