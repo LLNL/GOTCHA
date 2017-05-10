@@ -98,4 +98,6 @@ do {                                                       \
   (void*)(((ElfW(Addr))ptr) & (-pagesize))
 
 
+int debug_print(struct link_map *libc, char *filter);
+
 #endif
