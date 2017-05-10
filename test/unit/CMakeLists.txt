@@ -1,6 +1,8 @@
 add_library(internal_unit_sample SHARED testing_lib.c)
 include(ExternalProject)
 find_package(Git REQUIRED)
+if(DEPENDENCIES_PREINSTALLED)
+else()
 ExternalProject_Add(
     check_project
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}
@@ -12,9 +14,10 @@ ExternalProject_Add(
     INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
 )
-
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/tpl/include)
 LINK_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/tpl/lib)
+endif()
+
 
 find_library(check NAME libcheck.a)
 add_executable(unit_tests gotcha_unit_tests.c)
