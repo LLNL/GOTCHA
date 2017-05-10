@@ -28,3 +28,4 @@ set_target_properties(internal_unit_sample_elf PROPERTIES LINK_FLAGS -Wl,--hash-
 add_executable(unit_tests_elf gotcha_unit_tests.c)
 target_link_libraries(unit_tests_elf check gotcha internal_unit_sample_elf m rt pthread)
 add_test(full_unit unit_tests)
+add_test(full_unit_elf unit_tests_elf)
