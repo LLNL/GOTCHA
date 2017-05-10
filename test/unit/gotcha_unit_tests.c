@@ -183,6 +183,12 @@ START_TEST(vdso_map_test){
 }
 END_TEST
 
+START_TEST(vdso_pagesize_test){
+  int vdso_pagesize = get_auxv_pagesize();
+  ck_assert_msg(vdso_pagesize, "VDSO does not contain page size");
+}
+END_TEST
+
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
   TCase* libc_case = tcase_create("Basic tests");
