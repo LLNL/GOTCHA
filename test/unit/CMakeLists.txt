@@ -13,6 +13,9 @@ ExternalProject_Add(
     LOG_DOWNLOAD ON
 )
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/tpl/include)
+LINK_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/tpl/include)
+
 find_library(check NAME libcheck.a)
 add_executable(unit_tests gotcha_unit_tests.c)
 target_link_libraries(unit_tests check gotcha internal_unit_sample)
