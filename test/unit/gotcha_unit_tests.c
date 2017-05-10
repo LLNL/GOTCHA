@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha/gotcha.h"
 #include "testing_lib.h"
 #include "elf_ops.h"
+#include "gotcha_auxv.h"
 #include "tool.h"
 #include "libc_wrappers.h"
 #include "gotcha_utils.h"
@@ -169,6 +170,30 @@ Suite* gotcha_libc_suite(){
   return s;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////GOTCHA Auxv Tests///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+START_TEST(vdso_map_test){
+  struct link_map* hopefully_vdso = get_vdso_from_maps();
+  struct link_map* hopefully_also_vdso = get_vdso_from_auxv();
+  // intentionally not testing aliases explicitly as many systems don't implement this
+  ck_assert_msg(hopefully_vdso, "VDSO not found in maps");
+  ck_assert_msg(hopefully_also_vdso, "VDSO not found in auxv");
+}
+END_TEST
+
+Suite* gotcha_auxv_suite(){
+  Suite* s = suite_create("Gotcha Auxv");
+  TCase* libc_case = tcase_create("Basic tests");
+  tcase_add_test(libc_case, vdso_map_test);
+  suite_add_tcase(s, libc_case);
+  return s;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////Test Launch/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(){
   int num_fails;
@@ -180,7 +205,12 @@ int main(){
   SRunner* libc_runner = srunner_create(libc_suite);
   srunner_run_all(libc_runner, CK_NORMAL);
   num_fails += srunner_ntests_failed(libc_runner);
+  Suite* auxv_suite = gotcha_auxv_suite();
+  SRunner* auxv_runner = srunner_create(auxv_suite);
+  srunner_run_all(auxv_runner, CK_NORMAL);
+  num_fails += srunner_ntests_failed(auxv_runner);
   srunner_free(core_runner);
   srunner_free(libc_runner);
+  srunner_free(auxv_runner);
   return num_fails;
 }

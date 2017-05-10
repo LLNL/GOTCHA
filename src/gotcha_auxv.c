@@ -32,7 +32,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static ElfW(Ehdr) *vdso_ehdr = NULL;
 static int auxv_pagesz = 0;
 
-static int parse_auxv_contents()
+
+TEST_ONLY_VISIBILITY int parse_auxv_contents()
 {
    char name[] = "/proc/self/auxv";
    int fd, done = 0;
@@ -86,7 +87,7 @@ static int parse_auxv_contents()
    return 0;
 }
 
-static struct link_map *get_vdso_from_auxv()
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_auxv()
 {
    struct link_map *m;
 
@@ -128,7 +129,7 @@ static char* vdso_aliases[] = { "linux-vdso.so",
                                 "linux-gate.so",
                                 NULL };
 
-static struct link_map *get_vdso_from_aliases()
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases()
 {
    struct link_map *m;
    char **aliases;
@@ -143,7 +144,7 @@ static struct link_map *get_vdso_from_aliases()
    return NULL;
 }
 
-static int read_line(char *line, int size, int fd)
+TEST_ONLY_VISIBILITY int read_line(char *line, int size, int fd)
 {
    int i;
    for (i = 0; i < size - 1; i++) {
@@ -163,7 +164,7 @@ static int read_line(char *line, int size, int fd)
    return 0;
 }
 
-static int read_hex(char *str, unsigned long *val)
+TEST_ONLY_VISIBILITY int read_hex(char *str, unsigned long *val)
 {
    unsigned long local_val = 0, len = 0;
    for (;;) {
@@ -187,7 +188,7 @@ static int read_hex(char *str, unsigned long *val)
    }
 }
 
-static int read_word(char *str, char *word, int word_size) 
+TEST_ONLY_VISIBILITY int read_word(char *str, char *word, int word_size) 
 {
    int word_cur = 0;
    int len = 0;
@@ -218,7 +219,7 @@ static int read_word(char *str, char *word, int word_size)
    return len;
 }
 
-static struct link_map *get_vdso_from_maps()
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_maps()
 {
    int maps, hit_eof;
    ElfW(Addr) addr_begin, addr_end, dynamic;

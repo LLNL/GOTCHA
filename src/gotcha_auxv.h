@@ -15,6 +15,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #ifndef GOTCHA_AUXV_H
 #define GOTCHA_AUXV_H
+
 #include <elf.h>
 #include <link.h>
 #include <stdio.h>
@@ -26,7 +27,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "testing_infrastructure.h"
+
 int is_vdso(struct link_map *map);
 int get_auxv_pagesize();
+#ifdef GOTCHA_ENABLE_COVERAGE_TESTING
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_auxv();
+TEST_ONLY_VISIBILITY int parse_auxv_contents();
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases();
+TEST_ONLY_VISIBILITY int read_line(char *line, int size, int fd);
+TEST_ONLY_VISIBILITY int read_hex(char *str, unsigned long *val);
+TEST_ONLY_VISIBILITY int read_word(char *str, char *word, int word_size);
+TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_maps();
+#endif
+
 
 #endif
