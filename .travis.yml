@@ -70,6 +70,6 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE -DGOTCHA_ENABLE_COVERAGE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
   - make -j
   - make test 
