@@ -564,3 +564,13 @@ int gotcha_int_printf(int fd, const char *format, ...)
    va_end(args);
    return num_printed;
 }
+
+void *gotcha_memset(void *s, int c, size_t n)
+{
+   int i;
+   unsigned char byte = (unsigned char) c;
+   for (i = 0; i < n; i++) {
+      ((unsigned char *) s)[i] = byte;
+   }
+   return s;
+}
