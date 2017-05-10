@@ -1,6 +1,6 @@
 sudo: required
 dist: trusty
-language: cpp
+language: c
 
 matrix:
   include:
@@ -31,6 +31,8 @@ matrix:
            - g++-6
            - check
      env: COMPILER=gcc-6
+         - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_C_FLAGS='-coverage'"
+         - COVERAGE=t
    - compiler: clang-3.6
      addons:
        apt:
@@ -76,6 +78,8 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake -DDEPENDENCIES_PREINSTALLED=ON -DCMAKE_CXX_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
+  - cmake -DDEPENDENCIES_PREINSTALLED=ON -DCMAKE_C_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
   - make -j VERBOSE=1
   - make test 
+after_success:
+  - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
