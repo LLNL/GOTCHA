@@ -77,5 +77,5 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
   - cmake -DDEPENDENCIES_PREINSTALLED=ON -DCMAKE_CXX_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
-  - make VERBOSE=1
+  - make -j VERBOSE=1
   - make test 
