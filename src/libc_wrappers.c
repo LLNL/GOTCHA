@@ -48,7 +48,7 @@ static void split_allocation(malloc_link_t *allocation, size_t new_size)
    size_t orig_size = allocation->header.size;
    malloc_link_t *newalloc;
    
-   if (orig_size - new_size < sizeof(malloc_link_t))
+   if (orig_size - new_size <= sizeof(malloc_link_t))
       return;
 
    allocation->header.size = new_size;
@@ -73,7 +73,7 @@ void *gotcha_malloc(size_t size)
    //Find the tightest fit allocation in the free list
    for (prev = NULL, cur = free_list; cur; cur = cur->next) {
       diff = cur->header.size - size;
-      if (diff > 0 && (!best_fit || diff < best_fit_diff)) {
+      if (diff >= 0 && (!best_fit || diff < best_fit_diff)) {
          best_fit = cur;
          best_fit_prev = prev;
          best_fit_diff = diff;
@@ -94,9 +94,9 @@ void *gotcha_malloc(size_t size)
    }
 
    //Create a new allocation area
-   if (size > MIN_BLOCK_SIZE) {
-      block_size = size;
-      diff = size % gotcha_getpagesize();
+   if (size + sizeof(malloc_header_t) > MIN_BLOCK_SIZE) {
+      block_size = size + sizeof(malloc_header_t);
+      diff = block_size % gotcha_getpagesize();
       if (diff)
          block_size += gotcha_getpagesize() - diff;
    }
@@ -108,7 +108,7 @@ void *gotcha_malloc(size_t size)
    if (result == MAP_FAILED)
        return NULL;
    newalloc = (malloc_link_t *) result;
-   newalloc->header.size = block_size;
+   newalloc->header.size = block_size - sizeof(malloc_header_t);
    split_allocation(newalloc, size);
    return (void *) &newalloc->next;
 }
