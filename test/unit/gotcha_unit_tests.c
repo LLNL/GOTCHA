@@ -13,13 +13,14 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#include <gotcha/gotcha.h>
 #include <link.h>
 #include <check.h>
+#include "gotcha/gotcha.h"
 #include "testing_lib.h"
-//#include <gotcha_utils.h>
-//#include "elf_ops.h"
-//#include "tool.h"
+#include "elf_ops.h"
+#include "tool.h"
+#include "libc_wrappers.h"
+#include "gotcha_utils.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +33,8 @@ void setup_infrastructure(){
 void teardown_infrastructure(){
   free(new_tool);
 }
+
+extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
 int dummy_main(int argc, char* argv[]){return 4;}
 START_TEST(symbol_prep_test)
