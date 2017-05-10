@@ -41,7 +41,6 @@ void debug_init()
    static int debug_initialized = 0;
 
    char *debug_str;
-   int debug_val;
    if (debug_initialized) {
       return;
    }
