@@ -1,0 +1,6 @@
+#ifdef GOTCHA_ENABLE_COVERAGE_TESTING
+#define TEST_ONLY_VISIBILITY 
+#else
+#define TEST_ONLY_VISIBILITY static
+#endif
+
