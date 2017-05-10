@@ -43,7 +43,6 @@ tool_t *get_tool(char *tool_name)
          return t;
       }
    }
-   int x = 0 ;
    return NULL;
 }
 
@@ -66,7 +65,7 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
 
    ref_table = (binding_ref_t *) gotcha_malloc(sizeof(binding_ref_t) * user_binding_size);
    for (i = 0; i < user_binding_size; i++) {
-      ref_table[i].symbol_name = user_binding[i].name;
+      ref_table[i].symbol_name = (char *) user_binding[i].name;
       ref_table[i].binding = newbinding;
       ref_table[i].index = i;
       result = addto_hashtable(&newbinding->binding_hash, ref_table[i].symbol_name, ref_table+i);

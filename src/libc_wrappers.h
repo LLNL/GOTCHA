@@ -23,25 +23,27 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <unistd.h>
 #include <sys/mman.h>
 
+#define GOTCHA_USE_LIBC
+
 #if defined(GOTCHA_USE_LIBC) && !defined(BUILDING_LIBC_WRAPPERS)
 
-#define gotcha_malloc(A)          malloc(A)
-#define gotcha_realloc(A, B)      realloc(A, B)
-#define gotcha_free(A)            free(A)
-#define gotcha_memcpy(A, B, C)    memcpy(A, B, C)
-#define gotcha_strncmp(A, B, C)   strncmp(A, B, C)
-#define gotcha_strstr(A, B)       strstr(A, B)
-#define gotcha_assert(A)          assert(A)
-#define gotcha_strcmp(A, B)       strcmp(A, B)
-#define gotcha_getenv(A)          getenv(A)
-#define gotcha_getpid()           getpid()
-#define gotcha_getpagesize()      getpagesize()
-#define gotcha_open(A, B, ...)    open(A, B, __VA_ARGS__)
-#define gotcha_mmap(A, B, C, D, E, F) mmap(A, B, C, D, E, F)
-#define gotcha_atoi(A)            atoi(A)
-#define gotcha_close(A)           close(A)
-#define gotcha_mprotect(A, B, C)  mprotect(A, B, C)
-#define gotcha_read(A, B, C)      read(A, B, C)
+#define gotcha_malloc             malloc
+#define gotcha_realloc            realloc
+#define gotcha_free               free
+#define gotcha_memcpy             memcpy
+#define gotcha_strncmp            strncmp
+#define gotcha_strstr             strstr
+#define gotcha_assert             assert
+#define gotcha_strcmp             strcmp
+#define gotcha_getenv             getenv
+#define gotcha_getpid             getpid
+#define gotcha_getpagesize        getpagesize
+#define gotcha_open               open
+#define gotcha_mmap               mmap
+#define gotcha_atoi               atoi
+#define gotcha_close              close
+#define gotcha_mprotect           mprotect
+#define gotcha_read               read
 #define gotcha_dbg_printf(A, ...) fprintf(stderr, A, __VA_ARGS__)
 pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
 
@@ -61,12 +63,13 @@ int gotcha_getpagesize();
 int gotcha_open(const char *pathname, int flags, ...);
 void *gotcha_mmap(void *addr, size_t length, int prot, int flags,
                   int fd, off_t offset);
-int atoi(const char *nptr);
-int close(int fd);
+int gotcha_atoi(const char *nptr);
+int gotcha_close(int fd);
 int gotcha_mprotect(void *addr, size_t len, int prot);
 ssize_t gotcha_read(int fd, void *buf, size_t count);
 ssize_t gotcha_write(int fd, const void *buf, size_t count);
 int gotcha_int_printf(int fd, const char *format, ...);
+void gotcha_assert_fail(const char *s, const char *file, unsigned int line, const char *function);
 #define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, __VA_ARGS__)
 
 #define gotcha_assert(A)                                          \
