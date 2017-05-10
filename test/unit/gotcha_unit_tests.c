@@ -202,10 +202,11 @@ END_TEST
 
 START_TEST(gotcha_strcmp_test){
   ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",4)==0, "gotcha_strncmp is examining too many characters, marking matching prefixes as not matching");
-  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",5)!=0, "gotcha_strncmp is examining too few characters, marking nonmatching prefixes as matching");
-  ck_assert_msg(gotcha_strncmp("dogs","pups",999)!=0, "gotcha_strncmp fails on nonmatching strings of smaller lengths than the declared string length");
+  ck_assert_msg(gotcha_strncmp("dogsaregood","dogsisgreat",5)<0, "gotcha_strncmp is examining too few characters, marking nonmatching prefixes as matching");
+  ck_assert_msg(gotcha_strncmp("dogs","pups",999)<0, "gotcha_strncmp fails on nonmatching strings of smaller lengths than the declared string length");
   ck_assert_msg(gotcha_strncmp("dogs","dogs",999)==0, "gotcha_strncmp fails on matching strings of smaller lengths than the declared string length");
-  ck_assert_msg(gotcha_strcmp("dogs","pups")!=0, "gotcha_strcmp fails on nonmatching strings");
+  ck_assert_msg(gotcha_strcmp("dogs","pups")<0, "gotcha_strcmp fails on nonmatching strings");
+  ck_assert_msg(gotcha_strcmp("pups","dogs")>0, "gotcha_strcmp fails on reversed nonmatching strings");
   ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
 }
 END_TEST
