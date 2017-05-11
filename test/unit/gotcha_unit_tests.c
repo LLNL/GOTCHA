@@ -274,7 +274,7 @@ Suite* gotcha_auxv_suite(){
 ////////////////////////////////////////////////////GOTCHA Hash Tests///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define NUM_INSERTS 8192
+#define NUM_INSERTS 16384
 #define TABLE_SIZE (NUM_INSERTS/2)
 
 START_TEST(hash_grow_test){
@@ -285,7 +285,10 @@ START_TEST(hash_grow_test){
    hash_hashvalue_t dogs_val = strhash(hashable_string);  
    int loop;
    for(loop=0;loop<NUM_INSERTS;loop++){
-     addto_hashtable(&table,&pointer_list[loop],loop);
+     addto_hashtable(&table,&pointer_list[loop],hashable_string);
+   }
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     removefrom_hashtable(&table,&pointer_list[loop]);
    }
 }
 END_TEST
