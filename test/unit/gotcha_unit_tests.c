@@ -209,6 +209,16 @@ START_TEST(gotcha_strcmp_test){
   ck_assert_msg(gotcha_strcmp("dogs","pups")<0, "gotcha_strcmp fails on nonmatching strings");
   ck_assert_msg(gotcha_strcmp("pups","dogs")>0, "gotcha_strcmp fails on reversed nonmatching strings");
   ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
+  ck_assert_msg(gotcha_strstr("dogs","og")!=0, "gotcha_strstr fails on matching strings");
+  ck_assert_msg(gotcha_strstr("dogs","cats")==0, "gotcha_strstr fails on nonmatching strings");
+  ck_assert_msg(gotcha_strstr("dogs","doges")==0, "gotcha_strstr fails on nonmatching strings");
+}
+END_TEST
+
+START_TEST(gotcha_atoi_test){
+  ck_assert_msg(gotcha_atoi("-82")==-82,"gotcha_atoi fails on -82");
+  ck_assert_msg(gotcha_atoi("--82")==82,"gotcha_atoi fails on --82");
+  ck_assert_msg(gotcha_atoi("99999993")==99999993,"gotcha_atoi fails on 99999993");
 }
 END_TEST
 
@@ -222,6 +232,7 @@ Suite* gotcha_libc_suite(){
   tcase_add_test(libc_case, gotcha_heap_test);
   tcase_add_test(libc_case, gotcha_memcpy_test);
   tcase_add_test(libc_case, gotcha_strcmp_test);
+  tcase_add_test(libc_case, gotcha_atoi_test);
   suite_add_tcase(s, libc_case);
   return s;
 }
@@ -255,7 +266,7 @@ Suite* gotcha_auxv_suite(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////GOTCHA Auxv Tests///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////GOTCHA Hash Tests///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //START_TEST(hash_insert_test){
