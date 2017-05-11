@@ -30,3 +30,6 @@ target_link_libraries(unit_tests_elf check gotcha_no_libc internal_unit_sample_e
 set_target_properties(unit_tests_elf PROPERTIES COMPILE_DEFINITIONS "BUILDING_LIBC_WRAPPERS;FORCE_NO_LIBC")
 add_test(full_unit unit_tests)
 add_test(full_unit_elf unit_tests_elf)
+set_tests_properties(full_unit_elf PROPERTIES
+  ENVIRONMENT GOTCHA_DEBUG=3
+  )

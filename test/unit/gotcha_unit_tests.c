@@ -49,6 +49,8 @@ START_TEST(symbol_prep_test)
     { "main", &dummy_main, &my_main  }
   };
   struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
+  ck_assert_msg(get_bindings(),"get_bindings shows no bindings");
+  ck_assert_msg(get_tool_bindings(new_tool),"couldn't get bindings for created tool");
   gotcha_prepare_symbols(internal_bindings,1);
   ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
 }
