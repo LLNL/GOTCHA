@@ -53,10 +53,7 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
    return 0;
 }
 
-TEST_ONLY_VISIBILITY hash_data_t extract_data(struct hash_entry_t * entry){
-  return entry->data;
-}
-TEST_ONLY_VISIBILITY int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value)
+int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value)
 {
    hash_hashvalue_t index = value % table->table_size;
    hash_hashvalue_t startindex = index;
@@ -116,7 +113,7 @@ int destroy_hashtable(hash_table_t *table)
    return 0;
 }
 
-TEST_ONLY_VISIBILITY int lookup(hash_table_t *table, hash_key_t key, hash_entry_t **entry)
+int lookup(hash_table_t *table, hash_key_t key, hash_entry_t **entry)
 {
    size_t index, startindex;
    hash_hashvalue_t hashval;

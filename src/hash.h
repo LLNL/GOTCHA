@@ -48,10 +48,4 @@ int removefrom_hashtable(hash_table_t *table, hash_key_t key);
 
 hash_hashvalue_t strhash(const char *str);
 
-#ifdef GOTCHA_ENABLE_TESTING
-TEST_ONLY_VISIBILITY int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value);
-TEST_ONLY_VISIBILITY int lookup(hash_table_t *table, hash_key_t key, struct hash_entry_t **entry);
-TEST_ONLY_VISIBILITY hash_data_t extract_data(struct hash_entry_t * entry);
-#endif
-
 #endif

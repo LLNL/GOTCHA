@@ -274,56 +274,27 @@ Suite* gotcha_auxv_suite(){
 ////////////////////////////////////////////////////GOTCHA Hash Tests///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-START_TEST(hash_insert_test){
-   hash_table_t table;
-   create_hashtable(&table,50,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
-   const char* hashable_string = "dogs";
-   int ins_return=-1,look_return =-1, del_return=-1;
-   hash_hashvalue_t dogs_val = strhash(hashable_string);  
-   struct hash_entry_t* lookup_holder;;
-   ins_return=insert(&table,hashable_string,(void*)1337,dogs_val);
-   ck_assert_msg(!ins_return,"Internal error in insert function");
-   look_return = lookup(&table,hashable_string,&lookup_holder);
-   int found_value = extract_data(lookup_holder);
-   ck_assert_msg(!look_return,"Internal error in lookup function");
-   del_return = removefrom_hashtable(&table,hashable_string);
-   ck_assert_msg(!del_return,"Internal error in element removal function");
-   ck_assert_msg((int)found_value==1337,"Inserted item could not be looked up in hash table");
-   ck_assert_msg(!destroy_hashtable(&table),"Could not destroy hashtable");
-}
-END_TEST
+#define NUM_INSERTS 8192
+#define TABLE_SIZE (NUM_INSERTS/2)
 
 START_TEST(hash_grow_test){
    hash_table_t table;
-   create_hashtable(&table,50,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
-   int ins_return=-1,look_return =-1, grow_return=-1;
+   create_hashtable(&table,TABLE_SIZE,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    const char* hashable_string = "dogs";
+   int pointer_list[NUM_INSERTS];
    hash_hashvalue_t dogs_val = strhash(hashable_string);  
-   ins_return = insert(&table,hashable_string,(void*)1337,dogs_val);
-   ck_assert_msg(!ins_return,"Internal error in insert function");
-   grow_return = grow_hashtable(&table,100);
-   ck_assert_msg(!grow_return,"Internal error in grow function");
-   struct hash_entry_t* lookup_holder;
-   look_return = lookup(&table,hashable_string,&lookup_holder);
-   ck_assert_msg(!look_return,"Internal error in look function");
-   int found_value = extract_data(lookup_holder);
-   ck_assert_msg((int)found_value==1337,"Inserted item could not be looked up in hash table after growth");
-   int loop = 0;
-   int failed_insert_codes = 0;
-   for(loop = 0;loop<60;loop++){
-     failed_insert_codes |= insert(&table,hashable_string,(void*)1337,dogs_val);
-   }  
-   ck_assert_msg(!failed_insert_codes,"Could not insert 60 items into 100 item table");
-
-
+   int loop;
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     addto_hashtable(&table,&pointer_list[loop],loop);
+   }
 }
 END_TEST
+
 
 
 Suite* gotcha_hash_suite(){
   Suite* s = suite_create("Gotcha Auxv");
   TCase* libc_case = tcase_create("Basic tests");
-  tcase_add_test(libc_case, hash_insert_test);
   tcase_add_test(libc_case, hash_grow_test);
   suite_add_tcase(s, libc_case);
   return s;
