@@ -16,6 +16,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #if !defined(HASH_H_)
 #define HASH_H_
 
+#include "testing_infrastructure.h"
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -46,5 +47,11 @@ int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data);
 int removefrom_hashtable(hash_table_t *table, hash_key_t key);
 
 hash_hashvalue_t strhash(const char *str);
+
+#ifdef GOTCHA_ENABLE_TESTING
+TEST_ONLY_VISIBILITY int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value);
+TEST_ONLY_VISIBILITY int lookup(hash_table_t *table, hash_key_t key, struct hash_entry_t **entry);
+TEST_ONLY_VISIBILITY hash_data_t extract_data(struct hash_entry_t * entry);
+#endif
 
 #endif

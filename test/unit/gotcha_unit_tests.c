@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha_auxv.h"
 #include "tool.h"
 #include "libc_wrappers.h"
+#include "hash.h"
 #include "gotcha_utils.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,27 +270,60 @@ Suite* gotcha_auxv_suite(){
 ////////////////////////////////////////////////////GOTCHA Hash Tests///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//START_TEST(hash_insert_test){
-//   const char* hashable_string = "dogs";
-//   hash_hashvalue_t dogs_val = strhash(hashable_string);  
-//   
-//}
-//END_TEST
-//
-//START_TEST(hash_pagesize_test){
-//  int hash_pagesize = get_hash_pagesize();
-//  ck_assert_msg(hash_pagesize, "VDSO does not contain page size");
-//}
-//END_TEST
-//
-//Suite* gotcha_hash_suite(){
-//  Suite* s = suite_create("Gotcha Auxv");
-//  TCase* libc_case = tcase_create("Basic tests");
-//  tcase_add_test(libc_case, hash_map_test);
-//  tcase_add_test(libc_case, hash_pagesize_test);
-//  suite_add_tcase(s, libc_case);
-//  return s;
-//}
+START_TEST(hash_insert_test){
+   hash_table_t table;
+   create_hashtable(&table,50,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
+   const char* hashable_string = "dogs";
+   int ins_return=-1,look_return =-1, del_return=-1;
+   hash_hashvalue_t dogs_val = strhash(hashable_string);  
+   struct hash_entry_t* lookup_holder;;
+   ins_return=insert(&table,hashable_string,(void*)1337,dogs_val);
+   ck_assert_msg(!ins_return,"Internal error in insert function");
+   look_return = lookup(&table,hashable_string,&lookup_holder);
+   int found_value = extract_data(lookup_holder);
+   ck_assert_msg(!look_return,"Internal error in lookup function");
+   del_return = removefrom_hashtable(&table,hashable_string);
+   ck_assert_msg(!del_return,"Internal error in element removal function");
+   ck_assert_msg((int)found_value==1337,"Inserted item could not be looked up in hash table");
+   ck_assert_msg(!destroy_hashtable(&table),"Could not destroy hashtable");
+}
+END_TEST
+
+START_TEST(hash_grow_test){
+   hash_table_t table;
+   create_hashtable(&table,50,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
+   int ins_return=-1,look_return =-1, grow_return=-1;
+   const char* hashable_string = "dogs";
+   hash_hashvalue_t dogs_val = strhash(hashable_string);  
+   ins_return = insert(&table,hashable_string,(void*)1337,dogs_val);
+   ck_assert_msg(!ins_return,"Internal error in insert function");
+   grow_return = grow_hashtable(&table,100);
+   ck_assert_msg(!grow_return,"Internal error in grow function");
+   struct hash_entry_t* lookup_holder;
+   look_return = lookup(&table,hashable_string,&lookup_holder);
+   ck_assert_msg(!look_return,"Internal error in look function");
+   int found_value = extract_data(lookup_holder);
+   ck_assert_msg((int)found_value==1337,"Inserted item could not be looked up in hash table after growth");
+   int loop = 0;
+   int failed_insert_codes = 0;
+   for(loop = 0;loop<60;loop++){
+     failed_insert_codes |= insert(&table,hashable_string,(void*)1337,dogs_val);
+   }  
+   ck_assert_msg(!failed_insert_codes,"Could not insert 60 items into 100 item table");
+
+
+}
+END_TEST
+
+
+Suite* gotcha_hash_suite(){
+  Suite* s = suite_create("Gotcha Auxv");
+  TCase* libc_case = tcase_create("Basic tests");
+  tcase_add_test(libc_case, hash_insert_test);
+  tcase_add_test(libc_case, hash_grow_test);
+  suite_add_tcase(s, libc_case);
+  return s;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -310,8 +344,13 @@ int main(){
   SRunner* auxv_runner = srunner_create(auxv_suite);
   srunner_run_all(auxv_runner, CK_NORMAL);
   num_fails += srunner_ntests_failed(auxv_runner);
+  Suite* hash_suite = gotcha_hash_suite();
+  SRunner* hash_runner = srunner_create(hash_suite);
+  srunner_run_all(hash_runner, CK_NORMAL);
+  num_fails += srunner_ntests_failed(hash_runner);
   srunner_free(core_runner);
   srunner_free(libc_runner);
   srunner_free(auxv_runner);
+  srunner_free(hash_runner);
   return num_fails;
 }
