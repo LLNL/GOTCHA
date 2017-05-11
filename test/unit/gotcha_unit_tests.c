@@ -218,7 +218,9 @@ END_TEST
 
 START_TEST(gotcha_atoi_test){
   ck_assert_msg(gotcha_atoi("-82")==-82,"gotcha_atoi fails on -82");
-  ck_assert_msg(gotcha_atoi("--82")==82,"gotcha_atoi fails on --82");
+  int x  = gotcha_atoi("--82");
+  // In libc, atoi returns 0 for this. 82 is arguably a good behavior
+  ck_assert_msg((x==82)||(x==0),"gotcha_atoi fails on --82");
   ck_assert_msg(gotcha_atoi("99999993")==99999993,"gotcha_atoi fails on 99999993");
 }
 END_TEST
