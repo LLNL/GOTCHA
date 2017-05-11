@@ -42,6 +42,7 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
    newtable = (hash_entry_t *) gotcha_malloc(initial_size * sizeof(hash_entry_t));
    if (!newtable)
       return -1;
+   gotcha_memset(newtable, 0, initial_size * sizeof(hash_entry_t));
 
    table->table_size = initial_size;
    table->entry_count = 0;
@@ -82,6 +83,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
 
    newtable.table_size = new_size;
    newtable.table = (hash_entry_t *) gotcha_malloc(new_size * sizeof(hash_entry_t));
+   gotcha_memset(newtable.table, 0, new_size * sizeof(hash_entry_t));
 
    for (i = 0; i < table->table_size; i++) {
       if (table->table[i].status == EMPTY || table->table[i].status == TOMBSTONE)
