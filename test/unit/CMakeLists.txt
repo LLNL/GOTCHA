@@ -28,7 +28,5 @@ set_target_properties(internal_unit_sample_elf PROPERTIES LINK_FLAGS -Wl,--hash-
 add_executable(unit_tests_elf gotcha_unit_tests.c)
 target_link_libraries(unit_tests_elf check gotcha_no_libc internal_unit_sample_elf m rt pthread)
 set_target_properties(unit_tests_elf PROPERTIES COMPILE_DEFINITIONS "BUILDING_LIBC_WRAPPERS;FORCE_NO_LIBC")
-set_target_properties(unit_tests_elf PROPERTIES COMPILE_FLAGS -nolibc)
-set_target_properties(unit_tests_elf PROPERTIES LINK_FLAGS -nolibc)
 add_test(full_unit unit_tests)
 add_test(full_unit_elf unit_tests_elf)
