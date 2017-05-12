@@ -285,7 +285,7 @@ START_TEST(hash_grow_test){
    hash_hashvalue_t dogs_val = strhash(hashable_string);  
    int loop;
    for(loop=0;loop<NUM_INSERTS;loop++){
-     pointer_list[loop] = (char*)malloc(sizeof(char)*2);
+     pointer_list[loop] = (char*)gotcha_malloc(sizeof(char)*2);
      pointer_list[loop][0] = (char)(loop+1);
      pointer_list[loop][1] = (char)(0);
    }
@@ -294,6 +294,9 @@ START_TEST(hash_grow_test){
    }
    for(loop=0;loop<NUM_INSERTS;loop++){
      removefrom_hashtable(&table,&pointer_list[loop]);
+   }
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     gotcha_free(pointer_list[loop]);
    }
 }
 END_TEST
