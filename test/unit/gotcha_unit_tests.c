@@ -291,14 +291,13 @@ START_TEST(hash_grow_test){
      pointer_list[loop][1] = (char)(0);
    }
    for(loop=0;loop<NUM_INSERTS;loop++){
-     add_return_code |= addto_hashtable(&table,pointer_list[loop],loop);
+     add_return_code |= addto_hashtable(&table,pointer_list[loop],(void*)loop);
    }
    ck_assert_msg(!add_return_code, "Internal error adding to hashtable");
    int first_broken = -1;
    for(loop=0;loop<NUM_INSERTS;loop++){
      int found_val;
      find_return_code |= lookup_hashtable(&table,pointer_list[loop],(void*)&found_val);
-     printf("Found %d\n",found_val);
      if(found_val!=loop){
        first_broken = loop;
        break;
@@ -319,7 +318,7 @@ END_TEST
 
 
 Suite* gotcha_hash_suite(){
-  Suite* s = suite_create("Gotcha Auxv");
+  Suite* s = suite_create("Gotcha Hashing");
   TCase* libc_case = tcase_create("Basic tests");
   tcase_add_test(libc_case, hash_grow_test);
   suite_add_tcase(s, libc_case);
