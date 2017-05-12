@@ -31,5 +31,8 @@ set_target_properties(unit_tests_elf PROPERTIES COMPILE_DEFINITIONS "BUILDING_LI
 add_test(full_unit unit_tests)
 add_test(full_unit_elf unit_tests_elf)
 set_tests_properties(full_unit_elf PROPERTIES
-  ENVIRONMENT GOTCHA_DEBUG=3
+  ENVIRONMENT "GOTCHA_DEBUG=3 LLVM_PROFILE_FILE=full_unit_elf.profraw"
   )
+set_tests_properties(full_unit PROPERTIES
+  ENVIRONMENT LLVM_PROFILE_FILE=full_unit.profraw
+)
