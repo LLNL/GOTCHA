@@ -279,11 +279,16 @@ Suite* gotcha_auxv_suite(){
 
 START_TEST(hash_grow_test){
    hash_table_t table;
-   create_hashtable(&table,TABLE_SIZE,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
-   const char* hashable_string = "dogs";
-   int pointer_list[NUM_INSERTS];
+   create_hashtable(&table,4,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
+   char* hashable_string = "dogs";
+   char* pointer_list[NUM_INSERTS];
    hash_hashvalue_t dogs_val = strhash(hashable_string);  
    int loop;
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     pointer_list[loop] = (char*)malloc(sizeof(char)*2);
+     pointer_list[loop][0] = (char)(loop+1);
+     pointer_list[loop][1] = (char)(0);
+   }
    for(loop=0;loop<NUM_INSERTS;loop++){
      addto_hashtable(&table,&pointer_list[loop],hashable_string);
    }
