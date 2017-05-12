@@ -307,7 +307,7 @@ START_TEST(hash_grow_test){
    ck_assert_msg(!find_return_code, "Internal error finding in hashtable");
    ck_assert_msg(first_broken==-1,"Failed to find item we searched for");
    for(loop=0;loop<NUM_INSERTS;loop++){
-     remove_return_code |= removefrom_hashtable(&table,&pointer_list[loop]);
+     remove_return_code |= removefrom_hashtable(&table,pointer_list[loop]);
    }
    ck_assert_msg(!remove_return_code, "Internal error removing from hashtable");
    for(loop=0;loop<NUM_INSERTS;loop++){
