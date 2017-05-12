@@ -247,11 +247,13 @@ Suite* gotcha_libc_suite(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 START_TEST(vdso_map_test){
-  struct link_map* hopefully_vdso = get_vdso_from_maps();
-  struct link_map* hopefully_also_vdso = get_vdso_from_auxv();
-  // intentionally not testing aliases explicitly as many systems don't implement this
-  ck_assert_msg(hopefully_vdso, "VDSO not found in maps");
-  ck_assert_msg(hopefully_also_vdso, "VDSO not found in auxv");
+  struct link_map *maps_vdso = get_vdso_from_maps();
+  struct link_map *auxv_vdso = get_vdso_from_auxv();
+  struct link_map *alias_vdso = get_vdso_from_aliases();
+  ck_assert_msg(maps_vdso || auxv_vdso || alias_vdso, "VDSO not found in any solution");
+  ck_assert_msg(!maps_vdso || !auxv_vdso || maps_vdso == auxv_vdso, "VDSO Mismatch of maps and auxv");
+  ck_assert_msg(!maps_vdso || !alias_vdso || maps_vdso == alias_vdso, "VDSO Mismatch of maps and alias");
+  ck_assert_msg(!auxv_vdso || !alias_vdso || auxv_vdso == alias_vdso, "VDSO Mismatch of auxv and alias");
 }
 END_TEST
 
@@ -275,14 +277,13 @@ Suite* gotcha_auxv_suite(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define NUM_INSERTS 16384
-#define TABLE_SIZE (NUM_INSERTS/2)
 
 START_TEST(hash_grow_test){
    hash_table_t table;
-   create_hashtable(&table,4,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
-   char* hashable_string = "dogs";
+   int create_return_code = 0, add_return_code = 0, find_return_code = 0, remove_return_code = 0;
+   create_return_code = create_hashtable(&table,1,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
+   ck_assert_msg(!create_return_code, "Internal error creating hashtable");
    char* pointer_list[NUM_INSERTS];
-   hash_hashvalue_t dogs_val = strhash(hashable_string);  
    int loop;
    for(loop=0;loop<NUM_INSERTS;loop++){
      pointer_list[loop] = (char*)gotcha_malloc(sizeof(char)*2);
@@ -290,11 +291,25 @@ START_TEST(hash_grow_test){
      pointer_list[loop][1] = (char)(0);
    }
    for(loop=0;loop<NUM_INSERTS;loop++){
-     addto_hashtable(&table,&pointer_list[loop],hashable_string);
+     add_return_code |= addto_hashtable(&table,pointer_list[loop],loop);
    }
+   ck_assert_msg(!add_return_code, "Internal error adding to hashtable");
+   int first_broken = -1;
    for(loop=0;loop<NUM_INSERTS;loop++){
-     removefrom_hashtable(&table,&pointer_list[loop]);
+     int found_val;
+     find_return_code |= lookup_hashtable(&table,pointer_list[loop],(void*)&found_val);
+     printf("Found %d\n",found_val);
+     if(found_val!=loop){
+       first_broken = loop;
+       break;
+     }
    }
+   ck_assert_msg(!find_return_code, "Internal error finding in hashtable");
+   ck_assert_msg(first_broken==-1,"Failed to find item we searched for");
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     remove_return_code |= removefrom_hashtable(&table,&pointer_list[loop]);
+   }
+   ck_assert_msg(!remove_return_code, "Internal error removing from hashtable");
    for(loop=0;loop<NUM_INSERTS;loop++){
      gotcha_free(pointer_list[loop]);
    }
