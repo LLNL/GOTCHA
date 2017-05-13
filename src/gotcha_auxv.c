@@ -33,7 +33,7 @@ static ElfW(Ehdr) *vdso_ehdr = NULL;
 static int auxv_pagesz = 0;
 
 
-TEST_ONLY_VISIBILITY int parse_auxv_contents()
+int parse_auxv_contents()
 {
    char name[] = "/proc/self/auxv";
    int fd, done = 0;
@@ -87,7 +87,7 @@ TEST_ONLY_VISIBILITY int parse_auxv_contents()
    return 0;
 }
 
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_auxv()
+struct link_map *get_vdso_from_auxv()
 {
    struct link_map *m;
 
@@ -129,7 +129,7 @@ static char* vdso_aliases[] = { "linux-vdso.so",
                                 "linux-gate.so",
                                 NULL };
 
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases()
+struct link_map *get_vdso_from_aliases()
 {
    struct link_map *m;
    char **aliases;
@@ -219,7 +219,7 @@ static int read_word(char *str, char *word, int word_size)
    return len;
 }
 
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_maps()
+struct link_map *get_vdso_from_maps()
 {
    int maps, hit_eof;
    ElfW(Addr) addr_begin, addr_end, dynamic;

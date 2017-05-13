@@ -16,7 +16,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #if !defined(HASH_H_)
 #define HASH_H_
 
-#include "testing_infrastructure.h"
 #include <stdlib.h>
 #include <stdint.h>
 

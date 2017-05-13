@@ -1,6 +1,0 @@
-#ifdef GOTCHA_ENABLE_TESTING
-#define TEST_ONLY_VISIBILITY 
-#else
-#define TEST_ONLY_VISIBILITY static
-#endif
-
