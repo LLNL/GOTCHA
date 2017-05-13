@@ -27,16 +27,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "testing_infrastructure.h"
-
 int is_vdso(struct link_map *map);
 int get_auxv_pagesize();
-#ifdef GOTCHA_ENABLE_COVERAGE_TESTING
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_auxv();
-TEST_ONLY_VISIBILITY int parse_auxv_contents();
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_aliases();
-TEST_ONLY_VISIBILITY struct link_map *get_vdso_from_maps();
-#endif
+
+//Do not use, exposed only for unit testing
+int parse_auxv_contents();
+struct link_map *get_vdso_from_auxv();
+struct link_map *get_vdso_from_aliases();
+struct link_map *get_vdso_from_maps();
+
 
 
 #endif
