@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "libc_wrappers.h"
 #include "hash.h"
 #include "gotcha_utils.h"
+#include "gotcha_auxv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -286,18 +287,20 @@ START_TEST(hash_grow_test){
    char* pointer_list[NUM_INSERTS];
    int loop;
    for(loop=0;loop<NUM_INSERTS;loop++){
-     pointer_list[loop] = (char*)gotcha_malloc(sizeof(char)*2);
-     pointer_list[loop][0] = (char)(loop+1);
-     pointer_list[loop][1] = (char)(0);
+     pointer_list[loop] = (char*)gotcha_malloc(sizeof(char)*8);
+     snprintf(pointer_list[loop], 8, "%d", loop);
+     pointer_list[loop][7] = '\0';
    }
    for(loop=0;loop<NUM_INSERTS;loop++){
-     add_return_code |= addto_hashtable(&table,pointer_list[loop],(void*)loop);
+      add_return_code |= addto_hashtable(&table,pointer_list[loop],(void*)(long)loop);
    }
    ck_assert_msg(!add_return_code, "Internal error adding to hashtable");
    int first_broken = -1;
    for(loop=0;loop<NUM_INSERTS;loop++){
      int found_val;
-     find_return_code |= lookup_hashtable(&table,pointer_list[loop],(void*)&found_val);
+     void *result;
+     find_return_code |= lookup_hashtable(&table,pointer_list[loop],&result);
+     found_val = (int) (long) result;
      if(found_val!=loop){
        first_broken = loop;
        break;
