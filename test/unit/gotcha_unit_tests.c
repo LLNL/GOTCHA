@@ -18,9 +18,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha/gotcha.h"
 #include "testing_lib.h"
 #include "elf_ops.h"
+#include "gotcha_auxv.h"
 #include "tool.h"
 #include "libc_wrappers.h"
+#include "hash.h"
 #include "gotcha_utils.h"
+#include "gotcha_auxv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +50,8 @@ START_TEST(symbol_prep_test)
     { "main", &dummy_main, &my_main  }
   };
   struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
+  ck_assert_msg(get_bindings(),"get_bindings shows no bindings");
+  ck_assert_msg(get_tool_bindings(new_tool),"couldn't get bindings for created tool");
   gotcha_prepare_symbols(internal_bindings,1);
   ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
 }
@@ -208,6 +213,18 @@ START_TEST(gotcha_strcmp_test){
   ck_assert_msg(gotcha_strcmp("dogs","pups")<0, "gotcha_strcmp fails on nonmatching strings");
   ck_assert_msg(gotcha_strcmp("pups","dogs")>0, "gotcha_strcmp fails on reversed nonmatching strings");
   ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
+  ck_assert_msg(gotcha_strstr("dogs","og")!=0, "gotcha_strstr fails on matching strings");
+  ck_assert_msg(gotcha_strstr("dogs","cats")==0, "gotcha_strstr fails on nonmatching strings");
+  ck_assert_msg(gotcha_strstr("dogs","doges")==0, "gotcha_strstr fails on nonmatching strings");
+}
+END_TEST
+
+START_TEST(gotcha_atoi_test){
+  ck_assert_msg(gotcha_atoi("-82")==-82,"gotcha_atoi fails on -82");
+  int x  = gotcha_atoi("--82");
+  // In libc, atoi returns 0 for this. 82 is arguably a good behavior
+  ck_assert_msg((x==82)||(x==0),"gotcha_atoi fails on --82");
+  ck_assert_msg(gotcha_atoi("99999993")==99999993,"gotcha_atoi fails on 99999993");
 }
 END_TEST
 
@@ -221,10 +238,100 @@ Suite* gotcha_libc_suite(){
   tcase_add_test(libc_case, gotcha_heap_test);
   tcase_add_test(libc_case, gotcha_memcpy_test);
   tcase_add_test(libc_case, gotcha_strcmp_test);
+  tcase_add_test(libc_case, gotcha_atoi_test);
   suite_add_tcase(s, libc_case);
   return s;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////GOTCHA Auxv Tests///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+START_TEST(vdso_map_test){
+  struct link_map *maps_vdso = get_vdso_from_maps();
+  struct link_map *auxv_vdso = get_vdso_from_auxv();
+  struct link_map *alias_vdso = get_vdso_from_aliases();
+  ck_assert_msg(maps_vdso || auxv_vdso || alias_vdso, "VDSO not found in any solution");
+  ck_assert_msg(!maps_vdso || !auxv_vdso || maps_vdso == auxv_vdso, "VDSO Mismatch of maps and auxv");
+  ck_assert_msg(!maps_vdso || !alias_vdso || maps_vdso == alias_vdso, "VDSO Mismatch of maps and alias");
+  ck_assert_msg(!auxv_vdso || !alias_vdso || auxv_vdso == alias_vdso, "VDSO Mismatch of auxv and alias");
+}
+END_TEST
+
+START_TEST(vdso_pagesize_test){
+  int vdso_pagesize = get_auxv_pagesize();
+  ck_assert_msg(vdso_pagesize, "VDSO does not contain page size");
+}
+END_TEST
+
+Suite* gotcha_auxv_suite(){
+  Suite* s = suite_create("Gotcha Auxv");
+  TCase* libc_case = tcase_create("Basic tests");
+  tcase_add_test(libc_case, vdso_map_test);
+  tcase_add_test(libc_case, vdso_pagesize_test);
+  suite_add_tcase(s, libc_case);
+  return s;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////GOTCHA Hash Tests///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define NUM_INSERTS 16384
+
+START_TEST(hash_grow_test){
+   hash_table_t table;
+   int create_return_code = 0, add_return_code = 0, find_return_code = 0, remove_return_code = 0;
+   create_return_code = create_hashtable(&table,1,(hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
+   ck_assert_msg(!create_return_code, "Internal error creating hashtable");
+   char* pointer_list[NUM_INSERTS];
+   int loop;
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     pointer_list[loop] = (char*)gotcha_malloc(sizeof(char)*8);
+     snprintf(pointer_list[loop], 8, "%d", loop);
+     pointer_list[loop][7] = '\0';
+   }
+   for(loop=0;loop<NUM_INSERTS;loop++){
+      add_return_code |= addto_hashtable(&table,pointer_list[loop],(void*)(long)loop);
+   }
+   ck_assert_msg(!add_return_code, "Internal error adding to hashtable");
+   int first_broken = -1;
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     int found_val;
+     void *result;
+     find_return_code |= lookup_hashtable(&table,pointer_list[loop],&result);
+     found_val = (int) (long) result;
+     if(found_val!=loop){
+       first_broken = loop;
+       break;
+     }
+   }
+   ck_assert_msg(!find_return_code, "Internal error finding in hashtable");
+   ck_assert_msg(first_broken==-1,"Failed to find item we searched for");
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     remove_return_code |= removefrom_hashtable(&table,pointer_list[loop]);
+   }
+   ck_assert_msg(!remove_return_code, "Internal error removing from hashtable");
+   for(loop=0;loop<NUM_INSERTS;loop++){
+     gotcha_free(pointer_list[loop]);
+   }
+}
+END_TEST
+
+
+
+Suite* gotcha_hash_suite(){
+  Suite* s = suite_create("Gotcha Hashing");
+  TCase* libc_case = tcase_create("Basic tests");
+  tcase_add_test(libc_case, hash_grow_test);
+  suite_add_tcase(s, libc_case);
+  return s;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////Test Launch/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(){
   int num_fails;
@@ -236,7 +343,17 @@ int main(){
   SRunner* libc_runner = srunner_create(libc_suite);
   srunner_run_all(libc_runner, CK_NORMAL);
   num_fails += srunner_ntests_failed(libc_runner);
+  Suite* auxv_suite = gotcha_auxv_suite();
+  SRunner* auxv_runner = srunner_create(auxv_suite);
+  srunner_run_all(auxv_runner, CK_NORMAL);
+  num_fails += srunner_ntests_failed(auxv_runner);
+  Suite* hash_suite = gotcha_hash_suite();
+  SRunner* hash_runner = srunner_create(hash_suite);
+  srunner_run_all(hash_runner, CK_NORMAL);
+  num_fails += srunner_ntests_failed(hash_runner);
   srunner_free(core_runner);
   srunner_free(libc_runner);
+  srunner_free(auxv_runner);
+  srunner_free(hash_runner);
   return num_fails;
 }

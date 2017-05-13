@@ -1,4 +1,8 @@
 add_library(gotcha SHARED gotcha_utils.c gotcha.c gotcha_auxv.c libc_wrappers.c elf_ops.c hash.c tool.c)
+if(GOTCHA_ENABLE_TESTS)
+add_library(gotcha_no_libc SHARED gotcha_utils.c gotcha.c gotcha_auxv.c libc_wrappers.c elf_ops.c hash.c tool.c)
+set_target_properties(gotcha_no_libc PROPERTIES COMPILE_DEFINITIONS "FORCE_NO_LIBC")
+endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gotcha DESTINATION lib)
 add_subdirectory(example)

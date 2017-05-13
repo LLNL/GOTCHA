@@ -15,6 +15,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #ifndef GOTCHA_AUXV_H
 #define GOTCHA_AUXV_H
+
 #include <elf.h>
 #include <link.h>
 #include <stdio.h>
@@ -28,5 +29,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 int is_vdso(struct link_map *map);
 int get_auxv_pagesize();
+
+//Do not use, exposed only for unit testing
+int parse_auxv_contents();
+struct link_map *get_vdso_from_auxv();
+struct link_map *get_vdso_from_aliases();
+struct link_map *get_vdso_from_maps();
+
+
 
 #endif
