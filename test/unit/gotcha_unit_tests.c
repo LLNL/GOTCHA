@@ -364,8 +364,8 @@ START_TEST(vdso_map_test){
 END_TEST
 
 START_TEST(vdso_pagesize_test){
-  int vdso_pagesize = get_auxv_pagesize();
-  ck_assert_msg(vdso_pagesize, "VDSO does not contain page size");
+  int vdso_pagesize = gotcha_getpagesize();
+  ck_assert_msg(vdso_pagesize == getpagesize(), "VDSO does not contain page size");
 }
 END_TEST
 
