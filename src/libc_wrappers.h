@@ -47,7 +47,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define gotcha_mprotect           mprotect
 #define gotcha_read               read
 #define gotcha_memset             memset
-#define gotcha_dbg_printf(A, ...) fprintf(stderr, A, __VA_ARGS__)
+#define gotcha_write              write
+#define gotcha_dbg_printf(A, ...) fprintf(stderr, A, ##__VA_ARGS__)
 pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
 
 #else
@@ -71,11 +72,10 @@ int gotcha_close(int fd);
 int gotcha_mprotect(void *addr, size_t len, int prot);
 ssize_t gotcha_read(int fd, void *buf, size_t count);
 ssize_t gotcha_write(int fd, const void *buf, size_t count);
-int gotcha_int_printf(int fd, const char *format, ...);
 void gotcha_assert_fail(const char *s, const char *file, unsigned int line, const char *function);
 void *gotcha_memset(void *s, int c, size_t n);
 
-#define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, __VA_ARGS__)
+#define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, ##__VA_ARGS__)
 
 #define gotcha_assert(A)                                          \
    do {                                                           \
@@ -84,5 +84,7 @@ void *gotcha_memset(void *s, int c, size_t n);
    } while (0); 
 
 #endif
+
+int gotcha_int_printf(int fd, const char *format, ...);
 
 #endif

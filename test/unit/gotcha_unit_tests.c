@@ -13,8 +13,13 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#define _GNU_SOURCE
+
 #include <link.h>
 #include <check.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "gotcha/gotcha.h"
 #include "testing_lib.h"
 #include "elf_ops.h"
@@ -24,6 +29,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "hash.h"
 #include "gotcha_utils.h"
 #include "gotcha_auxv.h"
+
+#if !defined(STR)
+#define STR(X) STR2(X)
+#define STR2(X) #X
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -228,6 +238,100 @@ START_TEST(gotcha_atoi_test){
 }
 END_TEST
 
+//double_printf calls glibc printf to print a string to a buffer,
+// and calls gotcha_int_printf to print the same string to a fd
+//The fd is the input to a pipe, and test_printf_buffers pulls
+// from the pipe and compares against the glibc buffer.
+#define double_printf(FORMAT, ...)                                        \
+   do {                                                                   \
+      result_libc = snprintf(buffer, sizeof(buffer),                      \
+                             FORMAT, ##__VA_ARGS__);                      \
+      result_gotcha = gotcha_int_printf(pipe_out, FORMAT, ##__VA_ARGS__); \
+      test_printf_buffers(buffer, sizeof(buffer),                         \
+                          pipe_out, pipe_in, FORMAT,                      \
+                          result_libc, result_gotcha);                    \
+   } while (0)
+
+static void test_printf_buffers(char *buffer, int buffer_size,
+                                int pipe_out, int pipe_in, const char *format,
+                                int result_libc, int result_gotcha)
+{
+   char pipe_buffer[4092];
+   int i = 0, result;
+   char zero = 0;
+
+   buffer[buffer_size-1] = '\0';
+   gotcha_write(pipe_out, &zero, 1);
+
+   if (result_libc != result_gotcha) {
+      printf("\"%s\" printf test returned different result %d != %d\n", format, result_libc, result_gotcha);
+      ck_assert_msg(result_libc == result_gotcha, " printf test returned different results\n");
+   }
+
+   do {
+      result = read(pipe_in, pipe_buffer+i, 1);
+      ck_assert_msg(result == 1, "Failed to read from pipe buffer");
+      i++;
+   } while (i < sizeof(pipe_buffer) && pipe_buffer[i-1] != '\0');
+
+   if (gotcha_strcmp(buffer, pipe_buffer) != 0) {
+      fprintf(stderr, "\"%s\" != \"%s\" for printf string \"%s\"\n", buffer, pipe_buffer, format);
+   }
+   ck_assert_msg(gotcha_strcmp(buffer, pipe_buffer) == 0, "Mismatch in printf test");
+}
+
+START_TEST(printf_test){
+   char buffer[4096], *format_str;
+   int pipefds[2], pipe_in, pipe_out, result;
+   int result_libc, result_gotcha;
+
+   result = pipe2(pipefds, O_NONBLOCK);
+   ck_assert_msg(result == 0, "Failed to create test pipe");
+   pipe_in = pipefds[0];
+   pipe_out = pipefds[1];
+
+   double_printf("Hello, World!\n");
+
+#define print_ints(SIGN, MULT, CODE, SIZET)                                                          \
+   double_printf("%hh" CODE " is " STR(SIGN) " char\n", (SIGN char) (10 * MULT));                    \
+   double_printf("%h" CODE " is " STR(SIGN) " short\n", (SIGN short) (1000 * MULT));                 \
+   double_printf("%" CODE " is " STR(SIGN) " int\n", (SIGN int) (1000000 * MULT));                   \
+   double_printf("%l" CODE " is " STR(SIGN) " long\n", (SIGN long) (10000000000L * MULT));           \
+   double_printf("%ll" CODE " is " STR(SIGN) " long long\n", (SIGN long long) (1000000000L * MULT)); \
+   double_printf("%z" CODE " is " STR(SIZET) "\n", (SIZET) (1 * MULT));                              \
+   double_printf("All together: %hh" CODE " %h" CODE " %" CODE " %l" CODE                            \
+                 " %ll" CODE " %z" CODE "\n", (SIGN char) MULT, (SIGN short) MULT,                   \
+                 (SIGN int) MULT, (SIGN long) MULT, (SIGN long long) MULT, (SIZET) MULT)
+
+   print_ints(signed, -5, "d", ssize_t);
+   print_ints(signed, -1, "i", ssize_t);
+   print_ints(signed, 3, "d", ssize_t);
+   print_ints(signed, 2, "i", ssize_t);
+   print_ints(signed, 0, "d", ssize_t);
+   print_ints(unsigned, 1, "u", size_t);
+   print_ints(unsigned, 2, "x", size_t);
+   print_ints(unsigned, 3, "X", size_t);
+   print_ints(unsigned, 0, "u", size_t);
+   double_printf("%p is the address of buffer", buffer);
+
+   double_printf("%s %s%s %s %s %d%s", "I", "am ", "a", "string", "printer.", 3, " is an int\n");
+   double_printf("%s %s %s", "don't interpret ", "%s", " in argument\n");
+   double_printf("Percent sign looks like %%%s\n", " this");
+
+   double_printf("single string of characters: \a\b\f\r\t\v\'\"\?\\\n");
+   double_printf("individual characters %c %c %c %c %c %c %c %c %c %c %c\n", 
+                 '\a', '\b', '\f', '\r', '\t', '\v', '\n', '\'', '\"', '\?', '\\');
+   double_printf("don't interpret escaped chars: \\a\\b\\f\\r\\t\\v\\'\\\"\\?\\\\\\n");
+   double_printf("%c%c%c%c%c%c", 'C', 'h', 'a', 'r', '%', '\n');
+
+   format_str = "%y is not a valid code, but %s is.\n";
+   double_printf(format_str, "%s");
+
+   close(pipe_in);
+   close(pipe_out);
+}
+END_TEST
+
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
   TCase* libc_case = tcase_create("Basic tests");
@@ -239,6 +343,7 @@ Suite* gotcha_libc_suite(){
   tcase_add_test(libc_case, gotcha_memcpy_test);
   tcase_add_test(libc_case, gotcha_strcmp_test);
   tcase_add_test(libc_case, gotcha_atoi_test);
+  tcase_add_test(libc_case, printf_test);
   suite_add_tcase(s, libc_case);
   return s;
 }
@@ -259,8 +364,8 @@ START_TEST(vdso_map_test){
 END_TEST
 
 START_TEST(vdso_pagesize_test){
-  int vdso_pagesize = get_auxv_pagesize();
-  ck_assert_msg(vdso_pagesize, "VDSO does not contain page size");
+  int vdso_pagesize = gotcha_getpagesize();
+  ck_assert_msg(vdso_pagesize == getpagesize(), "VDSO does not contain page size");
 }
 END_TEST
 
