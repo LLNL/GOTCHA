@@ -1,6 +1,11 @@
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 option(GOTCHA_ENABLE_COVERAGE_TESTS "Enable coverage tests" Off)
 project(gotcha)
+
+set(LIBTOOL_INTERFACE 0)
+set(LIBTOOL_REVISION 0)
+set(LIBTOOL_AGE 0)
+
 if(GOTCHA_ENABLE_TESTS)
   enable_testing()
   add_definitions("-DGOTCHA_ENABLE_TESTING")

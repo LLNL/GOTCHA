@@ -1,4 +1,6 @@
 add_library(gotcha SHARED gotcha_utils.c gotcha.c gotcha_auxv.c libc_wrappers.c elf_ops.c hash.c tool.c)
+set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
+set_target_properties(gotcha PROPERTIES VERSION "${LIBTOOL_INTERFACE}.${LIBTOOL_REVISION}.${LIBTOOL_AGE}")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gotcha DESTINATION lib)
 add_subdirectory(example)
