@@ -1,4 +1,3 @@
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-z -Wl,relro -Wl,-z,combreloc,-z,now")
 add_library(stacked_lib1 SHARED lib1.c)
 add_library(stacked_tool1 SHARED tool1.c)
 add_library(stacked_tool2 SHARED tool2.c)
