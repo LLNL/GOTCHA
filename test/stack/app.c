@@ -25,8 +25,6 @@ int main(int argc, char *argv[])
 {
    int result;
 
-   printf("Every stdout print after this line should also appear in %s:\n", OUTPUT_FILE);
-
    result = init_tool1();
    result = init_tool2();
    if (result != 0)
