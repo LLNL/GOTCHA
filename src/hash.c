@@ -82,6 +82,9 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
    size_t i;
 
    newtable.table_size = new_size;
+   newtable.entry_count = 0;
+   newtable.hashfunc = table->hashfunc;
+   newtable.keycmp = table->keycmp;
    newtable.table = (hash_entry_t *) gotcha_malloc(new_size * sizeof(hash_entry_t));
    gotcha_memset(newtable.table, 0, new_size * sizeof(hash_entry_t));
 

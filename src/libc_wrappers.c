@@ -210,10 +210,11 @@ size_t gotcha_strlen(const char *s)
    return i;
 }
 
-static int ulong_to_hexstr(unsigned long num, char *str, int strlen)
+static int ulong_to_hexstr(unsigned long num, char *str, int strlen, int uppercase)
 {
    int len, i;
    unsigned long val;
+   char base_char = uppercase ? 'A' : 'a';
    
    if (num == 0) {
       if (strlen < 2)
@@ -231,7 +232,7 @@ static int ulong_to_hexstr(unsigned long num, char *str, int strlen)
    val = num;
    for (i = 1; i <= len; i++) {
 
-      str[len - i] = (val % 16 <= 9) ? ('0' + val % 16) : ('a' + (val % 16 - 10));
+      str[len - i] = (val % 16 <= 9) ? ('0' + val % 16) : (base_char + (val % 16 - 10));
       val = val / 16;
    }
    return len;
@@ -401,36 +402,14 @@ ssize_t gotcha_read(int fd, void *buf, size_t count)
    return syscall(SYS_read, fd, buf, count);
 }
 
-static const char *add_to_buffer(const char *str, int fd, int *pos, char *buffer, int buffer_size, int *num_printed)
+static const char *add_to_buffer(const char *str, int fd, int *pos, char *buffer, 
+                                 int buffer_size, int *num_printed, int print_percent)
 {
-   int is_escaped = 0;
-   for (; *str && *str != '%'; str++) {
-      if (!is_escaped && *str == '\\') {
-         is_escaped = 1;
-         continue;
-      }
+   for (; *str && (print_percent || *str != '%'); str++) {
       if (*pos >= buffer_size) {
          gotcha_write(fd, buffer, buffer_size);
          *num_printed += buffer_size;
          *pos = 0;
-      }
-      if (is_escaped) {
-         switch (*str) {
-            case 'a': buffer[*pos] = '\a'; break;
-            case 'b': buffer[*pos] = '\b'; break;
-            case 'f': buffer[*pos] = '\f'; break;
-            case 'n': buffer[*pos] = '\n'; break;
-            case 'r': buffer[*pos] = '\r'; break;
-            case 't': buffer[*pos] = '\t'; break;
-            case 'v': buffer[*pos] = '\v'; break;
-            case '\\': buffer[*pos] = '\\'; break;
-            case '\'': buffer[*pos] = '\''; break;
-            case '\"': buffer[*pos] = '\"'; break;
-            case '?': buffer[*pos] = '\?'; break;
-            case '0': buffer[*pos] = '\0'; break;
-            default: buffer[*pos] = *str;
-         }
-         is_escaped = 0;
       }
       else {
          buffer[*pos] = *str;
@@ -452,13 +431,13 @@ int gotcha_int_printf(int fd, const char *format, ...)
 
    va_start(args, format);
    while (*str) {
-      str = add_to_buffer(str, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+      str = add_to_buffer(str, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 0);
       if (!*str) break;
 
       gotcha_assert(*str == '%');
       inc(str);
 
-      char_width = short_width = long_width = long_long_width = 0;
+      char_width = short_width = long_width = long_long_width = size_width = 0;
       if (*str == 'h' && *(str+1) == 'h') {
          char_width = 1;
          inc(str);
@@ -498,12 +477,12 @@ int gotcha_int_printf(int fd, const char *format, ...)
          else
             val = (signed long) va_arg(args, signed int);
          slong_to_str(val, numstr, 64);
-         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
-      else if (*str == 'u' || *str == 'c') {
+      else if (*str == 'u') {
          unsigned long val;
          char numstr[64];
-         if (char_width || *str == 'c')
+         if (char_width)
             val = (unsigned long) (unsigned char) va_arg(args, unsigned int);
          else if (short_width)
             val = (unsigned long) (unsigned short) va_arg(args, unsigned int);
@@ -516,7 +495,7 @@ int gotcha_int_printf(int fd, const char *format, ...)
          else
             val = (unsigned long) va_arg(args, unsigned int);
          ulong_to_str(val, numstr, 64);
-         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
       else if (*str == 'x' || *str == 'X' || *str == 'p') {
          unsigned long val;
@@ -537,23 +516,30 @@ int gotcha_int_printf(int fd, const char *format, ...)
          }
          else {
             val = (unsigned long) va_arg(args, void *);
-            add_to_buffer("0x", fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+            add_to_buffer("0x", fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
          }
-         ulong_to_hexstr(val, numstr, 64);
-         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         ulong_to_hexstr(val, numstr, 64, (*str == 'X'));
+         add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
+      }
+      else if (*str == 'c') {
+         char cbuf[2];
+         cbuf[0] = (unsigned char) va_arg(args, unsigned int);
+         cbuf[1] = '\0';
+         add_to_buffer(cbuf, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
       else if (*str == 's') {
          char *s = (char *) va_arg(args, char *);
-         add_to_buffer(s, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         add_to_buffer(s, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
       else if (*str == '%') {
-         add_to_buffer("%", fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         add_to_buffer("%", fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
       else {
-         char s[2];
-         s[0] = *str;
-         s[1] = '\0';
-         add_to_buffer(s, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed);
+         char s[3];
+         s[0] = '%';
+         s[1] = *str;
+         s[2] = '\0';
+         add_to_buffer(s, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed, 1);
       }
       inc(str);
    }
