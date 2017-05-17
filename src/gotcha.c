@@ -27,7 +27,6 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   signed long result;
   int found = 0, not_found = 0;
   struct gotcha_binding_t *user_bindings = bindings->user_binding;
-
   debug_printf(1, "Looking up exported symbols for %d table entries\n", num_names);
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
     if (is_vdso(lib)) {
@@ -92,17 +91,32 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
   int result;
   binding_ref_t *ref;
   struct gotcha_binding_t *user_binding;
+  
   result = lookup_hashtable(&bindings->binding_hash, name, (void **) &ref);
   if (result != 0)
      return 0;
-
+  
+  void* current_address = (*((void **)(lmap->l_addr + offset)));
+  struct binding_t* binding_iter;
   user_binding = ref->binding->user_binding + ref->index;
+  for(binding_iter = get_bindings(); binding_iter!=NULL;binding_iter=binding_iter->next_binding){
+    if(binding_iter->tool){
+      int user_binding_size = binding_iter->user_binding_size;
+      int loop;
+      for(loop=0;loop<user_binding_size;loop++){
+        if(binding_iter->user_binding[loop].wrapper_pointer==current_address){
+          *(void**)(user_binding->function_address_pointer) = current_address;
+        }
+      } 
+    }
+  }
   (*((void **)(lmap->l_addr + offset))) = user_binding->wrapper_pointer;
+  
+
 
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap), 
                user_binding->wrapper_pointer);
-
   return 0;
 }
 #define MAX(a,b) (a>b?a:b)
