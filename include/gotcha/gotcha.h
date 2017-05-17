@@ -65,6 +65,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  ******************************************************************************
  */
-enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* tool_name) GOTCHA_EXPORT;
+GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* tool_name);
 
 #endif
