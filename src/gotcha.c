@@ -88,7 +88,7 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
 
 int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
                      struct link_map *lmap, binding_t *bindings,
-                     int num_actions) {
+                     int num_actions) GOTCHA_EXPORT {
   int result;
   binding_ref_t *ref;
   struct gotcha_binding_t *user_binding;
