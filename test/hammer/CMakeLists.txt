@@ -14,7 +14,7 @@ set(XSIZE 1)
 set(YSIZE 1)
 
 set(CMAKE_BUILD_TYPE Debug)
-SET(CMAKE_CXX_FLAGS_DEBUG "-O0")
+SET(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
 add_definitions(-DXSIZE=${XSIZE})
 add_definitions(-DYSIZE=${YSIZE})
@@ -30,6 +30,7 @@ add_custom_target(externals.h
         COMMAND ${CMAKE_SOURCE_DIR}/test/hammer/gen_externals_h.sh ${YSIZE} ${XSIZE})
 
 add_executable(hammer hammer.cc)
+add_test(hammer_time_test hammer)
 target_link_libraries(hammer math wrap)
 
 foreach(y RANGE ${YSIZE})
