@@ -1,7 +1,7 @@
 GOTCHA v0.0.1 (alpha)
 ============
 
-[![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/RAJA)
+[![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/GOTCHA)
 [![Coverage](https://img.shields.io/codecov/c/github/LLNL/GOTCHA/master.svg)](https://codecov.io/gh/LLNL/GOTCHA)
 
 
