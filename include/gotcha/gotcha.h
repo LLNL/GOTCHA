@@ -50,6 +50,8 @@ extern "C" {
 
 #define GOTCHA_MAKE_FUNCTION_PTR(name, ret_type, ...) ret_type(*name)(__VA_ARGS__)
 
+#define GOTCHA_EXPORT __attribute__((__visibility__("default")))
+
 /*!
  ******************************************************************************
  *
@@ -66,10 +68,12 @@ extern "C" {
  *
  ******************************************************************************
  */
-enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
+
+GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
 
 #if defined(__cplusplus) 
 }
 #endif
+
 
 #endif
