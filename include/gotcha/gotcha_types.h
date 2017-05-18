@@ -23,6 +23,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 #ifndef GOTCHA_TYPES_H
 #define GOTCHA_TYPES_H
+
+#if defined(__cplusplus) 
+extern "C" {
+#endif
+
 /*!
  * The representation of a GOTCHA action
  * as it passes through the pipeline
@@ -41,4 +46,9 @@ enum gotcha_error_t {
   GOTCHA_FUNCTION_NOT_FOUND, //!< The call looked up a function which could not be found
   GOTCHA_INTERNAL            //!< Internal gotcha error
 };
+
+#if defined(__cplusplus) 
+}
+#endif
+
 #endif
