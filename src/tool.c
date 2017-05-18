@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static tool_t *tools = NULL;
 static binding_t *all_bindings = NULL;
 
-tool_t *create_tool(char *tool_name)
+tool_t *create_tool(const char *tool_name)
 {
    tool_t *newtool = (tool_t *) gotcha_malloc(sizeof(tool_t));
    if (!newtool) {
@@ -35,7 +35,7 @@ tool_t *create_tool(char *tool_name)
    return newtool;
 }
 
-tool_t *get_tool(char *tool_name)
+tool_t *get_tool(const char *tool_name)
 {
    tool_t *t;
    for (t = tools; t; t = t->next_tool) {

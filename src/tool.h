@@ -43,7 +43,7 @@ typedef struct binding_t {
  * tools this will become more important.
  **/
 typedef struct tool_t {
-   char *tool_name;
+   const char *tool_name;
    binding_t *binding;
    struct tool_t *next_tool;
 } tool_t;
@@ -58,8 +58,8 @@ typedef struct binding_ref_t {
    int index;
 } binding_ref_t;
 
-tool_t *create_tool(char *tool_name);
-tool_t *get_tool(char *tool_name);
+tool_t *create_tool(const char *tool_name);
+tool_t *get_tool(const char *tool_name);
 
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size);
 binding_t *get_bindings();

@@ -32,6 +32,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "gotcha/gotcha_types.h"
 
+#if defined(__cplusplus) 
+extern "C" {
+#endif
 
 /*!
  ******************************************************************************
@@ -65,6 +68,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  ******************************************************************************
  */
-GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, char* tool_name);
+
+GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
+
+#if defined(__cplusplus) 
+}
+#endif
+
 
 #endif

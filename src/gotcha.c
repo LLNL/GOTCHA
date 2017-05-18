@@ -106,7 +106,9 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
   return 0;
 }
 #define MAX(a,b) (a>b?a:b)
-GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, char* tool_name){
+
+GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name){
+
   int page_size = gotcha_getpagesize();
   int i;
   enum gotcha_error_t ret_code;
