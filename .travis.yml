@@ -80,6 +80,6 @@ script:
   - mkdir travis-build && cd travis-build
   - cmake -DDEPENDENCIES_PREINSTALLED=ON -DCMAKE_C_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS ../
   - make -j VERBOSE=1
-  - make test 
+  - ctest --verbose
 after_success:
   - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
