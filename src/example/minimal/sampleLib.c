@@ -58,5 +58,5 @@ int retX(int x) { return x; }
 int dogRetX(int x)
 {
   printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n", x);
-  return origRetX ? origRetX(x) : 0;
+  return origRetX ? origRetX(x) + 1 : 0;
 }

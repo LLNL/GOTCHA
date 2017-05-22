@@ -27,6 +27,6 @@ int main()
 {
   sample_init();
   int check_val = retX(9);
-  assert(check_val == 9);
+  assert(check_val == 10);
   return 0;
 }
