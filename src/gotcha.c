@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "elf_ops.h"
 #include "tool.h"
 
+
 int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct link_map *lib;
   struct gotcha_binding_t *binding_iter;
@@ -132,6 +133,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   gotcha_init();
 
   //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
+  
   for (i = 0; i < num_actions; i++) {
     *(void **)(user_bindings[i].function_address_pointer) = NULL;
   }
@@ -175,7 +177,9 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
 
   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
     debug_printf(2, "Looking for wrapped callsites in %s\n", LIB_NAME(lib_iter));
-    FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings, num_actions);
+    if(libraryFilterFunc(lib_iter)){
+      FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings, num_actions);
+    }
   }
 
   ret_code = GOTCHA_SUCCESS;

@@ -19,6 +19,16 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #include <elf.h>
 #include <link.h>
 
+int alwaysTrue(struct link_map* candidate);
+static int (*libraryFilterFunc)(struct link_map*) = alwaysTrue;
+
+void setLibraryFilterFunc(int(*new_func)(struct link_map*));
+void restoreLibraryFilterFunc();
+
+static const char* filter;
+int trueIfNameMatches(struct link_map* target);
+void filterLibrariesByName(const char* nameFilter);
+
 /*!
  ******************************************************************************
  * \def GOTCHA_CHECK_VISIBILITY(sym)

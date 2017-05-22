@@ -50,10 +50,6 @@ int main(int argc, char *argv[])
    int result;
 
    result = gotcha_wrap(funcs, 2, "dlopen_test");
-   if (result != 0) {
-      fprintf(stderr, "ERROR: gotcha_wrap returned error code %d\n", result);
-      return -1;
-   }
 
    libnum = dlopen("libnum.so", RTLD_NOW);
    if (!libnum) {
