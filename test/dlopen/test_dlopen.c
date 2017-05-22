@@ -17,6 +17,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <stdio.h>
 #include "gotcha/gotcha.h"
 
+#define Q(x) #x
+#define QUOTE(x) Q(x)
+
+#ifndef LIB_NAME_RAW
+#define LIB_NAME_RAW libnum.so
+#endif
+
+#define LIB_NAME QUOTE(LIB_NAME_RAW)
 int correct_return_four()
 {
    return 4;
@@ -51,7 +59,7 @@ int main(int argc, char *argv[])
 
    result = gotcha_wrap(funcs, 2, "dlopen_test");
 
-   libnum = dlopen("libnum.so", RTLD_NOW);
+   libnum = dlopen(LIB_NAME, RTLD_NOW);
    if (!libnum) {
       fprintf(stderr, "ERROR: Test failed to dlopen libnum.so\n");
       return -1;
