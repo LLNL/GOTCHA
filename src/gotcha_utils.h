@@ -41,6 +41,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;
 void debug_init();
+void gotcha_init();
 
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \

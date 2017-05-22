@@ -129,7 +129,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   struct link_map *lib_iter;
   tool_t *tool;
 
-  debug_init();
+  gotcha_init();
 
   //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
   for (i = 0; i < num_actions; i++) {

@@ -57,3 +57,12 @@ void debug_init()
 
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
+
+void gotcha_init(){
+   static int gotcha_initialized = 0;
+   if(gotcha_initialized){
+     return;
+   }
+   debug_init();
+}
+
