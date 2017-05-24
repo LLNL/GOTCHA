@@ -4,9 +4,9 @@ set_target_properties(test_dlopen
   PROPERTIES COMPILE_FLAGS "-DLIB_NAME_RAW=\"\"${CMAKE_CURRENT_BINARY_DIR}/libnum.so\"\""
   )
 target_link_libraries(test_dlopen gotcha dl)
-add_test(dlopen test_dlopen)
+gotcha_add_test(dlopen test_dlopen)
+environment_add(dlopen TEST "GOTCHA_DEBUG=3 LIBNUM_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 set_tests_properties(dlopen PROPERTIES
-  ENVIRONMENT "GOTCHA_DEBUG=3 LIBNUM_DIR=${CMAKE_CURRENT_BINARY_DIR}"
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

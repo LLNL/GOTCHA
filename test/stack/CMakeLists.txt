@@ -6,5 +6,5 @@ target_link_libraries(stacked_app gotcha)
 target_link_libraries(stacked_tool1 gotcha)
 target_link_libraries(stacked_tool2 gotcha)
 target_link_libraries(stacked_app stacked_lib1 stacked_tool1 stacked_tool2)
-add_test(test_stacked stacked_app)
+gotcha_add_test(test_stacked stacked_app)
 
