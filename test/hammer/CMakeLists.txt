@@ -30,7 +30,7 @@ add_custom_target(externals.h
         COMMAND ${CMAKE_SOURCE_DIR}/test/hammer/gen_externals_h.sh ${YSIZE} ${XSIZE})
 
 add_executable(hammer hammer.cc)
-add_test(hammer_time_test hammer)
+gotcha_add_test(hammer_time_test hammer)
 target_link_libraries(hammer math wrap)
 
 foreach(y RANGE ${YSIZE})
