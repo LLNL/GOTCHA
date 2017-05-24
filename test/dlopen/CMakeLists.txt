@@ -5,7 +5,7 @@ set_target_properties(test_dlopen
   )
 target_link_libraries(test_dlopen gotcha dl)
 gotcha_add_test(dlopen_test test_dlopen)
-environment_add(dlopen_test TEST "GOTCHA_DEBUG=3 LIBNUM_DIR=${CMAKE_CURRENT_BINARY_DIR}"
-set_tests_properties(dlopen PROPERTIES
+environment_add(dlopen_test TEST "GOTCHA_DEBUG=3 LIBNUM_DIR=${CMAKE_CURRENT_BINARY_DIR}")
+set_tests_properties(dlopen_test PROPERTIES
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
