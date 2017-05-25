@@ -16,25 +16,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "elf_ops.h"
 #include "libc_wrappers.h"
 #include <elf.h>
-int alwaysTrue(struct link_map* candidate){
-  return 1;
-}
 
-void setLibraryFilterFunc(int(*new_func)(struct link_map*)){
-  libraryFilterFunc = new_func;
-}
-void restoreLibraryFilterFunc(){
-  setLibraryFilterFunc(alwaysTrue);
-}
-int trueIfNameMatches(struct link_map* target){
-  int match = (filter) && (target) && (gotcha_strstr(target->l_name, filter) != 0);
-  return match;
-}
-
-void filterLibrariesByName(const char* nameFilter){
-  filter = nameFilter;
-  setLibraryFilterFunc(trueIfNameMatches);
-}
 struct gnu_hash_header {
    uint32_t nbuckets;   //!< The number of buckets to hash symbols into
    uint32_t symndx;     //!< Index of the first symbol accessible via hashtable in the symbol table

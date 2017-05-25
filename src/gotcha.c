@@ -97,9 +97,10 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
   if (result != 0)
      return 0;
   
+  user_binding = ref->binding->user_binding + ref->index;
+
   void* current_address = (*((void **)(lmap->l_addr + offset)));
   struct binding_t* binding_iter;
-  user_binding = ref->binding->user_binding + ref->index;
   for(binding_iter = get_bindings(); binding_iter!=NULL;binding_iter=binding_iter->next_binding){
     if(binding_iter->tool){
       int user_binding_size = binding_iter->user_binding_size;
