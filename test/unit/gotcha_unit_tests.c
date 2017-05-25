@@ -50,6 +50,10 @@ void teardown_infrastructure()
 {
 }
 
+int check_pointer(void* ptr){
+  return ((unsigned int)ptr)!=0;
+}
+
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
 int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
@@ -60,8 +64,8 @@ START_TEST(symbol_prep_test)
     { "main", &dummy_main, &my_main  }
   };
   struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
-  ck_assert_msg(get_bindings(),"get_bindings shows no bindings");
-  ck_assert_msg(get_tool_bindings(new_tool),"couldn't get bindings for created tool");
+  ck_assert_msg(check_pointer(get_bindings()),"get_bindings shows no bindings");
+  ck_assert_msg(check_pointer(get_tool_bindings(new_tool)),"couldn't get bindings for created tool");
   gotcha_prepare_symbols(internal_bindings,1);
   ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
 }
