@@ -1,1 +1,6 @@
 *.sw*
+**/.envrc
+.envrc
+build
+tags
+**/tags
