@@ -12,17 +12,7 @@ for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
-#ifndef GOTCHA_LIBRARY_FILTERS_H
-#define GOTCHA_LIBRARY_FILTERS_H
-#include <link.h>
-#include "gotcha_utils.h"
-
-int alwaysTrue(struct link_map* candidate KNOWN_UNUSED);
-static int (*libraryFilterFunc)(struct link_map*) = alwaysTrue;
-
-static const char* filter;
-int trueIfNameMatches(struct link_map* target);
-void filterLibrariesByName(const char* nameFilter);
-void setLibraryFilterFunc(int(*new_func)(struct link_map*));
-void restoreLibraryFilterFunc();
+#ifndef GOTCHA_TOOL2_H
+#define GOTCHA_TOOL2_H
+int init_tool2();
 #endif

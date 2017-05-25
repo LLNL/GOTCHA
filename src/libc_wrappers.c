@@ -324,9 +324,9 @@ pid_t gotcha_gettid()
    return syscall(SYS_gettid);
 }
 
-int gotcha_getpagesize()
+unsigned int gotcha_getpagesize()
 {
-   static int pagesz = 0;
+   static unsigned int pagesz = 0;
    if (pagesz)
       return pagesz;
 
@@ -553,7 +553,7 @@ int gotcha_int_printf(int fd, const char *format, ...)
 
 void *gotcha_memset(void *s, int c, size_t n)
 {
-   int i;
+   size_t i;
    unsigned char byte = (unsigned char) c;
    for (i = 0; i < n; i++) {
       ((unsigned char *) s)[i] = byte;

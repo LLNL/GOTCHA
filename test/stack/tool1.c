@@ -15,6 +15,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "gotcha/gotcha_types.h"
 #include "gotcha/gotcha.h"
+#include "tool1.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

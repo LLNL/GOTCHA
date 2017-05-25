@@ -44,7 +44,7 @@ public:
 template <int A>
 class MultChecker<A, 0> {
 public:
-   static int doCheck(bool is_neg) {
+   static int doCheck(bool is_neg __attribute__((unused))) {
       return Mult<A, 0>::math() == 0;
    }
 };

@@ -21,10 +21,8 @@ void* dlopen_wrapper(const char* filename, int flags){
   return handle;
 }
 void* dlsym_wrapper(void* handle, const char* symbol_name){
-  int found = 0;
   struct binding_t* tool_iter = get_bindings();
   for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
-    struct gotcha_binding_t* user_bindings;
     int loop = 0;
     for(loop=0;loop<tool_iter->user_binding_size;loop++){
       if(gotcha_strcmp(tool_iter->user_binding[loop].name,symbol_name)==0){

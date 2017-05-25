@@ -14,7 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "library_filters.h"
 #include "libc_wrappers.h"
-int alwaysTrue(struct link_map* candidate){
+int alwaysTrue(struct link_map* candidate KNOWN_UNUSED){
   return 1;
 }
 

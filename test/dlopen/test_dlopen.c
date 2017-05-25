@@ -49,7 +49,7 @@ struct gotcha_binding_t funcs[] = {
    { "return_five", correct_return_five, &buggy_return_five }
 };
 
-int main(int argc, char *argv[])
+int main()
 {
    void *libnum;
    int (*retfour)(void);
@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
    int result;
 
    result = gotcha_wrap(funcs, 2, "dlopen_test");
+   if(result != GOTCHA_FUNCTION_NOT_FOUND){
+     fprintf(stderr, "GOTCHA should have failed to find a function, but found it\n");
+     return -1;
+   }
 
    libnum = dlopen(LIB_NAME, RTLD_NOW);
    if (!libnum) {

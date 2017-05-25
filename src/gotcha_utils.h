@@ -37,6 +37,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #include <link.h>
 #include <string.h>
 
+#define KNOWN_UNUSED __attribute__((unused))
 
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;

@@ -52,7 +52,7 @@ void teardown_infrastructure()
 
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
-int dummy_main(int argc, char* argv[]){return 4;}
+int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
 START_TEST(symbol_prep_test)
 {
   int(*my_main)(int argc, char* argv[]) = 0;
@@ -257,7 +257,7 @@ static void test_printf_buffers(char *buffer, int buffer_size,
                                 int result_libc, int result_gotcha)
 {
    char pipe_buffer[4092];
-   int i = 0, result;
+   unsigned long i = 0, result;
    char zero = 0;
 
    buffer[buffer_size-1] = '\0';

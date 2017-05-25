@@ -49,7 +49,7 @@ tool_t *get_tool(const char *tool_name)
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size)
 {
    binding_t *newbinding;
-   binding_ref_t *ref_table;
+   binding_ref_t *ref_table = NULL;
    int result, i;
 
    newbinding = (binding_t *) gotcha_malloc(sizeof(binding_t));

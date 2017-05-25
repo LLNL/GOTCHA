@@ -86,9 +86,8 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   return 0;
 }
 
-int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
-                     struct link_map *lmap, binding_t *bindings,
-                     int num_actions) {
+int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
+                     struct link_map *lmap, binding_t *bindings) {
   int result;
   binding_ref_t *ref;
   struct gotcha_binding_t *user_binding;
@@ -125,7 +124,7 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name){
 
-  int page_size = gotcha_getpagesize();
+  unsigned int page_size = gotcha_getpagesize();
   int i;
   enum gotcha_error_t ret_code;
   struct link_map *lib_iter;
@@ -179,7 +178,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
     debug_printf(2, "Looking for wrapped callsites in %s\n", LIB_NAME(lib_iter));
     if(libraryFilterFunc(lib_iter)){
-      FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings, num_actions);
+      FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings);
     }
   }
 

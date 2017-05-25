@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <sys/stat.h>
 
 int is_vdso(struct link_map *map);
-int get_auxv_pagesize();
+unsigned int get_auxv_pagesize();
 
 //Do not use, exposed only for unit testing
 int parse_auxv_contents();

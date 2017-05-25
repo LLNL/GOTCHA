@@ -15,13 +15,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include <stdio.h>
 #include <string.h>
+#include "tool1.h"
+#include "tool2.h"
+#include "lib1.h"
 
 extern int init_autotee(char *filename);
 extern int close_autotee();
 
 #define OUTPUT_FILE "tee.out"
 
-int main(int argc, char *argv[])
+int main()
 {
    int result;
 
