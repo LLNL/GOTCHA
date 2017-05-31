@@ -58,7 +58,7 @@ void *gotcha_realloc(void* buffer, size_t size);
 void gotcha_free(void* free_me);
 void gotcha_memcpy(void* dest, void* src, size_t size);
 int gotcha_strncmp(const char* in_one, const char* in_two, int max_length);
-const char *gotcha_strstr(const char* searchIn,const char* searchFor);
+char *gotcha_strstr(const char* searchIn,const char* searchFor);
 int gotcha_strcmp(const char* in_one, const char* in_two);
 char *gotcha_getenv(const char *env);
 pid_t gotcha_getpid();

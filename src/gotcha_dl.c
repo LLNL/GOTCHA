@@ -3,6 +3,9 @@
 #include "libc_wrappers.h"
 #include "elf_ops.h"
 
+static void*(*orig_dlopen)(const char* filename, int flags);
+static void*(*orig_dlsym)(void* handle, const char* name);
+
 void* dlopen_wrapper(const char* filename, int flags){
   void* handle = orig_dlopen(filename,flags);
   filterLibrariesByName("libdl");
@@ -31,4 +34,12 @@ void* dlsym_wrapper(void* handle, const char* symbol_name){
     }
   }
   return orig_dlsym(handle,symbol_name);
+}
+
+void handle_libdl(){
+  static struct gotcha_binding_t dl_binds[] = {
+    {"dlopen", dlopen_wrapper, &orig_dlopen},
+    {"dlsym", dlsym_wrapper, &orig_dlsym}
+  };     
+  gotcha_wrap(dl_binds, 2, "gotcha");
 }

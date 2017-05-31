@@ -60,13 +60,6 @@ void debug_init()
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
 
-void handle_libdl(){
-  static struct gotcha_binding_t dl_binds[] = {
-    {"dlopen", dlopen_wrapper, &orig_dlopen},
-    {"dlsym", dlsym_wrapper, &orig_dlsym}
-  };     
-  gotcha_wrap(dl_binds, 2, "gotcha");
-}
 
 
 void gotcha_init(){

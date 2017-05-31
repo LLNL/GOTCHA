@@ -177,7 +177,7 @@ int gotcha_strcmp(const char *in_one, const char *in_two)
   }
 }
 
-const char *gotcha_strstr(const char *searchIn, const char *searchFor)
+char *gotcha_strstr(const char *searchIn, const char *searchFor)
 {
    int i, j;
    if (!searchFor[0])
@@ -188,7 +188,7 @@ const char *gotcha_strstr(const char *searchIn, const char *searchFor)
          continue;
       for (j = 1; ; j++) {
          if (!searchFor[j])
-            return searchFor + i;
+            return (char*)(searchFor + i);
          if (!searchIn[i+j])
             return NULL;
          if (searchFor[j] != searchIn[i+j])
