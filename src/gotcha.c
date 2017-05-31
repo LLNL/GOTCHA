@@ -141,7 +141,25 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
     INIT_DYNAMIC(lib_iter);
     if(got){
-      int res = gotcha_mprotect(BOUNDARY_BEFORE(got,page_size),MAX(rel_count*rel_size,page_size),PROT_WRITE|PROT_READ|PROT_EXEC);
+      size_t protect_size = MAX(rel_count * rel_size, page_size);
+      if(protect_size%page_size){
+        protect_size += page_size -  ((protect_size) %page_size);
+      }
+      ElfW(Addr) prot_address = BOUNDARY_BEFORE(got,(ElfW(Addr))page_size);
+      //printf("Writing %p, %zu bytes, page size %d remainder is %lx\n",prot_address,protect_size, page_size,((size_t)BOUNDARY_BEFORE(got,page_size)%page_size));
+      int res = gotcha_mprotect((void*)prot_address,protect_size,PROT_READ | PROT_WRITE | PROT_EXEC );
+      if(!res){
+        printf("Fuuuu\n");
+      }
+      if(errno==EACCES){
+        printf("ACCESS\n");
+      }
+      else if(errno==EINVAL){
+        printf("INVALID\n");
+      }
+      else if(errno==ENOMEM){
+        printf("CAN'T ALLOCATE\n");
+      }
       if(!res){
         debug_printf(1, "GOTCHA attempted to mark the GOT table as writable and was unable to do so, calls to wrapped functions will likely fail\n");
       }

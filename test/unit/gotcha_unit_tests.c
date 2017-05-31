@@ -51,7 +51,7 @@ void teardown_infrastructure()
 }
 
 int check_pointer(void* ptr){
-  return ((unsigned int)ptr)!=0;
+  return ((size_t)ptr)!=0;
 }
 
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);

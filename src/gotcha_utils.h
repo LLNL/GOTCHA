@@ -97,7 +97,7 @@ do {                                                       \
  ******************************************************************************
  */
 #define BOUNDARY_BEFORE(ptr, pagesize) \
-  (void*)(((ElfW(Addr))ptr) & (-pagesize))
+  (ElfW(Addr))(((ElfW(Addr))ptr) &(-pagesize))
 
 
 int debug_print(struct link_map *libc, char *filter);
