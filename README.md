@@ -46,7 +46,7 @@ make install
   struct gotcha_binding_t wrap_actions [] = {
     { "puts", puts_wrapper, &wrappee_puts },
     { "fputs", fputs_wrapper, &wrappee_fputs },
-  } 
+  };
   int init_mytool(){
     gotcha_wrap(wrap_actions, sizeof(wrap_actions)/sizeof(struct gotcha_binding_t), "my_tool_name");
   }
