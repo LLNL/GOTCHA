@@ -1,4 +1,4 @@
-GOTCHA v0.0.1 (alpha)
+GOTCHA v0.0.2 (alpha)
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/GOTCHA)
