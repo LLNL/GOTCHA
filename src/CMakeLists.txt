@@ -13,5 +13,6 @@ set_target_properties(gotcha_no_libc PROPERTIES LINK_FLAGS "-fvisibility=${DEFAU
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gotcha DESTINATION lib EXPORT gotcha)
+install(TARGETS gotcha DESTINATION lib EXPORT gotcha) 
+install(EXPORT gotcha DESTINATION cmake/gotcha) 
 add_subdirectory(example)
