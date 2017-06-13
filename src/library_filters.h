@@ -18,11 +18,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha_utils.h"
 
 int alwaysTrue(struct link_map* candidate KNOWN_UNUSED);
-static int (*libraryFilterFunc)(struct link_map*) = alwaysTrue;
+extern int (*libraryFilterFunc)(struct link_map*);
 
 static const char* filter;
 int trueIfNameMatches(struct link_map* target);
+int trueIfLast(struct link_map* target);
 void filterLibrariesByName(const char* nameFilter);
+void onlyFilterLast();
 void setLibraryFilterFunc(int(*new_func)(struct link_map*));
 void restoreLibraryFilterFunc();
 #endif

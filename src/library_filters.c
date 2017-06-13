@@ -14,6 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "library_filters.h"
 #include "libc_wrappers.h"
+int (*libraryFilterFunc)(struct link_map*) = alwaysTrue;
 int alwaysTrue(struct link_map* candidate KNOWN_UNUSED){
   return 1;
 }
@@ -21,6 +22,14 @@ int alwaysTrue(struct link_map* candidate KNOWN_UNUSED){
 int trueIfNameMatches(struct link_map* target){
   int match = (filter) && (target) && (gotcha_strstr(target->l_name, filter) != 0);
   return match;
+}
+int trueIfLast(struct link_map* target){
+  int ret = (target->l_next) ? 0 : 1;
+  printf("%s %s\n", target->l_name, ret ? "Yes" : "No");
+  return ret;
+}
+void onlyFilterLast(){
+  setLibraryFilterFunc(trueIfLast);
 }
 void setLibraryFilterFunc(int(*new_func)(struct link_map*)){
   libraryFilterFunc = new_func;
