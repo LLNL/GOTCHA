@@ -23,6 +23,14 @@ struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
   }
   return rev_builder;
 }
+void free_reverse_iterator(struct rev_iter* free_me){
+  struct rev_iter* next;
+  while(free_me){
+    next = free_me->next;
+    free(free_me);
+    free_me = next;
+  }
+}
 void* dlopen_wrapper(const char* filename, int flags){
   void* handle = orig_dlopen(filename,flags);
   struct binding_t* tool_iter = get_bindings();
@@ -44,11 +52,13 @@ void* dlsym_wrapper(void* handle, const char* symbol_name){
       int loop = 0;
       for(loop=0;loop<tool_iter->user_binding_size;loop++){
         if(gotcha_strcmp(tool_iter->user_binding[loop].name,symbol_name)==0){
+          free_reverse_iterator(rev);
           return tool_iter->user_binding[loop].wrapper_pointer;
         }
       }
     }
   }
+  free_reverse_iterator(rev);
   return orig_dlsym(handle,symbol_name);
 }
 
