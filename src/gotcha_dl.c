@@ -5,10 +5,6 @@
 
 static void*(*orig_dlopen)(const char* filename, int flags);
 static void*(*orig_dlsym)(void* handle, const char* name);
-struct rev_iter{
-  struct binding_t* data;
-  void* next;
-};
 struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
   struct rev_iter* rev_builder = (struct rev_iter*)malloc(sizeof(struct rev_iter));
   rev_builder->next = NULL;
@@ -35,6 +31,9 @@ void* dlopen_wrapper(const char* filename, int flags){
   void* handle = orig_dlopen(filename,flags);
   struct binding_t* tool_iter = get_bindings();
   struct binding_t* iter_helper = NULL;
+  /**
+   * The dlopen'ed file is added to the end of the link map. We only have to overwrite symbols in it, and so we only look there
+   */
   onlyFilterLast();
   for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
       gotcha_wrap(tool_iter->user_binding,tool_iter->user_binding_size,tool_iter->tool->tool_name);

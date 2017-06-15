@@ -100,6 +100,11 @@ do {                                                       \
   (ElfW(Addr))(((ElfW(Addr))ptr) &(-pagesize))
 
 
+struct rev_iter{
+  struct binding_t* data;
+  void* next;
+};
+
 int debug_print(struct link_map *libc, char *filter);
 
 #endif
