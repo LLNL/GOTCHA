@@ -5,6 +5,8 @@
 #include "elf_ops.h"
 #include <dlfcn.h>
 
+void* _dl_sym(void* handle, const char* name, void* where);
+
 static void*(*orig_dlopen)(const char* filename, int flags);
 static void*(*orig_dlsym)(void* handle, const char* name);
 struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
