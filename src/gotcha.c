@@ -21,6 +21,23 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "elf_ops.h"
 #include "tool.h"
 
+static void writeAddress(void* write, void* value){
+#if defined(__powerpc)
+#else
+  *(void**)write = value;
+#endif
+}
+
+static void** getBindingAddressPointer(struct gotcha_binding_t* in){
+#if defined(__powerpc)
+#else
+  return (void**)in->function_address_pointer;
+#endif
+}
+
+static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
+  writeAddress(getBindingAddressPointer(in), value);
+}
 
 int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct link_map *lib;
@@ -42,7 +59,7 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
     int binding_check = 0;
     for (binding_check = 0, binding_iter = user_bindings; binding_check < num_names;
          binding_iter++, binding_check++) {
-      if (*(void **)(binding_iter->function_address_pointer) != 0x0) {
+      if (*getBindingAddressPointer(binding_iter) != 0x0) {
         continue;
       }
 
@@ -76,8 +93,7 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
                    binding_iter->name, LIB_NAME(lib),
                    symtab[result].st_value + lib->l_addr);
 
-      *(void **)(binding_iter->function_address_pointer) =
-         (void *)(symtab[result].st_value + lib->l_addr);
+      setBindingAddressPointer(binding_iter,(void *)(symtab[result].st_value + lib->l_addr)); 
       found++;
     }
   }
@@ -106,14 +122,12 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
       int loop;
       for(loop=0;loop<user_binding_size;loop++){
         if(binding_iter->user_binding[loop].wrapper_pointer==current_address){
-          *(void**)(user_binding->function_address_pointer) = current_address;
+          setBindingAddressPointer(user_binding,current_address);
         }
       } 
     }
   }
-  (*((void **)(lmap->l_addr + offset))) = user_binding->wrapper_pointer;
-  
-
+  writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
 
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap), 
@@ -135,7 +149,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
   
   for (i = 0; i < num_actions; i++) {
-    *(void **)(user_bindings[i].function_address_pointer) = NULL;
+    setBindingAddressPointer(&user_bindings[i], NULL);
   }
 
   for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
@@ -189,7 +203,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
 
   ret_code = GOTCHA_SUCCESS;
   for(i = 0; i<num_actions;i++){
-    if(*(void**)(user_bindings[i].function_address_pointer)==0){
+    if(*getBindingAddressPointer(&user_bindings[i]) ==NULL ){
        debug_printf(1, "Returning GOTCHA_FUNCTION_NOT_FOUND from gotcha_wrap" 
                     "because of entry %d\n", i);
       ret_code = GOTCHA_FUNCTION_NOT_FOUND;
