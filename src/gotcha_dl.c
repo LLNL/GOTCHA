@@ -1,7 +1,9 @@
+#define _GNU_SOURCE
 #include "gotcha_dl.h"
 #include "tool.h"
 #include "libc_wrappers.h"
 #include "elf_ops.h"
+#include <dlfcn.h>
 
 static void*(*orig_dlopen)(const char* filename, int flags);
 static void*(*orig_dlsym)(void* handle, const char* name);
@@ -11,7 +13,6 @@ struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
   struct rev_iter* rever;
   struct binding_t* tool_iter = in;
   for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
-    printf("Testing print %s\n",tool_iter->tool->tool_name);
     rev_builder->data = tool_iter;
     rever =  (struct rev_iter*)malloc(sizeof(struct rev_iter));
     rever->next = rev_builder;
@@ -42,6 +43,9 @@ void* dlopen_wrapper(const char* filename, int flags){
   return handle;
 }
 void* dlsym_wrapper(void* handle, const char* symbol_name){
+  if(handle == RTLD_NEXT){
+    return _dl_sym(RTLD_NEXT, symbol_name ,__builtin_return_address(0));
+  }
   struct binding_t* tool_iter = get_bindings();
   // TODO: free this chain
   struct rev_iter* rev = get_reverse_tool_iterator(tool_iter);
@@ -68,3 +72,4 @@ void handle_libdl(){
   };     
   gotcha_wrap(dl_binds, 2, "gotcha");
 }
+#undef _GNU_SOURCE

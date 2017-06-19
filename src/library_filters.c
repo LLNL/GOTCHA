@@ -25,7 +25,6 @@ int trueIfNameMatches(struct link_map* target){
 }
 int trueIfLast(struct link_map* target){
   int ret = (target->l_next) ? 0 : 1;
-  printf("%s %s\n", target->l_name, ret ? "Yes" : "No");
   return ret;
 }
 void onlyFilterLast(){
