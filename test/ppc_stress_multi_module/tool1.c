@@ -21,9 +21,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <string.h>
 #include <stdarg.h>
 
-extern int storage1test = 5;
-static int storage2test = 5;
-int storage3test = 5;
+static int storage1test = 10;
+int storage2test = 5;
 
 static int retX_wrapper(int x);
 
@@ -36,7 +35,7 @@ struct gotcha_binding_t iofuncs[] = {
 
 int retX_wrapper(int x){
   printf("In tool1 wrapper, calling %p\n", origRetX);
-  return origRetX ? (origRetX(x) + storage1test + storage2test + storage3test) : 0;
+  return origRetX ? (origRetX(x) + storage1test + storage2test ) : 0;
 }
 
 int init_tool1()
