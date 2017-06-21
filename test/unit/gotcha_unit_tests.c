@@ -34,6 +34,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define STR(X) STR2(X)
 #define STR2(X) #X
 #endif
+TCase* configured_case_create(const char* name){
+  TCase* ccase = tcase_create(name);
+  tcase_set_timeout(ccase, 100.0);
+  return ccase;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +111,7 @@ START_TEST(bad_lookup_test){
 END_TEST
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
-  TCase* core_case = tcase_create("Wrapping");
+  TCase* core_case = configured_case_create("Wrapping");
   tcase_add_checked_fixture(core_case, setup_infrastructure, teardown_infrastructure);
   tcase_add_test(core_case, symbol_prep_test);
   tcase_add_test(core_case, symbol_wrap_test);
@@ -338,7 +343,7 @@ END_TEST
 
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, debug_print_test);
   tcase_add_test(libc_case, gotcha_malloc_test);
   tcase_add_test(libc_case, gotcha_free_test);
@@ -375,7 +380,7 @@ END_TEST
 
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
   tcase_add_test(libc_case, vdso_pagesize_test);
   suite_add_tcase(s, libc_case);
@@ -431,7 +436,7 @@ END_TEST
 
 Suite* gotcha_hash_suite(){
   Suite* s = suite_create("Gotcha Hashing");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, hash_grow_test);
   suite_add_tcase(s, libc_case);
   return s;
