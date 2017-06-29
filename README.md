@@ -1,4 +1,4 @@
-GOTCHA v0.0.1 (alpha)
+GOTCHA v0.0.2 (alpha)
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/GOTCHA)
@@ -46,7 +46,7 @@ make install
   struct gotcha_binding_t wrap_actions [] = {
     { "puts", puts_wrapper, &wrappee_puts },
     { "fputs", fputs_wrapper, &wrappee_fputs },
-  } 
+  };
   int init_mytool(){
     gotcha_wrap(wrap_actions, sizeof(wrap_actions)/sizeof(struct gotcha_binding_t), "my_tool_name");
   }
@@ -61,7 +61,10 @@ make install
 the library was installed (default is <that_prefix>/lib) to your library search directories (-L...), and link
 libgotcha.so (-lgotcha) with your tool. Very often this becomes "add -lgotcha to your link line," and nicer CMake integration is coming down the pipe.
 
-That should represent all the work your application needs to do to use Gotcha
+A more advanced example can be seen in the [GOTCHA-tracer](https://github.com/llnl/GOTCHA-tracer) project.
+This example shows how to implement a simple tracer with GOTCHA, including linking to GOTCHA through CMake and testing GOTCHA through direct invocation and using `LD_PRELOAD`.
+
+That should represent all the work your application needs to do to use Gotcha.
 
 Contact/Legal
 -----------

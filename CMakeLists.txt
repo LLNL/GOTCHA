@@ -1,10 +1,13 @@
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 option(GOTCHA_ENABLE_COVERAGE_TESTS "Enable coverage tests" Off)
 project(gotcha)
+include(CheckCXXCompilerFlag)
+include(cmake/gotcha.cmake)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 
 set(LIBTOOL_INTERFACE 0)
 set(LIBTOOL_REVISION 0)
-set(LIBTOOL_AGE 0)
+set(LIBTOOL_AGE 1)
 
 set(DEFAULT_SYMBOL_VISIBILITY hidden)
 
@@ -22,4 +25,5 @@ add_subdirectory(include)
 add_subdirectory(src)
 if(GOTCHA_ENABLE_TESTS)
 add_subdirectory(test)
+setup_coverage_target()
 endif()
