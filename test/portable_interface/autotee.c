@@ -37,12 +37,23 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static int tee_fd = -1;
 static FILE *tee_FILE = NULL;
 
+// Portability doc
+// Historically, Gotcha would overwrite function pointers (orig_fputs)
+// which you would call to get the underlying function you're wrapping ("real_fputs")
+// We're playing with this idea, so we introduce a typedef to hide whether gotcha
+// operates on pointers or indices
 typedef void* gotcha_index_t;
 
+// Portability doc
+// At the end of the day, however, you're going to need a function pointer
+// Here we have a function which you can use to get from the index type
+// gotcha plays with to the function pointer you want to call
 void* gotcha_func_pointer_for_index(gotcha_index_t in){
   return in;
 }
 
+// Portability doc
+// For each function you want to wrap, have a gotcha index type for it
 static gotcha_index_t orig_printf_index;
 static gotcha_index_t orig_fprintf_index;
 static gotcha_index_t orig_vfprintf_index;
@@ -52,6 +63,8 @@ static gotcha_index_t orig_puts_index;
 static gotcha_index_t orig_fputs_index;
 static gotcha_index_t orig_fwrite_index;
 
+// Portability doc
+// Ye auld function pointers
 static int (*orig_printf)(const char *, ...);
 static int (*orig_fprintf)(FILE *, const char *, ...);
 static int (*orig_vfprintf)(FILE *, const char *, va_list);
@@ -61,6 +74,8 @@ static int (*orig_puts)(const char *);
 static int (*orig_fputs)(const char *, FILE *);
 static int (*orig_fwrite)(const void *, size_t, size_t, FILE *);
 
+// Portability doc
+// Forward declarations of the wrapper functions you plan to use
 static int printf_wrapper(const char *format, ...);
 static int fprintf_wrapper(FILE *stream, const char *format, ...);
 static int vfprintf_wrapper(FILE *stream, const char *str, va_list args);
@@ -70,6 +85,9 @@ static int puts_wrapper(const char *str);
 static int fputs_wrapper(const char *str, FILE *f);
 static int fwrite_wrapper(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 
+// Portability doc
+// Note that the third entry in these trios are now *indices*, not *function pointers.*
+// This protects you from interface changes
 #define NUM_IOFUNCS 8
 struct gotcha_binding_t iofuncs[] = {
    { "printf", printf_wrapper, &orig_printf_index },
@@ -116,7 +134,11 @@ static int printf_wrapper(const char *format, ...)
    int result;
    va_list args, args2;
    va_start(args, format);
-
+   // Portability doc
+   // Where you would have just called "orig_vprintf" in earlier interfaces,
+   // here you insert a call to get that function pointer from the index
+   // you got earlier. You do this for any call to a function wrapped with
+   // Gotcha
    orig_vprintf = gotcha_func_pointer_for_index(orig_vprintf_index);
    orig_vfprintf = gotcha_func_pointer_for_index(orig_vfprintf_index);
    if (tee_FILE) {
