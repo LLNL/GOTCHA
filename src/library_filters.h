@@ -13,29 +13,21 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#ifndef GOTCHA_AUXV_H
-#define GOTCHA_AUXV_H
+// TODO: Determine whether this interface should stay on in this form
 
-#include <elf.h>
+#ifndef GOTCHA_LIBRARY_FILTERS_H
+#define GOTCHA_LIBRARY_FILTERS_H
 #include <link.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "gotcha_utils.h"
 
-int is_vdso(struct link_map *map);
-unsigned int get_auxv_pagesize();
+int alwaysTrue(struct link_map* candidate KNOWN_UNUSED);
+extern int (*libraryFilterFunc)(struct link_map*);
 
-//Do not use, exposed only for unit testing
-int parse_auxv_contents();
-struct link_map *get_vdso_from_auxv();
-struct link_map *get_vdso_from_aliases();
-struct link_map *get_vdso_from_maps();
-
-
-
+static const char* filter;
+int trueIfNameMatches(struct link_map* target);
+int trueIfLast(struct link_map* target);
+void filterLibrariesByName(const char* nameFilter);
+void onlyFilterLast();
+void setLibraryFilterFunc(int(*new_func)(struct link_map*));
+void restoreLibraryFilterFunc();
 #endif

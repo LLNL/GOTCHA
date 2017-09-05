@@ -34,6 +34,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define STR(X) STR2(X)
 #define STR2(X) #X
 #endif
+TCase* configured_case_create(const char* name){
+  TCase* ccase = tcase_create(name);
+  tcase_set_timeout(ccase, 100.0);
+  return ccase;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -50,9 +55,13 @@ void teardown_infrastructure()
 {
 }
 
+int check_pointer(void* ptr){
+  return ((ElfW(Addr))ptr)!=0;
+}
+
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
-int dummy_main(int argc, char* argv[]){return 4;}
+int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
 START_TEST(symbol_prep_test)
 {
   int(*my_main)(int argc, char* argv[]) = 0;
@@ -60,8 +69,8 @@ START_TEST(symbol_prep_test)
     { "main", &dummy_main, &my_main  }
   };
   struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
-  ck_assert_msg(get_bindings(),"get_bindings shows no bindings");
-  ck_assert_msg(get_tool_bindings(new_tool),"couldn't get bindings for created tool");
+  ck_assert_msg(check_pointer(get_bindings()),"get_bindings shows no bindings");
+  ck_assert_msg(check_pointer(get_tool_bindings(new_tool)),"couldn't get bindings for created tool");
   gotcha_prepare_symbols(internal_bindings,1);
   ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
 }
@@ -102,7 +111,7 @@ START_TEST(bad_lookup_test){
 END_TEST
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
-  TCase* core_case = tcase_create("Wrapping");
+  TCase* core_case = configured_case_create("Wrapping");
   tcase_add_checked_fixture(core_case, setup_infrastructure, teardown_infrastructure);
   tcase_add_test(core_case, symbol_prep_test);
   tcase_add_test(core_case, symbol_wrap_test);
@@ -257,7 +266,7 @@ static void test_printf_buffers(char *buffer, int buffer_size,
                                 int result_libc, int result_gotcha)
 {
    char pipe_buffer[4092];
-   int i = 0, result;
+   unsigned long i = 0, result;
    char zero = 0;
 
    buffer[buffer_size-1] = '\0';
@@ -334,7 +343,7 @@ END_TEST
 
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, debug_print_test);
   tcase_add_test(libc_case, gotcha_malloc_test);
   tcase_add_test(libc_case, gotcha_free_test);
@@ -371,7 +380,7 @@ END_TEST
 
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
   tcase_add_test(libc_case, vdso_pagesize_test);
   suite_add_tcase(s, libc_case);
@@ -427,7 +436,7 @@ END_TEST
 
 Suite* gotcha_hash_suite(){
   Suite* s = suite_create("Gotcha Hashing");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, hash_grow_test);
   suite_add_tcase(s, libc_case);
   return s;

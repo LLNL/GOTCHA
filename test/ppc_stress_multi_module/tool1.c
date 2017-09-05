@@ -13,29 +13,40 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#ifndef GOTCHA_AUXV_H
-#define GOTCHA_AUXV_H
-
-#include <elf.h>
-#include <link.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+#include "gotcha/gotcha_types.h"
+#include "gotcha/gotcha.h"
+#include "tool1.h"
 #include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 
-int is_vdso(struct link_map *map);
-unsigned int get_auxv_pagesize();
+static int storage1test = 10;
+int storage2test = 5;
 
-//Do not use, exposed only for unit testing
-int parse_auxv_contents();
-struct link_map *get_vdso_from_auxv();
-struct link_map *get_vdso_from_aliases();
-struct link_map *get_vdso_from_maps();
+static int retX_wrapper(int x);
 
+static int(*origRetX)(int) = 0x0;
 
+#define NUM_IOFUNCS 1
+struct gotcha_binding_t iofuncs[] = {
+   { "retX",retX_wrapper,&origRetX}
+};
 
-#endif
+int retX_wrapper(int x){
+  printf("In tool1 wrapper, calling %p\n", origRetX);
+  return origRetX ? (origRetX(x) + storage1test + storage2test ) : 0;
+}
+
+int init_tool1()
+{
+   enum gotcha_error_t result;
+
+   result = gotcha_wrap(iofuncs, NUM_IOFUNCS, "tool1");
+   if (result != GOTCHA_SUCCESS) {
+      fprintf(stderr, "gotcha_wrap returned %d\n", (int) result);
+      return -1;
+   }
+   return 0;
+}
+

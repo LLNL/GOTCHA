@@ -12,30 +12,33 @@ for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
+#include "library_filters.h"
+#include "libc_wrappers.h"
+int (*libraryFilterFunc)(struct link_map*) = alwaysTrue;
+int alwaysTrue(struct link_map* candidate KNOWN_UNUSED){
+  return 1;
+}
 
-#ifndef GOTCHA_AUXV_H
-#define GOTCHA_AUXV_H
+int trueIfNameMatches(struct link_map* target){
+  int match = (filter) && (target) && (gotcha_strstr(target->l_name, filter) != 0);
+  return match;
+}
+int trueIfLast(struct link_map* target){
+  int ret = (target->l_next) ? 0 : 1;
+  return ret;
+}
+void onlyFilterLast(){
+  setLibraryFilterFunc(trueIfLast);
+}
+void setLibraryFilterFunc(int(*new_func)(struct link_map*)){
+  libraryFilterFunc = new_func;
+}
+void restoreLibraryFilterFunc(){
+  setLibraryFilterFunc(alwaysTrue);
+}
 
-#include <elf.h>
-#include <link.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+void filterLibrariesByName(const char* nameFilter){
+  filter = nameFilter;
+  setLibraryFilterFunc(trueIfNameMatches);
+}
 
-int is_vdso(struct link_map *map);
-unsigned int get_auxv_pagesize();
-
-//Do not use, exposed only for unit testing
-int parse_auxv_contents();
-struct link_map *get_vdso_from_auxv();
-struct link_map *get_vdso_from_aliases();
-struct link_map *get_vdso_from_maps();
-
-
-
-#endif

@@ -37,10 +37,12 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #include <link.h>
 #include <string.h>
 
+#define KNOWN_UNUSED __attribute__((unused))
 
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;
 void debug_init();
+void gotcha_init();
 
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \
@@ -95,8 +97,13 @@ do {                                                       \
  ******************************************************************************
  */
 #define BOUNDARY_BEFORE(ptr, pagesize) \
-  (void*)(((ElfW(Addr))ptr) & (-pagesize))
+  (ElfW(Addr))(((ElfW(Addr))ptr) &(-pagesize))
 
+
+struct rev_iter{
+  struct binding_t* data;
+  void* next;
+};
 
 int debug_print(struct link_map *libc, char *filter);
 

@@ -21,7 +21,7 @@ extern int close_autotee();
 
 #define OUTPUT_FILE "tee.out"
 
-int main(int argc, char *argv[])
+int main()
 {
    int result;
 

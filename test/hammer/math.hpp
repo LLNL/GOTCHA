@@ -14,7 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #if !defined(MULT_HPP_)
-#define MULT_HPP
+#define MULT_HPP_
 
 #include <map>
 #include <utility>

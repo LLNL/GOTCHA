@@ -55,8 +55,8 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
 
 static int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value)
 {
-   hash_hashvalue_t index = value % table->table_size;
-   hash_hashvalue_t startindex = index;
+   unsigned long index = (unsigned long)value % table->table_size;
+   unsigned long startindex = index;
 
    do {
       hash_entry_t *entry = table->table + index;

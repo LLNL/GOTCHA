@@ -14,6 +14,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #include "gotcha_utils.h"
+#include "gotcha_dl.h"
+#include "tool.h"
 #include "libc_wrappers.h"
 #include "elf_ops.h"
 #include "gotcha/gotcha.h"
@@ -57,3 +59,16 @@ void debug_init()
 
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
+
+
+
+void gotcha_init(){
+   static int gotcha_initialized = 0;
+   if(gotcha_initialized){
+     return;
+   }
+   gotcha_initialized = 1;
+   debug_init();
+   handle_libdl();
+}
+

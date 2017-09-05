@@ -13,29 +13,27 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#ifndef GOTCHA_AUXV_H
-#define GOTCHA_AUXV_H
-
-#include <elf.h>
-#include <link.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "tool1.h"
+#include "tool2.h"
+#include "lib1.h"
 
-int is_vdso(struct link_map *map);
-unsigned int get_auxv_pagesize();
+extern int init_autotee(char *filename);
+extern int close_autotee();
 
-//Do not use, exposed only for unit testing
-int parse_auxv_contents();
-struct link_map *get_vdso_from_auxv();
-struct link_map *get_vdso_from_aliases();
-struct link_map *get_vdso_from_maps();
+#define OUTPUT_FILE "tee.out"
 
+int main()
+{
+   int result;
 
+   result = init_tool1();
+   result = init_tool2();
+   if (result != 0)
+      return -1;
 
-#endif
+   result = retX(10); 
+   printf("Result %d\n", result);
+   return (result==13) ? 0 : 1;
+}

@@ -58,12 +58,12 @@ void *gotcha_realloc(void* buffer, size_t size);
 void gotcha_free(void* free_me);
 void gotcha_memcpy(void* dest, void* src, size_t size);
 int gotcha_strncmp(const char* in_one, const char* in_two, int max_length);
-char *gotcha_strstr(char* searchIn, char* searchFor);
+char *gotcha_strstr(const char* searchIn,const char* searchFor);
 int gotcha_strcmp(const char* in_one, const char* in_two);
 char *gotcha_getenv(const char *env);
 pid_t gotcha_getpid();
 pid_t gotcha_gettid();
-int gotcha_getpagesize();
+unsigned int gotcha_getpagesize();
 int gotcha_open(const char *pathname, int flags, ...);
 void *gotcha_mmap(void *addr, size_t length, int prot, int flags,
                   int fd, off_t offset);
