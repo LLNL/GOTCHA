@@ -116,17 +116,8 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
 
   void* current_address = (*((void **)(lmap->l_addr + offset)));
   struct binding_t* binding_iter;
-  for(binding_iter = get_bindings(); binding_iter!=NULL;binding_iter=binding_iter->next_binding){
-    if(binding_iter->tool){
-      int user_binding_size = binding_iter->user_binding_size;
-      int loop;
-      for(loop=0;loop<user_binding_size;loop++){
-        if(binding_iter->user_binding[loop].wrapper_pointer==current_address){
-          setBindingAddressPointer(user_binding,current_address);
-        }
-      } 
-    }
-  }
+
+  setBindingAddressPointer(user_binding,current_address);
   writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
 
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
