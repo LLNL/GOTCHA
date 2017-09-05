@@ -13,38 +13,25 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#include "gotcha/gotcha_types.h"
-#include "gotcha/gotcha.h"
-#include "tool2.h"
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
+#include "tool2.h"
+#include "tool1.h"
 
-__attribute__((unused)) static int retX_wrapper(int x);
+extern int init_autotee(char *filename);
+extern int close_autotee();
 
-static int(*origRetX)(int) = 0x0;
+#define OUTPUT_FILE "tee.out"
 
-#define NUM_IOFUNCS 1
-struct gotcha_binding_t iofuncs2[] = {
-   { "retX",retX_wrapper,&origRetX}
-};
-
-int retX_wrapper(int x){
-  printf("In tool2 wrapper, calling %p\n", origRetX);
-  return origRetX ? (origRetX(x) + 2) : 0;
-}
-
-int init_tool2()
+int main()
 {
-   enum gotcha_error_t result;
+   int result;
 
-   result = gotcha_wrap(iofuncs2, NUM_IOFUNCS, "tool2");
-   if (result != GOTCHA_SUCCESS) {
-      fprintf(stderr, "gotcha_wrap returned %d\n", (int) result);
+   result = init_tool1();
+   if (result != 0)
       return -1;
-   }
 
-   return 0;
+   result = retX(10); 
+   printf("Result %d\n", result);
+   return (result==25) ? 0 : 1;
 }
-

@@ -33,7 +33,6 @@ void free_reverse_iterator(struct rev_iter* free_me){
 void* dlopen_wrapper(const char* filename, int flags){
   void* handle = orig_dlopen(filename,flags);
   struct binding_t* tool_iter = get_bindings();
-  struct binding_t* iter_helper = NULL;
   /**
    * The dlopen'ed file is added to the end of the link map. We only have to overwrite symbols in it, and so we only look there
    */

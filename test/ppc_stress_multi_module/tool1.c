@@ -15,36 +15,38 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "gotcha/gotcha_types.h"
 #include "gotcha/gotcha.h"
-#include "tool2.h"
+#include "tool1.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
-__attribute__((unused)) static int retX_wrapper(int x);
+static int storage1test = 10;
+int storage2test = 5;
+
+static int retX_wrapper(int x);
 
 static int(*origRetX)(int) = 0x0;
 
 #define NUM_IOFUNCS 1
-struct gotcha_binding_t iofuncs2[] = {
+struct gotcha_binding_t iofuncs[] = {
    { "retX",retX_wrapper,&origRetX}
 };
 
 int retX_wrapper(int x){
-  printf("In tool2 wrapper, calling %p\n", origRetX);
-  return origRetX ? (origRetX(x) + 2) : 0;
+  printf("In tool1 wrapper, calling %p\n", origRetX);
+  return origRetX ? (origRetX(x) + storage1test + storage2test ) : 0;
 }
 
-int init_tool2()
+int init_tool1()
 {
    enum gotcha_error_t result;
 
-   result = gotcha_wrap(iofuncs2, NUM_IOFUNCS, "tool2");
+   result = gotcha_wrap(iofuncs, NUM_IOFUNCS, "tool1");
    if (result != GOTCHA_SUCCESS) {
       fprintf(stderr, "gotcha_wrap returned %d\n", (int) result);
       return -1;
    }
-
    return 0;
 }
 

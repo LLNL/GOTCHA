@@ -12,39 +12,8 @@ for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
+#ifndef GOTCHA_TOOL1_H
+#define GOTCHA_TOOL1_H
+int init_tool1();
 
-#include "gotcha/gotcha_types.h"
-#include "gotcha/gotcha.h"
-#include "tool2.h"
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-
-__attribute__((unused)) static int retX_wrapper(int x);
-
-static int(*origRetX)(int) = 0x0;
-
-#define NUM_IOFUNCS 1
-struct gotcha_binding_t iofuncs2[] = {
-   { "retX",retX_wrapper,&origRetX}
-};
-
-int retX_wrapper(int x){
-  printf("In tool2 wrapper, calling %p\n", origRetX);
-  return origRetX ? (origRetX(x) + 2) : 0;
-}
-
-int init_tool2()
-{
-   enum gotcha_error_t result;
-
-   result = gotcha_wrap(iofuncs2, NUM_IOFUNCS, "tool2");
-   if (result != GOTCHA_SUCCESS) {
-      fprintf(stderr, "gotcha_wrap returned %d\n", (int) result);
-      return -1;
-   }
-
-   return 0;
-}
-
+#endif

@@ -61,7 +61,10 @@ make install
 the library was installed (default is <that_prefix>/lib) to your library search directories (-L...), and link
 libgotcha.so (-lgotcha) with your tool. Very often this becomes "add -lgotcha to your link line," and nicer CMake integration is coming down the pipe.
 
-That should represent all the work your application needs to do to use Gotcha
+A more advanced example can be seen in the [GOTCHA-tracer](https://github.com/llnl/GOTCHA-tracer) project.
+This example shows how to implement a simple tracer with GOTCHA, including linking to GOTCHA through CMake and testing GOTCHA through direct invocation and using `LD_PRELOAD`.
+
+That should represent all the work your application needs to do to use Gotcha.
 
 Contact/Legal
 -----------
