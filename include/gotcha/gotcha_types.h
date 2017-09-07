@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 extern "C" {
 #endif
 
+typedef void* wrapper_id_t;
+
 /*!
  * The representation of a GOTCHA action
  * as it passes through the pipeline
@@ -35,7 +37,7 @@ extern "C" {
 struct gotcha_binding_t {
   const char* name;                      //!< The name of the function being wrapped
   void* wrapper_pointer;           //!< A pointer to the wrapper function
-  void* function_address_pointer;  //!< A pointer to the function being wrapped
+  wrapper_id_t function_address_pointer;  //!< A pointer to the function being wrapped
 };
 
 /*!

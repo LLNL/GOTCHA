@@ -204,3 +204,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   debug_printf(1, "Returning code %d from gotcha_wrap\n", ret_code);
   return ret_code;
 }
+
+void* gotcha_get_wrapped_function(wrapper_id_t wrappee){
+  return wrappee;
+}
