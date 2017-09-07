@@ -71,6 +71,20 @@ extern "C" {
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
 
+/*!
+ ******************************************************************************
+ *
+ * \fn enum void* gotcha_get_wrapped_function(wrapper_id_t wrappee)
+ *
+ * \brief Returns the underlying function for use in Gotcha wrappers
+ *
+ * \param wrappee The index of the underlying function the user desires
+ *
+ ******************************************************************************
+ */
+
+GOTCHA_EXPORT void* gotcha_get_wrapped_function(wrapper_id_t wrappee); 
+
 #if defined(__cplusplus) 
 }
 #endif
