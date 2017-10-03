@@ -8,6 +8,22 @@
 #include <type_traits>
 
 #include<gotcha/gotcha.h>
+// TODO: decide on inclusion
+// template <typename store>
+// struct temp_wrapper{
+//   store* contents;
+//   temp_wrapper(store* new_contents){
+//     contents = new_contents;
+//   }   
+//   ~temp_wrapper(){
+//     contents->unwrap();
+//   }  
+// };
+// 
+// template<typename store>
+// temp_wrapper<store> make_temp_wrapper(store* in){
+//   return temp_wrapper<store>(in);
+// }
 
 //via: https://functionalcpp.wordpress.com/2013/08/05/function-traits/
 template<class F>
@@ -23,6 +39,11 @@ struct gotcha_function_info<R(Args...)>
     using return_type = R;
     using function_pointer_type = R(*)(Args...);
     using std_function_type = std::function<R(Args...)>;
+    /**
+     * For this function type, give the type of a function which takes in the same args, 
+     * prefixed by a function pointer of the current type. Used as the type for the wrapper 
+     * functions
+     */
     using function_wrapper_type = std::function<R(function_pointer_type,Args...)>;
     static constexpr std::size_t arity = sizeof...(Args);
  
@@ -95,12 +116,14 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
      static gotcha_binding_t* bindings_data = new gotcha_binding_t;
      return bindings_data;
    }
-   //static struct gotcha_binding_t bindings[1];
    static wrapper_store_type* instrumented_version(){
      static wrapper_store_type instrumented_version_data;
      return &instrumented_version_data;
    }
-   //runtime_wrapper(const char* name, Wrapper wrapper, R(*original)(Args...)){
+   static bool* active(){
+     static bool active_data = true;
+     return &active_data;
+   }
    runtime_wrapper(const char* name, Wrapper wrapper, R(*original)(Args...)){
      *(original_call()) = original; 
      bindings()[0].name = name;
@@ -108,42 +131,55 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
      bindings()[0].function_address_pointer = original_call();
      *(instrumented_version()) = wrapper;
      gotcha_wrap(bindings(),1,"nothing_good");
-     //*(instrumented_version()) = ArgWrappedFunction<R(*)(Args...)>(cali::wrap_function_and_args(name, *(original_call())));
    }
    template<typename shadow_R = R>
    static auto redirect(Args... args) -> typename std::enable_if<
         !std::is_same<shadow_R, void>::value,
         shadow_R>::type {
-       R ret_val = (*(instrumented_version()))(*original_call(),args...);
+       R ret_val;   
+       if(*active()){
+          ret_val = (*(instrumented_version()))(*original_call(),args...);
+       }
+       else{
+          ret_val = (*original_call())(args...);
+       }
        return ret_val;
    }
    template<typename shadow_R = R>
    static auto redirect(Args... args) -> typename std::enable_if<
         std::is_same<shadow_R, void>::value,
         shadow_R>::type {
-       (*(instrumented_version()))(*original_call(),args...);
+       if(*active()){
+         (*(instrumented_version()))(*original_call(),args...);
+       }
+       else{
+         (*original_call())(args...);
+       }
+   }
+   void unwrap(){
+     *active() = false;
+     bindings()[0].wrapper_pointer = (void*)*(original_call());
+     //bindings()[0].function_address_pointer = (void*)*(original_call());
+     gotcha_wrap(bindings(),1,"nothing_good");
+
    }
 };
 
-//via: https://functionalcpp.wordpress.com/2013/08/05/function-traits/
 template<int N,class Wrapper, class R, class... Args>
 struct runtime_wrapper<N,Wrapper,R(Args...)>
 {};  
-
-template<int Index, class Wrapper, class R, class... Args>
-struct runtime_wrap_helper{
-  using wrapper_type = runtime_wrapper<Index,Wrapper,R(*)(Args...)>;
-};
 
 template<int N, typename Callable, class R, class... Args>
 auto gotcha_instrument_function(const char* name, Callable wrapper, R(*wrap_me)(Args...)) -> runtime_wrapper<N,Callable,R(*)(Args...)>*  {
   return new runtime_wrapper<N,Callable,R(*)(Args...)>(name,wrapper, wrap_me);
 }
+
 #ifndef GOTCHA_QUOTE
 #define GOTCHA_QUOTE(name) #name
 #define GOTCHA_STR(macro) GOTCHA_QUOTE(macro)
 #endif
 #define gotcha_quick_wrap(name,wrapper) \
   using original_##name = gotcha_function_info<decltype(name)>::function_pointer_type; \
-  gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name)
+  gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name);
+  //auto hold_##name = make_temp_wrapper(gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name));
 #endif
