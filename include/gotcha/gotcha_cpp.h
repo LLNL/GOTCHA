@@ -8,6 +8,20 @@
 #include <type_traits>
 
 #include<gotcha/gotcha.h>
+
+#ifndef GOTCHA_QUOTE
+#define GOTCHA_QUOTE(name) #name
+#define GOTCHA_STR(macro) GOTCHA_QUOTE(macro)
+#endif
+#define gotcha_quick_wrap(name,wrapper) \
+  using original_##name = gotcha_function_info<decltype(name)>::function_pointer_type; \
+  gotcha_instrument_function2<__COUNTER__>(GOTCHA_STR(name),wrapper,name);
+#define gotcha_quick_wrap_handle(handle,name,wrapper) \
+  using original_##name = gotcha_function_info<decltype(name)>::function_pointer_type; \
+  auto handle = gotcha_instrument_function2<__COUNTER__>(GOTCHA_STR(name),wrapper,name);
+  //auto hold_##name = make_temp_wrapper(gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name));
+#endif
+
 // TODO: decide on inclusion
 // template <typename store>
 // struct temp_wrapper{
@@ -101,6 +115,9 @@ struct gotcha_function_info<F&&> : public gotcha_function_info<F>
 
 template<int N, class Wrap, class F>
 struct runtime_wrapper;
+
+template<int N, typename Callable, class R, class... Args>
+auto gotcha_instrument_function(const char* name, Callable wrapper, R(*wrap_me)(Args...)) -> runtime_wrapper<N,Callable,R(*)(Args...)>*;
  
 template<int N, class Wrapper, class R, class... Args>
 struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapper, R(Args...)>
@@ -136,6 +153,7 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
    static auto redirect(Args... args) -> typename std::enable_if<
         !std::is_same<shadow_R, void>::value,
         shadow_R>::type {
+
        R ret_val;   
        if(*active()){
           ret_val = (*(instrumented_version()))(*original_call(),args...);
@@ -158,10 +176,20 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
    }
    void unwrap(){
      *active() = false;
-     bindings()[0].wrapper_pointer = (void*)*(original_call());
-     //bindings()[0].function_address_pointer = (void*)*(original_call());
-     gotcha_wrap(bindings(),1,"nothing_good");
-
+     //bindings()[0].wrapper_pointer = (void*)*(original_call());
+     ////bindings()[0].function_address_pointer = (void*)*(original_call());
+     //gotcha_wrap(bindings(),1,"nothing_good");
+     Underlying wrapped_func = (Underlying)bindings()[0].function_address_pointer;
+     if((void*)wrapped_func != (void*)bindings()[0].wrapper_pointer){
+     gotcha_instrument_function<__COUNTER__>(bindings()[0].name, [=](Underlying call_this, Args... args){
+         return call_this(args...);
+     },wrapped_func);
+     bindings()[0].wrapper_pointer = (void*)wrapped_func; 
+     }
+   }
+   // This is almost certainly a mistake, as multiple handles to the same object can exist. If we do this, we should have this have unique_ptr semantics
+   ~runtime_wrapper(){
+     unwrap();
    }
 };
 
@@ -174,12 +202,7 @@ auto gotcha_instrument_function(const char* name, Callable wrapper, R(*wrap_me)(
   return new runtime_wrapper<N,Callable,R(*)(Args...)>(name,wrapper, wrap_me);
 }
 
-#ifndef GOTCHA_QUOTE
-#define GOTCHA_QUOTE(name) #name
-#define GOTCHA_STR(macro) GOTCHA_QUOTE(macro)
-#endif
-#define gotcha_quick_wrap(name,wrapper) \
-  using original_##name = gotcha_function_info<decltype(name)>::function_pointer_type; \
-  gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name);
-  //auto hold_##name = make_temp_wrapper(gotcha_instrument_function<__COUNTER__>(GOTCHA_STR(name),wrapper,name));
-#endif
+template<int N, typename Callable, class R, class... Args>
+auto gotcha_instrument_function2(const char* name, Callable wrapper, R(*wrap_me)(Args...)) -> runtime_wrapper<N,Callable,R(*)(Args...)>  {
+  return runtime_wrapper<N,Callable,R(*)(Args...)>(name,wrapper, wrap_me);
+}
