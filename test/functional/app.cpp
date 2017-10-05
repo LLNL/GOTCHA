@@ -36,6 +36,7 @@ int main()
    {
    gotcha_quick_wrap_handle(malloc_handle_2,malloc,[&](original_malloc orig, unsigned long size){
        std::cout << "Outer malloc wrapper called on size " << size << std::endl;
+       last_allocation_size = size;
        void* ret = orig(size);
        return ret;
        //return (void*)NULL;
@@ -50,12 +51,12 @@ int main()
    }
 
    free(test_allocation);
+   test_allocation = (int*) malloc(sizeof(int) * 1000);
    if(last_allocation_size != sizeof(int)*1000){
-     std::cout << "Size of last allocation not correctly captured;";
+     std::cout << "Size of last allocation not correctly captured " << last_allocation_size<<"\n";
      return -1;
    }
    //free_handle.unwrap();
-   test_allocation = (int*) malloc(sizeof(int) * 1000);
    free(test_allocation);
 
    std::cout << "Test success\n";
