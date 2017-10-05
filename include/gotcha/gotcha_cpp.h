@@ -118,6 +118,8 @@ struct runtime_wrapper;
 
 template<int N, typename Callable, class R, class... Args>
 auto gotcha_instrument_function(const char* name, Callable wrapper, R(*wrap_me)(Args...)) -> runtime_wrapper<N,Callable,R(*)(Args...)>*;
+
+#define CDECL_CALLING_CONVENTION __attribute__((cdecl))
  
 template<int N, class Wrapper, class R, class... Args>
 struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapper, R(Args...)>
@@ -150,7 +152,7 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
      gotcha_wrap(bindings(),1,"nothing_good");
    }
    template<typename shadow_R = R>
-   static auto redirect(Args... args) -> typename std::enable_if<
+   static CDECL_CALLING_CONVENTION auto redirect(Args... args) -> typename std::enable_if<
         !std::is_same<shadow_R, void>::value,
         shadow_R>::type {
 
@@ -164,7 +166,7 @@ struct runtime_wrapper<N,Wrapper,R(*)(Args...)> : public runtime_wrapper<N,Wrapp
        return ret_val;
    }
    template<typename shadow_R = R>
-   static auto redirect(Args... args) -> typename std::enable_if<
+   static CDECL_CALLING_CONVENTION auto redirect(Args... args) -> typename std::enable_if<
         std::is_same<shadow_R, void>::value,
         shadow_R>::type {
        if(*active()){
