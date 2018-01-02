@@ -42,9 +42,10 @@ struct gotcha_binding_t {
  * The representation of an error (or success) of a GOTCHA action
  */
 enum gotcha_error_t {
-  GOTCHA_SUCCESS = 0,        //!< The call succeeded
-  GOTCHA_FUNCTION_NOT_FOUND, //!< The call looked up a function which could not be found
-  GOTCHA_INTERNAL            //!< Internal gotcha error
+  GOTCHA_SUCCESS = 0,          //!< The call succeeded
+  GOTCHA_FUNCTION_NOT_FOUND,   //!< The call looked up a function which could not be found
+  GOTCHA_INTERNAL,             //!< Internal gotcha error
+  GOTCHA_INVALID_CONFIGURATION //!< Failure on a configuration call
 };
 
 /*!

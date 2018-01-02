@@ -57,6 +57,7 @@ typedef struct tool_t {
    struct tool_t *next_tool;
    struct gotcha_configuration_t config;
    hash_table_t child_tools;
+   struct tool_t * parent_tool;
 } tool_t;
 
 /**
@@ -78,5 +79,6 @@ binding_t *get_tool_bindings(tool_t *tool);
 
 struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_in);
 struct gotcha_configuration_t get_default_configuration();
+enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* data);
 
 #endif

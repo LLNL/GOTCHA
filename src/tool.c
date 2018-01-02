@@ -30,6 +30,8 @@ tool_t *create_tool(const char *tool_name)
    newtool->tool_name = tool_name;
    newtool->binding = NULL;
    newtool->next_tool = tools;
+   newtool->config = get_default_configuration();
+   newtool->parent_tool = NULL;
    create_hashtable(&newtool->child_tools, 5, 
      (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    tools = newtool;
@@ -131,6 +133,7 @@ struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_i
       struct tool_t* new_tool = create_tool(new_tool_name);
       strncpy(new_tool_name,intermediate_name,512);
       addto_hashtable(&tool_iter->child_tools, string_iter, new_tool);
+      new_tool->parent_tool = tool_iter;
       tool_iter = new_tool;
     }
     else{
@@ -144,4 +147,39 @@ struct gotcha_configuration_t get_default_configuration(){
   struct gotcha_configuration_t result;
   result.priority = UNSET_PRIORITY;
   return result;
+}
+enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key, void* data){
+  struct gotcha_configuration_t config = get_default_configuration();
+  if(key==GOTCHA_PRIORITY){
+    int current_priority = config.priority;
+    if(current_priority!=UNSET_PRIORITY)
+    *((int*)(data)) = config.priority; 
+  }
+  return GOTCHA_SUCCESS;
+
+}
+
+enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* data){
+  struct tool_t* tool = get_tool(tool_name);
+  if(tool==NULL){
+    debug_printf(1, "Property being examined for nonexistent tool %s\n", tool_name);
+    return GOTCHA_INVALID_CONFIGURATION;
+  }
+  get_default_configuration_value(key, data);
+  int found_valid_value = 0;
+  while( (tool!=NULL) && !(found_valid_value) ){
+    struct gotcha_configuration_t config = tool->config;
+    if(key==GOTCHA_PRIORITY){
+      int current_priority = config.priority;
+      if(current_priority!=UNSET_PRIORITY){
+        *((int*)(data)) = config.priority; 
+        found_valid_value = 1;
+      }
+    }
+    else{
+      debug_printf(1, "Invalid property being configured on tool %s\n", tool_name);
+      return GOTCHA_INVALID_CONFIGURATION;
+    }
+  }
+  return GOTCHA_SUCCESS;  
 }
