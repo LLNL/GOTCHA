@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 /*!
- * The representation of a GOTCHA action
+ * The representation of a Gotcha action
  * as it passes through the pipeline
  */
 struct gotcha_binding_t {
@@ -45,6 +45,14 @@ enum gotcha_error_t {
   GOTCHA_SUCCESS = 0,        //!< The call succeeded
   GOTCHA_FUNCTION_NOT_FOUND, //!< The call looked up a function which could not be found
   GOTCHA_INTERNAL            //!< Internal gotcha error
+};
+
+/*!
+ * TODO DO-NOT-MERGE figure out what keys to start with
+ * The configurable parts of Gotcha bindings
+ */
+enum gotcha_config_key_t {
+  GOTCHA_PRIORITY
 };
 
 #if defined(__cplusplus) 
