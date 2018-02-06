@@ -208,11 +208,13 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
 enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
   if( configuration_key == GOTCHA_PRIORITY){
     struct gotcha_configuration_t config = get_configuration_for_tool(tool_name);
+    config.priority = value;
   }
   else{
     debug_printf(1, "Invalid property being configured on tool %s\n", tool_name);
     return GOTCHA_INVALID_CONFIGURATION;
   }
+  
   return GOTCHA_SUCCESS;
 }
 /**
