@@ -220,15 +220,15 @@ enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_conf
 /**
  * Currently an implementation stub, as no float configuration options exist
  */
-enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value){
-  return GOTCHA_SUCCESS;
-}
-/**
- * Currently an implementation stub, as no float configuration options exist
- */
-enum gotcha_error_t gotcha_configure_string(const char* tool_name,  enum gotcha_config_key_t configuration_key , const char* value){
-  return GOTCHA_SUCCESS;
-}
+//enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value){
+//  return GOTCHA_SUCCESS;
+//}
+///**
+// * Currently an implementation stub, as no float configuration options exist
+// */
+//enum gotcha_error_t gotcha_configure_string(const char* tool_name,  enum gotcha_config_key_t configuration_key , const char* value){
+//  return GOTCHA_SUCCESS;
+//}
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
   return gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
