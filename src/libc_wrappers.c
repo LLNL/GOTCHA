@@ -210,6 +210,13 @@ size_t gotcha_strlen(const char *s)
    return i;
 }
 
+size_t gotcha_strnlen(const char *s, size_t max_length)
+{
+   size_t i;
+   for (i = 0; s[i] && i<max_length; i++);
+   return i;
+}
+
 static int ulong_to_hexstr(unsigned long num, char *str, int strlen, int uppercase)
 {
    int len, i;
@@ -564,7 +571,7 @@ void *gotcha_memset(void *s, int c, size_t n)
 char* gotcha_strncat(char* dest, const char* src, size_t n){
   char* dest_begin = dest;
   dest = dest + gotcha_strlen(dest);
-  size_t dest_stop = gotcha_strlnen(src, n);
+  size_t dest_stop = gotcha_strnlen(src, n);
   dest[dest_stop] = '\0';
   memcpy(dest,src,n);
   return dest_begin;
