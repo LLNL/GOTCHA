@@ -27,7 +27,7 @@ struct tool_t;
 /**
  * A structure representing how a given tool's bindings are configured
  */
-struct gotcha_configuration_t{
+struct gotcha_configuration_t {
   int priority;
 };
 
@@ -72,6 +72,7 @@ typedef struct binding_ref_t {
 
 tool_t *create_tool(const char *tool_name);
 tool_t *get_tool(const char *tool_name);
+void reorder_tool(tool_t* new_tool);
 
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size);
 binding_t *get_bindings();

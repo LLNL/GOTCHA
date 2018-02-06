@@ -22,17 +22,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "tool.h"
 
 static void writeAddress(void* write, void* value){
-#if defined(__powerpc)
-#else
   *(void**)write = value;
-#endif
 }
 
 static void** getBindingAddressPointer(struct gotcha_binding_t* in){
-#if defined(__powerpc)
-#else
   return (void**)in->function_address_pointer;
-#endif
 }
 
 static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
@@ -231,5 +225,16 @@ enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_conf
 //}
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
-  return gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
+  enum gotcha_error_t error_on_call = GOTCHA_SUCCESS;
+  enum gotcha_error_t error_on_set = gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
+  if(error_on_set != GOTCHA_SUCCESS) {
+    error_on_call = error_on_set;
+    debug_printf(1, "Failed to set priority on tool %s\n", tool_name);
+  }
+  else {
+    tool_t* tool_to_place = get_tool(tool_name);
+    //remove_tool_from_list(tool_to_place);
+    reorder_tool(tool_to_place);
+  }
+  return error_on_call;
 }

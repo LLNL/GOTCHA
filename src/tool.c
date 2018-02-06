@@ -20,6 +20,34 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static tool_t *tools = NULL;
 static binding_t *all_bindings = NULL;
 
+//void remove_tool_from_list(void* target){
+//  tool_t* last = NULL;
+//  for(tool_t* iter = tools, iter && (iter->config.priority > new_priority);last=iter,iter=iter->next_tool);
+//  if(!last){
+//  }
+//}
+
+void reorder_tool(tool_t* new_tool) {
+  int new_priority = new_tool->config.priority;
+  tool_t* last = NULL;
+  tool_t* iter = tools;
+  for(iter = tools; 
+     (iter != NULL) && (iter->config.priority > new_priority);)
+     {
+       last=iter;
+       iter=iter->next_tool;
+     }
+  if(last){
+     last->next_tool = new_tool;
+  }
+  if(iter == tools){
+    tools = new_tool;
+  }
+  else {
+    iter->next_tool = new_tool;
+  }
+}
+
 tool_t *create_tool(const char *tool_name)
 {
    tool_t *newtool = (tool_t *) gotcha_malloc(sizeof(tool_t));
@@ -29,12 +57,13 @@ tool_t *create_tool(const char *tool_name)
    }
    newtool->tool_name = tool_name;
    newtool->binding = NULL;
-   newtool->next_tool = tools;
+   //newtool->next_tool = tools;
    newtool->config = get_default_configuration();
+   reorder_tool(newtool);
    newtool->parent_tool = NULL;
    create_hashtable(&newtool->child_tools, 5, 
      (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
-   tools = newtool;
+   //tools = newtool;
    debug_printf(1, "Created new tool %s\n", tool_name);
    return newtool;
 }
