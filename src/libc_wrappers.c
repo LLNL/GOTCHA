@@ -560,3 +560,12 @@ void *gotcha_memset(void *s, int c, size_t n)
    }
    return s;
 }
+
+char* gotcha_strncat(char* dest, const char* src, size_t n){
+  char* dest_begin = dest;
+  dest = dest + gotcha_strlen(dest);
+  size_t dest_stop = gotcha_strlnen(src, n);
+  dest[dest_stop] = '\0';
+  memcpy(dest,src,n);
+  return dest_begin;
+}

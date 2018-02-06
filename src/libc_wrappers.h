@@ -48,6 +48,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define gotcha_read               read
 #define gotcha_memset             memset
 #define gotcha_write              write
+#define gotcha_strlen             strlen
+#define gotcha_strnlen            strnlen
+#define gotcha_strtok             strtok
+#define gotcha_strncat            strncat
 #define gotcha_dbg_printf(A, ...) fprintf(stderr, A, ##__VA_ARGS__)
 pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
 
@@ -74,6 +78,10 @@ ssize_t gotcha_read(int fd, void *buf, size_t count);
 ssize_t gotcha_write(int fd, const void *buf, size_t count);
 void gotcha_assert_fail(const char *s, const char *file, unsigned int line, const char *function);
 void *gotcha_memset(void *s, int c, size_t n);
+size_t gotcha_strlen(const char* str);
+size_t gotcha_strnlen(const char* str, size_t max_length);
+char* gotcha_strncat(char* dest, const char* src, size_t n);
+char* gotcha_strtok(char* dest, const char* src, size_t n);
 
 #define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, ##__VA_ARGS__)
 

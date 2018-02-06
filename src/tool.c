@@ -143,6 +143,7 @@ struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_i
   }
   return tool_iter->config;
 }
+
 struct gotcha_configuration_t get_default_configuration(){
   struct gotcha_configuration_t result;
   result.priority = UNSET_PRIORITY;
@@ -180,6 +181,7 @@ enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_c
       debug_printf(1, "Invalid property being configured on tool %s\n", tool_name);
       return GOTCHA_INVALID_CONFIGURATION;
     }
+    tool = tool->parent_tool;
   }
   return GOTCHA_SUCCESS;  
 }

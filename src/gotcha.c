@@ -205,7 +205,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   return ret_code;
 }
 
-GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
+enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
   if( configuration_key == GOTCHA_PRIORITY){
     struct gotcha_configuration_t config = get_configuration_for_tool(tool_name);
   }
@@ -218,13 +218,16 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_int(const char* tool_name, en
 /**
  * Currently an implementation stub, as no float configuration options exist
  */
-GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value){
+enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value){
   return GOTCHA_SUCCESS;
 }
 /**
  * Currently an implementation stub, as no float configuration options exist
  */
-GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_string(const char* tool_name,  enum gotcha_config_key_t configuration_key , const char* value){
+enum gotcha_error_t gotcha_configure_string(const char* tool_name,  enum gotcha_config_key_t configuration_key , const char* value){
   return GOTCHA_SUCCESS;
 }
 
+GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
+  return gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
+}
