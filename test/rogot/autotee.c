@@ -70,7 +70,7 @@ struct gotcha_binding_t iofuncs[] = {
 int init_autotee(const char *teefile)
 {
    enum gotcha_error_t result;
-   gotcha_configure_int("testing/whether/this/works", GOTCHA_PRIORITY, 1);
+   gotcha_set_priority("testing/whether/this/works", 1);
    tee_FILE = fopen(teefile, "w");
    if (!tee_FILE) {
       perror("Failed to open tee file");
