@@ -20,31 +20,40 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static tool_t *tools = NULL;
 static binding_t *all_bindings = NULL;
 
-//void remove_tool_from_list(void* target){
-//  tool_t* last = NULL;
-//  for(tool_t* iter = tools, iter && (iter->config.priority > new_priority);last=iter,iter=iter->next_tool);
-//  if(!last){
-//  }
-//}
+tool_t* get_tool_list(){
+  return tools;
+}
+
+void remove_tool_from_list(struct tool_t* target){
+     if(!tools){
+        return;
+     }
+     if(tools = target){
+        tools = NULL;
+        return;
+     }
+     struct tool_t *cur = tools;
+     while( (cur!=NULL) && (cur->next_tool != NULL) && cur->next_tool!=target){
+        cur = cur->next_tool;
+     }
+     if(cur->next_tool == target){
+        cur->next_tool = target->next_tool; 
+     }
+}
 
 void reorder_tool(tool_t* new_tool) {
   int new_priority = new_tool->config.priority;
-  tool_t* last = NULL;
-  tool_t* iter = tools;
-  for(iter = tools; 
-     (iter != NULL) && (iter->config.priority > new_priority);)
-     {
-       last=iter;
-       iter=iter->next_tool;
+  if(tools==NULL || tools->config.priority >= new_priority ){
+     new_tool->next_tool = tools;
+     tools = new_tool;
+  }
+  else{
+     struct tool_t *cur = tools;
+     while((cur->next_tool != NULL) && cur->next_tool->config.priority < new_priority){
+        cur = cur->next_tool;
      }
-  if(last){
-     last->next_tool = new_tool;
-  }
-  if(iter == tools){
-    tools = new_tool;
-  }
-  else {
-    iter->next_tool = new_tool;
+     new_tool->next_tool = cur->next_tool;
+     cur->next_tool = new_tool;
   }
 }
 

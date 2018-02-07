@@ -95,9 +95,12 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
                found, num_names);
   return 0;
 }
-
+typedef long int ptd;
+ptd ptrdiff(void* d1, void* d2){
+  return ((unsigned long int)(d1)) - ((unsigned long int)(d2));
+}
 int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
-                     struct link_map *lmap, binding_t *bindings) {
+                     struct link_map *lmap, binding_t *bindings, int* no_write) {
   int result;
   binding_ref_t *ref;
   struct gotcha_binding_t *user_binding;
@@ -105,21 +108,77 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
   result = lookup_hashtable(&bindings->binding_hash, name, (void **) &ref);
   if (result != 0)
      return 0;
-  
   user_binding = ref->binding->user_binding + ref->index;
-
   void* current_address = (*((void **)(lmap->l_addr + offset)));
   struct binding_t* binding_iter;
 
-  setBindingAddressPointer(user_binding,current_address);
-  writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
-
-  debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
+  //if((!no_write) || no_write[ref->index]){
+    setBindingAddressPointer(user_binding,current_address);
+    writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
+    debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX %lu\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap), 
-               user_binding->wrapper_pointer);
+               user_binding->wrapper_pointer, ref->index);
+  //}
   return 0;
 }
+#ifndef MAX
 #define MAX(a,b) (a>b?a:b)
+#endif
+
+void rewriteWrappingTables(tool_t* adding_tool, struct gotcha_binding_t* user_bindings, int* rewrite_table, int num_actions){
+  tool_t* tool_iter = get_tool_list(); 
+  int* priority_per_action = (int*)malloc(sizeof(int)*num_actions);
+  struct gotcha_binding_t** binding_per_action = (struct gotcha_binding_t**)malloc(sizeof(struct gotcha_binding_t*)*num_actions*2);
+  memset(priority_per_action, 0 , sizeof(int)*num_actions);
+  memset(binding_per_action, 0 , sizeof(struct gotcha_binding_t*)*num_actions*2);
+  for(int i = num_actions; i< num_actions;i++){
+    priority_per_action[i] = -1;
+  }
+  int add_priority = adding_tool->config.priority;
+  for(;tool_iter;tool_iter=tool_iter->next_tool){
+    int tool_iter_priority = tool_iter->config.priority;
+    struct binding_t* binding = tool_iter->binding;
+    for(; binding; binding=binding->next_tool_binding){
+      for(int i = 0; i < num_actions; i++){
+        binding_ref_t* ref;
+        int result = lookup_hashtable(&binding->binding_hash, (char*)user_bindings[i].name, (void**)&ref);
+        if( (result != -1) && (adding_tool != tool_iter )){
+           if((tool_iter_priority >= add_priority) && (!binding_per_action[(2*i)+1])){
+             binding_per_action[2*i] = ref->binding->user_binding+ref->index;
+             priority_per_action[i] = tool_iter_priority;
+           }
+           if(tool_iter_priority <= add_priority){
+             binding_per_action[(2*i)+1] = ref->binding->user_binding+ref->index;
+             priority_per_action[i] = tool_iter_priority;
+           }
+        }
+      }
+    }
+  }
+  for(int i = 0 ; i < num_actions; i++){
+     if(binding_per_action[2*i]){
+       if (binding_per_action[2*i]+1){
+         printf("Recommending no rewrite on %s\n",user_bindings[i].name);
+         binding_per_action[2*i]->function_address_pointer = user_bindings[i].wrapper_pointer;
+         user_bindings[i].function_address_pointer = binding_per_action[(2*i)+1]->wrapper_pointer;
+         rewrite_table[i] = 0;
+       }
+       else{
+         printf("Recommending rewrite on %s\n",user_bindings[i].name);
+         rewrite_table[i] = 1;
+       }
+     }
+     else{
+       printf("Recommending firstwrite on %s\n",user_bindings[i].name);
+       rewrite_table[i] = 1;
+     }
+  }
+  //for(int i = 0 ; i< num_actions;i++){
+  //  rewrite_table[i] = 1;
+  //}
+  free(priority_per_action);
+  free(binding_per_action);
+}
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name){
 
@@ -132,7 +191,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   gotcha_init();
 
   //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
-  
+   
   for (i = 0; i < num_actions; i++) {
     setBindingAddressPointer(&user_bindings[i], NULL);
   }
@@ -178,11 +237,19 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
 
   gotcha_prepare_symbols(bindings, num_actions);
-
+  //if(0){
+  //   find_if_i_am_lowest_priority
+  //   if yes
+  //     actual wrap
+  //   else
+  //     rewrite "next" tables
+  //} 
+  int* write_table = (int*)malloc(sizeof(int)*num_actions);
+  //rewriteWrappingTables(tool,user_bindings,write_table, num_actions);
   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
     debug_printf(2, "Looking for wrapped callsites in %s\n", LIB_NAME(lib_iter));
     if(libraryFilterFunc(lib_iter)){
-      FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings);
+      FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings, NULL);
     }
   }
 
@@ -211,18 +278,6 @@ enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_conf
   
   return GOTCHA_SUCCESS;
 }
-/**
- * Currently an implementation stub, as no float configuration options exist
- */
-//enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value){
-//  return GOTCHA_SUCCESS;
-//}
-///**
-// * Currently an implementation stub, as no float configuration options exist
-// */
-//enum gotcha_error_t gotcha_configure_string(const char* tool_name,  enum gotcha_config_key_t configuration_key , const char* value){
-//  return GOTCHA_SUCCESS;
-//}
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
   enum gotcha_error_t error_on_call = GOTCHA_SUCCESS;
@@ -233,7 +288,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int
   }
   else {
     tool_t* tool_to_place = get_tool(tool_name);
-    //remove_tool_from_list(tool_to_place);
+    remove_tool_from_list(tool_to_place);
     reorder_tool(tool_to_place);
   }
   return error_on_call;
