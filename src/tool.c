@@ -23,25 +23,29 @@ static binding_t *all_bindings = NULL;
 tool_t* get_tool_list(){
   return tools;
 }
-
+int tool_equal(tool_t* t1, tool_t* t2){
+  return gotcha_strcmp(t1->tool_name,t2->tool_name);
+}
 void remove_tool_from_list(struct tool_t* target){
+     const char* name = target->tool_name;
      if(!tools){
         return;
      }
-     if(tools = target){
-        tools = NULL;
+     if(!tool_equal(tools,target)){
+        tools = tools->next_tool;
         return;
      }
      struct tool_t *cur = tools;
-     while( (cur!=NULL) && (cur->next_tool != NULL) && cur->next_tool!=target){
+     while( (cur!=NULL) && (cur->next_tool != NULL) && (tool_equal(cur->next_tool,target))){
         cur = cur->next_tool;
      }
-     if(cur->next_tool == target){
+     if(!tool_equal(cur->next_tool,target)){
         cur->next_tool = target->next_tool; 
      }
 }
 
 void reorder_tool(tool_t* new_tool) {
+  const char* name = new_tool->tool_name;
   int new_priority = new_tool->config.priority;
   if(tools==NULL || tools->config.priority >= new_priority ){
      new_tool->next_tool = tools;
@@ -59,6 +63,7 @@ void reorder_tool(tool_t* new_tool) {
 
 tool_t *create_tool(const char *tool_name)
 {
+   debug_printf(1, "Found no existing tool with name %s\n",tool_name);
    tool_t *newtool = (tool_t *) gotcha_malloc(sizeof(tool_t));
    if (!newtool) {
       error_printf("Failed to malloc tool %s\n", tool_name);
@@ -76,7 +81,6 @@ tool_t *create_tool(const char *tool_name)
    debug_printf(1, "Created new tool %s\n", tool_name);
    return newtool;
 }
-
 tool_t *get_tool(const char *tool_name)
 {
    tool_t *t;
@@ -149,11 +153,22 @@ binding_t *get_tool_bindings(tool_t *tool)
  * TODO DO-NOT-MERGE "/" should be a macro of possible separators
  */
 struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_in){
+  printf("Creating config for tool %s\n",tool_name_in);
   gotcha_init();
+  tool_t* possible_tool = get_tool(tool_name_in);
+  if(possible_tool){
+    printf("Returning config predefined\n");
+    return possible_tool->config;
+  }
+  else{ // TODO: do-not-merge, no hierarchy
+     possible_tool = create_tool(tool_name_in);
+     return possible_tool->config;
+  }
   char tool_name[512];
   strncpy(tool_name,tool_name_in,512);
   char* string_iter;
   string_iter = strtok((char*)tool_name, "/"); // TODO DO-NOT-MERGE gotcha_strtok
+  printf("strtok pointer %p value %s\n",(void*)string_iter,string_iter);
   struct tool_t* tool_iter = get_tool(tool_name);
   if(tool_iter == NULL){
     tool_iter = create_tool(tool_name);
@@ -164,9 +179,9 @@ struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_i
   string_iter = strtok(NULL, "/"); // TODO DO-NOT-MERGE gotcha_strtok
   while(string_iter!=NULL){
     int lookup = lookup_hashtable(&tool_iter->child_tools, string_iter,(hash_data_t*) &lookup_key); 
+    strncat(intermediate_name, "/", 1); //TODO DO-NOT-MERGE gotcha_strncat
+    strncat(intermediate_name, string_iter, 512); //TODO DO-NOT-MERGE gotcha_strncat
     if(lookup==-1){
-      strncat(intermediate_name, "/", 1); //TODO DO-NOT-MERGE gotcha_strncat
-      strncat(intermediate_name, string_iter, 512); //TODO DO-NOT-MERGE gotcha_strncat
       char* new_tool_name = (char*)malloc(sizeof(char)*512); //TODO DO-NOT-MERGE implement, and is 512 enough?
       struct tool_t* new_tool = create_tool(new_tool_name);
       strncpy(new_tool_name,intermediate_name,512);
