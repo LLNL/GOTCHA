@@ -113,7 +113,6 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
   struct binding_t* binding_iter;
 
   if((!no_write) || no_write[ref->index]){
-    //setBindingAddressPointer(user_binding,current_address);
     writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
     debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap), 
@@ -127,31 +126,25 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
 
 void rewriteWrappingTables(tool_t* adding_tool, struct gotcha_binding_t* user_bindings, int* rewrite_table, int num_actions){
   tool_t* tool_iter = get_tool_list(); 
-  int* priority_per_action = (int*)malloc(sizeof(int)*num_actions);
   struct gotcha_binding_t** functions_above = (struct gotcha_binding_t**)malloc(sizeof(struct gotcha_binding_t*)*num_actions);
   struct gotcha_binding_t** functions_below = (struct gotcha_binding_t**)malloc(sizeof(struct gotcha_binding_t*)*num_actions);
-  memset(priority_per_action, 0 , sizeof(int)*num_actions);
   memset(functions_above, 0 , sizeof(struct gotcha_binding_t*)*num_actions);
   memset(functions_below, 0 , sizeof(struct gotcha_binding_t*)*num_actions);
-  for(int i = num_actions; i< num_actions;i++){
-    priority_per_action[i] = -1;
-  }
   int add_priority = adding_tool->config.priority;
   for(;tool_iter;tool_iter=tool_iter->next_tool){
     int tool_iter_priority = tool_iter->config.priority;
     struct binding_t* binding = tool_iter->binding;
     for(; binding; binding=binding->next_tool_binding){
-      for(int i = 0; i < num_actions; i++){
+      int i;
+      for(i = 0; i < num_actions; i++){
         binding_ref_t* ref;
         int result = lookup_hashtable(&binding->binding_hash, (char*)user_bindings[i].name, (void**)&ref);
         if( (result != -1) && (tool_equal(adding_tool , tool_iter) )){
            if((tool_iter_priority > add_priority) && (!functions_above[i])){
              functions_above[i] = ref->binding->user_binding+ref->index;
-             priority_per_action[i] = tool_iter_priority;
            }
            if(tool_iter_priority <= add_priority){
              functions_below[i] = ref->binding->user_binding+ref->index;
-             priority_per_action[i] = tool_iter_priority;
            }
         }
       }
@@ -177,7 +170,6 @@ void rewriteWrappingTables(tool_t* adding_tool, struct gotcha_binding_t* user_bi
        rewrite_table[i] = 0;
      }
   }
-  free(priority_per_action);
   free(functions_above);
   free(functions_below);
 }
