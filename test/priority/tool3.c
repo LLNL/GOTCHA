@@ -21,16 +21,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <string.h>
 #include <stdarg.h>
 
-__attribute__((unused)) static const char* retX_wrapper(const char* x);
+__attribute__((unused)) static char* retX_wrapper(char* x);
 
-static const char*(*origRetX)(const char*) = 0x0;
+static char*(*origRetX)(char*) = 0x0;
 
 #define NUM_IOFUNCS 1
 struct gotcha_binding_t iofuncs3[] = {
    { "retX",retX_wrapper,&origRetX}
 };
 
-const char* retX_wrapper(const char* x){
+char* retX_wrapper(char* x){
   strcat(x,"t3=>");
  
   return origRetX ? (origRetX(x)) : 0;

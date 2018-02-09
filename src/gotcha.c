@@ -115,9 +115,9 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
   if((!no_write) || no_write[ref->index]){
     //setBindingAddressPointer(user_binding,current_address);
     writeAddress((((void **)(lmap->l_addr + offset))), user_binding->wrapper_pointer);
-    debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX %lu\n",
+    debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap), 
-               user_binding->wrapper_pointer, ref->index);
+               user_binding->wrapper_pointer);
   }
   return 0;
 }

@@ -84,5 +84,6 @@ binding_t *get_tool_bindings(tool_t *tool);
 struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_in);
 struct gotcha_configuration_t get_default_configuration();
 enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* data);
+int tool_equal(tool_t* tool_1, tool_t* tool_2);
 
 #endif
