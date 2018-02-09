@@ -150,7 +150,8 @@ void rewriteWrappingTables(tool_t* adding_tool, struct gotcha_binding_t* user_bi
       }
     }
   }
-  for(int i = 0 ; i < num_actions; i++) {
+  int i = 0;
+  for(i = 0 ; i < num_actions; i++) {
      if((!functions_above[i]) && (!functions_below[i])) {
        rewrite_table[i] = 1;
      }
