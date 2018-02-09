@@ -42,7 +42,7 @@ void bubble3(int* in){
   indices[1] = 2;
   indices[2] = 3;
   int i = 0;
-  knt i = 0;
+  int k = 0;
   for(i=0;i<3;i++){
     for(k=0;k<2;k++){
       if(in[k]<in[k+1]){
