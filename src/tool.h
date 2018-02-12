@@ -40,7 +40,7 @@ struct gotcha_configuration_t {
  **/
 typedef struct binding_t {
    struct tool_t *tool;
-   struct gotcha_binding_t *user_binding;
+   struct internal_binding_t *user_binding;
    int user_binding_size;
    hash_table_t binding_hash;
    struct binding_t *next_tool_binding;
@@ -69,6 +69,12 @@ typedef struct binding_ref_t {
    binding_t *binding;
    int index;
 } binding_ref_t;
+
+struct internal_binding_t {
+  struct binding_t* associated_binding_table;
+  struct gotcha_binding_t* user_binding;
+  struct gotcha_binding_t* next_binding;
+};
 
 tool_t *create_tool(const char *tool_name);
 tool_t *get_tool(const char *tool_name);

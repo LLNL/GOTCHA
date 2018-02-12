@@ -38,7 +38,7 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct gotcha_binding_t *binding_iter;
   signed long result;
   int found = 0, not_found = 0;
-  struct gotcha_binding_t *user_bindings = bindings->user_binding;
+  struct gotcha_binding_t *user_bindings = bindings->user_binding->user_binding;
   debug_printf(1, "Looking up exported symbols for %d table entries\n", num_names);
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
     if (is_vdso(lib)) {
@@ -104,7 +104,7 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
   result = lookup_hashtable(&bindings->binding_hash, name, (void **) &ref);
   if (result != 0)
      return 0;
-  user_binding = ref->binding->user_binding + ref->index;
+  user_binding = ref->binding->user_binding->user_binding + ref->index;
   void* current_address = (*((void **)(lmap->l_addr + offset)));
   struct binding_t* binding_iter;
 
@@ -137,10 +137,10 @@ void rewriteWrappingTables(tool_t* adding_tool, struct gotcha_binding_t* user_bi
         int result = lookup_hashtable(&binding->binding_hash, (char*)user_bindings[i].name, (void**)&ref);
         if( (result != -1) && (tool_equal(adding_tool , tool_iter) )){
            if((tool_iter_priority > add_priority) && (!functions_above[i])){
-             functions_above[i] = ref->binding->user_binding+ref->index;
+             functions_above[i] = ref->binding->user_binding->user_binding+ref->index;
            }
            if(tool_iter_priority <= add_priority){
-             functions_below[i] = ref->binding->user_binding+ref->index;
+             functions_below[i] = ref->binding->user_binding->user_binding+ref->index;
            }
         }
       }

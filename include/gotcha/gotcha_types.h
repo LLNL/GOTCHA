@@ -33,13 +33,14 @@ extern "C" {
  * as it passes through the pipeline
  */
 struct gotcha_binding_t {
-  const char* name;                      //!< The name of the function being wrapped
+  const char* name;                //!< The name of the function being wrapped
   void* wrapper_pointer;           //!< A pointer to the wrapper function
   void* function_address_pointer;  //!< A pointer to the function being wrapped
+  void* opaque_handle;             //!< This pointer is for Gotcha developer use only
 };
 
 /*!
- * The representation of an error (or success) of a GOTCHA action
+ * The representation of an error (or success) of a Gotcha action
  */
 enum gotcha_error_t {
   GOTCHA_SUCCESS = 0,          //!< The call succeeded
@@ -48,10 +49,6 @@ enum gotcha_error_t {
   GOTCHA_INVALID_CONFIGURATION //!< Failure on a configuration call
 };
 
-/*!
- * TODO DO-NOT-MERGE figure out what keys to start with
- * The configurable parts of Gotcha bindings
- */
 enum gotcha_config_key_t {
   GOTCHA_PRIORITY
 };

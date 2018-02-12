@@ -98,10 +98,16 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
    binding_t *newbinding;
    binding_ref_t *ref_table = NULL;
    int result, i;
-
    newbinding = (binding_t *) gotcha_malloc(sizeof(binding_t));
    newbinding->tool = tool;
-   newbinding->user_binding = user_binding;
+   struct internal_binding_t* internal_bindings = (struct internal_binding_t*)gotcha_malloc(sizeof(struct internal_binding_t)*user_binding_size);
+   for(i=0;i<user_binding_size;i++){
+      internal_bindings[i].user_binding = &user_binding[i];
+      user_binding[i].opaque_handle = &internal_bindings[i]; 
+      internal_bindings[i].associated_binding_table = newbinding;
+   }  
+   //newbinding->user_binding = user_binding;
+   newbinding->user_binding = internal_bindings;
    newbinding->user_binding_size = user_binding_size;
    result = create_hashtable(&newbinding->binding_hash, user_binding_size * 2, 
                              (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
