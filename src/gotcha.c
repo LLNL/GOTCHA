@@ -95,10 +95,6 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
                found, num_names);
   return 0;
 }
-typedef long int ptd;
-ptd ptrdiff(void* d1, void* d2){
-  return ((unsigned long int)(d1)) - ((unsigned long int)(d2));
-}
 int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
                      struct link_map *lmap, binding_t *bindings, int* no_write) {
   int result;
@@ -249,7 +245,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
       ret_code = GOTCHA_FUNCTION_NOT_FOUND;
     }
   }
-
+  free(write_table);
   debug_printf(1, "Returning code %d from gotcha_wrap\n", ret_code);
   return ret_code;
 }
@@ -270,20 +266,16 @@ enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_conf
 }
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
-  enum gotcha_error_t error_on_call = GOTCHA_SUCCESS;
   enum gotcha_error_t error_on_set = gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
   if(error_on_set != GOTCHA_SUCCESS) {
-    error_on_call = error_on_set;
     debug_printf(1, "Failed to set priority on tool %s\n", tool_name);
+    return GOTCHA_INVALID_CONFIGURATION;
   }
-  else {
-   
-    tool_t* tool_to_place = get_tool(tool_name);
-    if(!tool_to_place){
-       tool_to_place = create_tool(tool_name);
-    }
-    remove_tool_from_list(tool_to_place);
-    reorder_tool(tool_to_place);
+  tool_t* tool_to_place = get_tool(tool_name);
+  if(!tool_to_place){
+     tool_to_place = create_tool(tool_name);
   }
-  return error_on_call;
+  remove_tool_from_list(tool_to_place);
+  reorder_tool(tool_to_place);
+  return GOTCHA_SUCCESS;
 }

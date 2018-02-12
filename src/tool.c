@@ -64,6 +64,7 @@ void reorder_tool(tool_t* new_tool) {
 tool_t *create_tool(const char *tool_name)
 {
    debug_printf(1, "Found no existing tool with name %s\n",tool_name);
+   // TODO: ensure free
    tool_t *newtool = (tool_t *) gotcha_malloc(sizeof(tool_t));
    if (!newtool) {
       error_printf("Failed to malloc tool %s\n", tool_name);
@@ -108,7 +109,7 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
       error_printf("Could not create hash table for %s\n", tool->tool_name);
       goto error; // error is a label which frees allocated resources and returns NULL
    }
-
+   // TODO: ensure free
    ref_table = (binding_ref_t *) gotcha_malloc(sizeof(binding_ref_t) * user_binding_size);
    for (i = 0; i < user_binding_size; i++) {
       ref_table[i].symbol_name = (char *) user_binding[i].name;
@@ -213,20 +214,25 @@ enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key
 
 }
 
-enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* data){
+int gotcha_get_priority(const char* tool_name){
+  int return_value;
+  get_configuration_value(tool_name, GOTCHA_PRIORITY,&return_value);
+  return return_value;
+}
+enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* location_to_store_result){
   struct tool_t* tool = get_tool(tool_name);
   if(tool==NULL){
     debug_printf(1, "Property being examined for nonexistent tool %s\n", tool_name);
     return GOTCHA_INVALID_CONFIGURATION;
   }
-  get_default_configuration_value(key, data);
+  get_default_configuration_value(key, location_to_store_result);
   int found_valid_value = 0;
   while( (tool!=NULL) && !(found_valid_value) ){
     struct gotcha_configuration_t config = tool->config;
     if(key==GOTCHA_PRIORITY){
       int current_priority = config.priority;
       if(current_priority!=UNSET_PRIORITY){
-        *((int*)(data)) = config.priority; 
+        *((int*)(location_to_store_result)) = config.priority; 
         found_valid_value = 1;
       }
     }
