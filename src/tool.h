@@ -73,6 +73,7 @@ typedef struct binding_ref_t {
 struct internal_binding_t {
   struct binding_t* associated_binding_table;
   struct gotcha_binding_t* user_binding;
+  int is_rewritten;
   struct internal_binding_t* next_binding;
 };
 

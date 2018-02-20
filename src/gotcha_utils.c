@@ -62,7 +62,7 @@ void debug_init()
 }
 
 void setup_function_hash_table(){
-  function_hash_table = (struct hash_table_t*)malloc(sizeof(hash_table_t));
+  function_hash_table = (hash_table_t*)malloc(sizeof(hash_table_t));
   create_hashtable(function_hash_table, 4096, (hash_func_t)strhash, (hash_cmp_t) gotcha_strcmp); 
 }
 
