@@ -76,7 +76,7 @@ tool_t *create_tool(const char *tool_name)
    newtool->config = get_default_configuration();
    reorder_tool(newtool);
    newtool->parent_tool = NULL;
-   create_hashtable(&newtool->child_tools, 5, 
+   create_hashtable(&newtool->child_tools, 24, 
      (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    //tools = newtool;
    debug_printf(1, "Created new tool %s\n", tool_name);
@@ -115,7 +115,6 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
       error_printf("Could not create hash table for %s\n", tool->tool_name);
       goto error; // error is a label which frees allocated resources and returns NULL
    }
-   // TODO: ensure free
    ref_table = (binding_ref_t *) gotcha_malloc(sizeof(binding_ref_t) * user_binding_size);
    for (i = 0; i < user_binding_size; i++) {
       ref_table[i].symbol_name = (char *) user_binding[i].name;

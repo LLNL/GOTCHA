@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "elf_ops.h"
 #include "gotcha/gotcha.h"
 #include <stdlib.h>
+#include "hash.h"
 
 int debug_print_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
                      char *filter)
@@ -60,7 +61,10 @@ void debug_init()
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
 
-
+void setup_function_hash_table(){
+  function_hash_table = (struct hash_table_t*)malloc(sizeof(hash_table_t));
+  create_hashtable(function_hash_table, 4096, (hash_func_t)strhash, (hash_cmp_t) gotcha_strcmp); 
+}
 
 void gotcha_init(){
    static int gotcha_initialized = 0;
@@ -68,6 +72,7 @@ void gotcha_init(){
      return;
    }
    gotcha_initialized = 1;
+   setup_function_hash_table();
    debug_init();
    handle_libdl();
 }
