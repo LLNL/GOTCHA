@@ -98,3 +98,49 @@ set_property(TEST test_priority_321
   PROPERTY
   ENVIRONMENT "tool_three_priority=1"
 )
+
+#add_test(test_priority_221 priority_app)
+#set_property(TEST test_priority_221
+#  PROPERTY
+#  ENVIRONMENT "tool_one_priority=2"
+#)
+#set_property(TEST test_priority_221
+#  APPEND
+#  PROPERTY
+#  ENVIRONMENT "tool_two_priority=2"
+#)
+#set_property(TEST test_priority_221
+#  APPEND
+#  PROPERTY
+#  ENVIRONMENT "tool_three_priority=1"
+#)
+add_test(test_priority_212 priority_app)
+set_property(TEST test_priority_212
+  PROPERTY
+  ENVIRONMENT "tool_one_priority=2"
+)
+set_property(TEST test_priority_212
+  APPEND
+  PROPERTY
+  ENVIRONMENT "tool_two_priority=1"
+)
+set_property(TEST test_priority_212
+  APPEND
+  PROPERTY
+  ENVIRONMENT "tool_three_priority=2"
+)
+#add_test(test_priority_122 priority_app)
+#set_property(TEST test_priority_122
+#  PROPERTY
+#  ENVIRONMENT "tool_one_priority=1"
+#)
+#set_property(TEST test_priority_122
+#  APPEND
+#  PROPERTY
+#  ENVIRONMENT "tool_two_priority=2"
+#)
+#set_property(TEST test_priority_122
+#  APPEND
+#  PROPERTY
+#  ENVIRONMENT "tool_three_priority=2"
+#)

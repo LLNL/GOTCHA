@@ -213,7 +213,6 @@ enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key
   struct gotcha_configuration_t config = get_default_configuration();
   if(key==GOTCHA_PRIORITY){
     int current_priority = config.priority;
-    if(current_priority!=UNSET_PRIORITY)
     *((int*)(data)) = config.priority; 
   }
   return GOTCHA_SUCCESS;
@@ -240,6 +239,7 @@ enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_c
       if(current_priority!=UNSET_PRIORITY){
         *((int*)(location_to_store_result)) = config.priority; 
         found_valid_value = 1;
+        return GOTCHA_SUCCESS;
       }
     }
     else{

@@ -45,7 +45,7 @@ void bubble3(int* in){
   int k = 0;
   for(i=0;i<3;i++){
     for(k=0;k<2;k++){
-      if(in[k]<in[k+1]){
+      if(in[k]<=in[k+1]){
          int temp = in[k];
          in[k] = in[k+1];
          in[k+1] = temp;

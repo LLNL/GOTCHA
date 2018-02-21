@@ -117,7 +117,10 @@ void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
       addto_hashtable(function_hash_table, (void*)name, (void*)binding);
     }
     else{
-      while((head->next_binding) && (gotcha_get_priority(head->next_binding->associated_binding_table->tool->tool_name) > insert_priority) ){
+      while((head->next_binding) && (gotcha_get_priority(head->next_binding->associated_binding_table->tool->tool_name) >= insert_priority) ){
+        if(head->user_binding->wrapper_pointer==binding->user_binding->wrapper_pointer){
+          return;
+        }
         head = head->next_binding;
       }
       if(head->user_binding->wrapper_pointer != binding->user_binding->wrapper_pointer){ // Ensure we aren't rewriting a wrapper to call itself
@@ -125,8 +128,8 @@ void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
           *(void**)(binding->user_binding->function_address_pointer) = head->next_binding->user_binding->wrapper_pointer;
           binding->next_binding = head->next_binding;
         }
-      head->next_binding = binding;
-      *(void**)(head->user_binding->function_address_pointer) = binding->user_binding->wrapper_pointer;
+        head->next_binding = binding;
+        *(void**)(head->user_binding->function_address_pointer) = binding->user_binding->wrapper_pointer;
       }
     }
   }
