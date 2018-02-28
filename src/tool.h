@@ -24,6 +24,10 @@ struct tool_t;
 
 #define UNSET_PRIORITY (-1)
 
+enum gotcha_config_key_t {
+  GOTCHA_PRIORITY
+};
+
 /**
  * A structure representing how a given tool's bindings are configured
  */

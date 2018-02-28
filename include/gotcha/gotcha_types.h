@@ -49,10 +49,6 @@ enum gotcha_error_t {
   GOTCHA_INVALID_CONFIGURATION //!< Failure on a configuration call
 };
 
-enum gotcha_config_key_t {
-  GOTCHA_PRIORITY
-};
-
 #if defined(__cplusplus) 
 }
 #endif
