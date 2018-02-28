@@ -40,8 +40,8 @@ struct gotcha_configuration_t {
  **/
 typedef struct binding_t {
    struct tool_t *tool;
-   struct internal_binding_t *user_binding;
-   int user_binding_size;
+   struct internal_binding_t *internal_bindings;
+   int internal_bindings_size;
    hash_table_t binding_hash;
    struct binding_t *next_tool_binding;
    struct binding_t *next_binding;

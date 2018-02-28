@@ -38,7 +38,7 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct gotcha_binding_t *binding_iter;
   signed long result;
   int found = 0, not_found = 0;
-  struct gotcha_binding_t *user_bindings = bindings->user_binding->user_binding;
+  struct gotcha_binding_t *user_bindings = bindings->internal_bindings->user_binding;
   debug_printf(1, "Looking up exported symbols for %d table entries\n", num_names);
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
     if (is_vdso(lib)) {
@@ -160,7 +160,7 @@ int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) off
   result = lookup_hashtable(&bindings->binding_hash, name, (void **) &ref);
   if (result != 0)
      return 0;
-  internal_binding = ((struct internal_binding_t*)(ref->binding->user_binding + ref->index));
+  internal_binding = ((struct internal_binding_t*)(ref->binding->internal_bindings + ref->index));
   gotcha_rewrite_got(internal_binding, (void**)(lmap->l_addr + offset));
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX\n",
              name, (lmap->l_addr + offset), LIB_NAME(lmap), 
@@ -236,7 +236,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
   int binding_iter; 
   for(binding_iter = 0; binding_iter < num_actions; binding_iter++){
-    gotcha_rewrite_wrapper_orders(&bindings->user_binding[binding_iter]);
+    gotcha_rewrite_wrapper_orders(&bindings->internal_bindings[binding_iter]);
   }
   ret_code = GOTCHA_SUCCESS;
   for(i = 0; i<num_actions;i++){

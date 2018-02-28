@@ -108,8 +108,8 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
       internal_bindings[i].associated_binding_table = newbinding;
    }  
    //newbinding->user_binding = user_binding;
-   newbinding->user_binding = internal_bindings;
-   newbinding->user_binding_size = user_binding_size;
+   newbinding->internal_bindings = internal_bindings;
+   newbinding->internal_bindings_size = user_binding_size;
    result = create_hashtable(&newbinding->binding_hash, user_binding_size * 2, 
                              (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    if (result != 0) {
