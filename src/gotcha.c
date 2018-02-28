@@ -33,7 +33,7 @@ static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
   writeAddress(getBindingAddressPointer(in), value);
 }
 
-int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
+static int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   struct link_map *lib;
   struct gotcha_binding_t *binding_iter;
   signed long result;
@@ -95,7 +95,8 @@ int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
                found, num_names);
   return 0;
 }
-void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
+
+static void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
   if(binding->is_rewritten){
     binding->is_rewritten = 0;
     return;
@@ -134,7 +135,8 @@ void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
     }
   }
 }
-void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_entry){
+
+static void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_entry){
   struct internal_binding_t* head;
   int hash_result;
   const char* name = binding->user_binding->name;
@@ -152,8 +154,9 @@ void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_entry){
     }
   }
 }
-int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
-                     struct link_map *lmap, binding_t *bindings) {
+
+static int gotcha_wrap_impl(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
+                            struct link_map *lmap, binding_t *bindings) {
   int result;
   binding_ref_t *ref;
   struct internal_binding_t *internal_binding;
@@ -181,8 +184,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
 
   gotcha_init();
 
-  //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries
-   
+  //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries   
   for (i = 0; i < num_actions; i++) {
     setBindingAddressPointer(&user_bindings[i], NULL);
   }
@@ -250,7 +252,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   return ret_code;
 }
 
-enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
+static enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
   tool_t * tool = get_tool(tool_name);
   if(tool==NULL){
     tool = create_tool(tool_name);

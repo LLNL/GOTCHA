@@ -22,24 +22,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <stdlib.h>
 #include "hash.h"
 
-int debug_print_impl(ElfW(Sym) * symbol, char *name, ElfW(Addr) offset,
-                     char *filter)
-{
-  if (gotcha_strstr(name, filter)) {
-     debug_printf(1, "Symbol name: %s, offset %lu, size %lu\n", name, offset,
-                  symbol->st_size);
-  }
-  return 0;
-}
-
-int debug_print(struct link_map *libc, char *filter)
-{
-  FOR_EACH_PLTREL(libc, debug_print_impl, filter);
-  return 0;
-}
-
 int debug_level;
-void debug_init()
+static void debug_init()
 {
    static int debug_initialized = 0;
 
@@ -61,7 +45,7 @@ void debug_init()
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
 
-void setup_function_hash_table(){
+static void setup_function_hash_table(){
   function_hash_table = (hash_table_t*)malloc(sizeof(hash_table_t));
   create_hashtable(function_hash_table, 4096, (hash_func_t)strhash, (hash_cmp_t) gotcha_strcmp); 
 }

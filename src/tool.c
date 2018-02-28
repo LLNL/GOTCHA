@@ -23,9 +23,11 @@ static binding_t *all_bindings = NULL;
 tool_t* get_tool_list(){
   return tools;
 }
+
 int tool_equal(tool_t* t1, tool_t* t2){
   return gotcha_strcmp(t1->tool_name,t2->tool_name);
 }
+
 void remove_tool_from_list(struct tool_t* target){
      const char* name = target->tool_name;
      if(!tools){
@@ -82,6 +84,7 @@ tool_t *create_tool(const char *tool_name)
    debug_printf(1, "Created new tool %s\n", tool_name);
    return newtool;
 }
+
 tool_t *get_tool(const char *tool_name)
 {
    tool_t *t;
@@ -209,6 +212,7 @@ struct gotcha_configuration_t get_default_configuration(){
   result.priority = UNSET_PRIORITY;
   return result;
 }
+
 enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key, void* data){
   struct gotcha_configuration_t config = get_default_configuration();
   if(key==GOTCHA_PRIORITY){
@@ -224,6 +228,7 @@ int gotcha_get_priority(const char* tool_name){
   get_configuration_value(tool_name, GOTCHA_PRIORITY,&return_value);
   return return_value;
 }
+
 enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* location_to_store_result){
   struct tool_t* tool = get_tool(tool_name);
   if(tool==NULL){
