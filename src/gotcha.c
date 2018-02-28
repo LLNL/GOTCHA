@@ -104,13 +104,13 @@ static void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
   struct internal_binding_t* head;
   int hash_result;
   const char* name = binding->user_binding->name;
-  int insert_priority = gotcha_get_priority(binding->associated_binding_table->tool->tool_name);
+  int insert_priority = get_priority(binding->associated_binding_table->tool);
   hash_result = lookup_hashtable(function_hash_table, (void*)name, (void**)&head);
   if(hash_result != 0){
     debug_printf(1,"Rewriting wrapper on an unknown function");
   }
   else{
-    int priority = gotcha_get_priority(head->associated_binding_table->tool->tool_name);
+    int priority = get_priority(head->associated_binding_table->tool);
     if(priority < insert_priority){ // if I'm the new head of the list of calls
       binding->next_binding = head;
       (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
@@ -118,7 +118,7 @@ static void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
       addto_hashtable(function_hash_table, (void*)name, (void*)binding);
     }
     else{
-      while((head->next_binding) && (gotcha_get_priority(head->next_binding->associated_binding_table->tool->tool_name) >= insert_priority) ){
+      while((head->next_binding) && (get_priority(head->next_binding->associated_binding_table->tool) >= insert_priority) ){
         if(head->user_binding->wrapper_pointer==binding->user_binding->wrapper_pointer){
           return;
         }
@@ -140,7 +140,7 @@ static void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_e
   struct internal_binding_t* head;
   int hash_result;
   const char* name = binding->user_binding->name;
-  int insert_priority = gotcha_get_priority(binding->associated_binding_table->tool->tool_name);
+  int insert_priority = get_priority(binding->associated_binding_table->tool);
   hash_result = lookup_hashtable(function_hash_table, (void*)name, (void**)&head);
   if(hash_result != 0){
     addto_hashtable(function_hash_table, (void*)name, (void*)binding);
@@ -148,7 +148,7 @@ static void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_e
     binding->is_rewritten = 1;
   }
   else{
-    int priority = gotcha_get_priority(head->associated_binding_table->tool->tool_name);
+    int priority = get_priority(head->associated_binding_table->tool);
     if(priority < insert_priority){ // if I'm the new head of the list of calls
       writeAddress(got_entry, binding->user_binding->wrapper_pointer);
     }
@@ -281,3 +281,8 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int
   reorder_tool(tool_to_place);
   return GOTCHA_SUCCESS;
 }
+
+GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int *priority){
+  return get_configuration_value(tool_name, GOTCHA_PRIORITY, priority);
+}
+

@@ -223,12 +223,6 @@ enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key
 
 }
 
-int gotcha_get_priority(const char* tool_name){
-  int return_value;
-  get_configuration_value(tool_name, GOTCHA_PRIORITY,&return_value);
-  return return_value;
-}
-
 enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* location_to_store_result){
   struct tool_t* tool = get_tool(tool_name);
   if(tool==NULL){
@@ -254,4 +248,9 @@ enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_c
     tool = tool->parent_tool;
   }
   return GOTCHA_SUCCESS;  
+}
+
+int get_priority(tool_t *tool)
+{
+   return tool->config.priority;
 }
