@@ -226,8 +226,8 @@ enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key
 enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* location_to_store_result){
   struct tool_t* tool = get_tool(tool_name);
   if(tool==NULL){
-    debug_printf(1, "Property being examined for nonexistent tool %s\n", tool_name);
-    return GOTCHA_INVALID_CONFIGURATION;
+     error_printf("Property being examined for nonexistent tool %s\n", tool_name);
+     return GOTCHA_INVALID_TOOL;
   }
   get_default_configuration_value(key, location_to_store_result);
   int found_valid_value = 0;
@@ -242,8 +242,8 @@ enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_c
       }
     }
     else{
-      debug_printf(1, "Invalid property being configured on tool %s\n", tool_name);
-      return GOTCHA_INVALID_CONFIGURATION;
+      error_printf("Invalid property being configured on tool %s\n", tool_name);
+      return GOTCHA_INTERNAL;
     }
     tool = tool->parent_tool;
   }

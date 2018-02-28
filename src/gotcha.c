@@ -261,8 +261,8 @@ static enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotc
     tool->config.priority = value;
   }
   else{
-    debug_printf(1, "Invalid property being configured on tool %s\n", tool_name);
-    return GOTCHA_INVALID_CONFIGURATION;
+    error_printf("Invalid property being configured on tool %s\n", tool_name);
+    return GOTCHA_INTERNAL;
   }
   return GOTCHA_SUCCESS;
 }
@@ -270,8 +270,7 @@ static enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotc
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
   enum gotcha_error_t error_on_set = gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
   if(error_on_set != GOTCHA_SUCCESS) {
-    debug_printf(1, "Failed to set priority on tool %s\n", tool_name);
-    return GOTCHA_INVALID_CONFIGURATION;
+    return error_on_set;
   }
   tool_t* tool_to_place = get_tool(tool_name);
   if(!tool_to_place){
