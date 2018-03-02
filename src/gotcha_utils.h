@@ -27,6 +27,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #define GOTCHA_UTILS_H
 #include <sys/mman.h>
 #include "gotcha/gotcha_types.h"
+#include "hash.h"
 // TODO: remove these includes
 #include <string.h>
 #include <stdlib.h>
@@ -43,6 +44,9 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 extern int debug_level;
 void debug_init();
 void gotcha_init();
+hash_table_t* function_hash_table;
+
+void setup_function_hash_table();
 
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \
@@ -106,5 +110,6 @@ struct rev_iter{
 };
 
 int debug_print(struct link_map *libc, char *filter);
+
 
 #endif

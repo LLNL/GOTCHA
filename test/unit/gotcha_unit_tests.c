@@ -206,6 +206,7 @@ START_TEST(gotcha_realloc_test){
   x[4] = 5;
   x = (int*)gotcha_realloc(x,sizeof(int)*15);
   x[14] = 5;
+  gotcha_free(x);
 }
 END_TEST
 
@@ -221,6 +222,8 @@ START_TEST(gotcha_memcpy_test){
   for(i =0 ;i<10;i++){
     ck_assert_msg(y[i] == i, "Target for gotcha_memcpy doesn't have the correct data");
   }
+  gotcha_free(x);
+  gotcha_free(y);
 }
 END_TEST
 

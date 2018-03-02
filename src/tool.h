@@ -22,6 +22,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 struct tool_t;
 
+#define UNSET_PRIORITY (-1)
+
+/**
+ * A structure representing how a given tool's bindings are configured
+ */
+struct gotcha_configuration_t {
+  int priority;
+};
+
 /**
  * The internal structure that matches the external gotcha_binding_t.
  * In addition to the data specified in the gotcha_binding_t, we add:
@@ -31,7 +40,7 @@ struct tool_t;
  **/
 typedef struct binding_t {
    struct tool_t *tool;
-   struct gotcha_binding_t *user_binding;
+   struct internal_binding_t *user_binding;
    int user_binding_size;
    hash_table_t binding_hash;
    struct binding_t *next_tool_binding;
@@ -46,6 +55,9 @@ typedef struct tool_t {
    const char *tool_name;
    binding_t *binding;
    struct tool_t *next_tool;
+   struct gotcha_configuration_t config;
+   hash_table_t child_tools;
+   struct tool_t * parent_tool;
 } tool_t;
 
 /**
@@ -58,11 +70,28 @@ typedef struct binding_ref_t {
    int index;
 } binding_ref_t;
 
+struct internal_binding_t {
+  struct binding_t* associated_binding_table;
+  struct gotcha_binding_t* user_binding;
+  int is_rewritten;
+  struct internal_binding_t* next_binding;
+};
+
 tool_t *create_tool(const char *tool_name);
 tool_t *get_tool(const char *tool_name);
+tool_t *get_tool_list();
+void reorder_tool(tool_t* new_tool);
+void remove_tool_from_list(struct tool_t* target);
+void print_tools();
 
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size);
 binding_t *get_bindings();
 binding_t *get_tool_bindings(tool_t *tool);
+
+struct gotcha_configuration_t get_configuration_for_tool(const char* tool_name_in);
+struct gotcha_configuration_t get_default_configuration();
+enum gotcha_error_t get_configuration_value(const char* tool_name, enum gotcha_config_key_t key, void* location_to_store_result);
+int gotcha_get_priority(const char* tool_name);
+int tool_equal(tool_t* tool_1, tool_t* tool_2);
 
 #endif

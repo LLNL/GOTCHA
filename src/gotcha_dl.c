@@ -38,7 +38,7 @@ void* dlopen_wrapper(const char* filename, int flags){
    */
   onlyFilterLast();
   for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
-      gotcha_wrap(tool_iter->user_binding,tool_iter->user_binding_size,tool_iter->tool->tool_name);
+      gotcha_wrap(tool_iter->user_binding->user_binding,tool_iter->user_binding_size,tool_iter->tool->tool_name);
   }
   restoreLibraryFilterFunc();
   return handle;
@@ -55,9 +55,9 @@ void* dlsym_wrapper(void* handle, const char* symbol_name){
     if(tool_iter){
       int loop = 0;
       for(loop=0;loop<tool_iter->user_binding_size;loop++){
-        if(gotcha_strcmp(tool_iter->user_binding[loop].name,symbol_name)==0){
+        if(gotcha_strcmp(tool_iter->user_binding->user_binding[loop].name,symbol_name)==0){
           free_reverse_iterator(rev);
-          return tool_iter->user_binding[loop].wrapper_pointer;
+          return tool_iter->user_binding->user_binding[loop].wrapper_pointer;
         }
       }
     }

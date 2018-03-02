@@ -39,6 +39,7 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
    if (initial_size % entries_per_page)
       initial_size += entries_per_page - (initial_size % entries_per_page);
 
+   // TODO: ensure free
    newtable = (hash_entry_t *) gotcha_malloc(initial_size * sizeof(hash_entry_t));
    if (!newtable)
       return -1;
