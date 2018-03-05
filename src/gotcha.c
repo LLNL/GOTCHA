@@ -48,7 +48,10 @@ static int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
     }
     debug_printf(2, "Searching for exported symbols in %s\n", LIB_NAME(lib));
     INIT_DYNAMIC(lib);
-    gotcha_assert(gnu_hash || elf_hash);
+    if (!gnu_hash && !elf_hash) {
+       debug_printf(3, "Library %s does not export or import symbols\n", LIB_NAME(lib));
+       continue;
+    }
 
     int binding_check = 0;
     for (binding_check = 0, binding_iter = user_bindings; binding_check < num_names;
@@ -96,44 +99,71 @@ static int gotcha_prepare_symbols(binding_t *bindings, int num_names) {
   return 0;
 }
 
-static void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding){
-  if(binding->is_rewritten){
-    binding->is_rewritten = 0;
-    return;
-  }
-  struct internal_binding_t* head;
-  int hash_result;
+static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
+{
+   binding->next_binding = head;
+   (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
+   removefrom_hashtable(function_hash_table, (void*) binding->user_binding->name);
+   addto_hashtable(function_hash_table, (void*)binding->user_binding->name, (void*)binding);
+}
+
+static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
+{
+   struct internal_binding_t *next = pos->next_binding;
+   if (next) {
+      *(void**)(binding->user_binding->function_address_pointer) = next->user_binding->wrapper_pointer;
+      binding->next_binding = next;
+   }
+   pos->next_binding = binding;
+   *(void**)(pos->user_binding->function_address_pointer) = binding->user_binding->wrapper_pointer;
+}
+
+static void gotcha_rewrite_wrapper_orders(struct internal_binding_t* binding)
+{
   const char* name = binding->user_binding->name;
   int insert_priority = get_priority(binding->associated_binding_table->tool);
+
+  debug_printf(2, "gotcha_rewrite_wrapper_orders for binding %s in tool %s of priority %d\n",
+               name, binding->associated_binding_table->tool->tool_name, insert_priority);
+
+  if (binding->is_rewritten) {
+     debug_printf(2, "Binding is already rewritten.  Skipping gotcha_rewrite_wrapper_orders\n");
+     binding->is_rewritten = 0;
+     return;
+  }
+
+  struct internal_binding_t* head;
+  int hash_result;
   hash_result = lookup_hashtable(function_hash_table, (void*)name, (void**)&head);
   if(hash_result != 0){
-    debug_printf(1,"Rewriting wrapper on an unknown function");
+    debug_printf(2, "Skipping rewriting wrapper on a not present function %s\n", name);
+    return;
   }
-  else{
-    int priority = get_priority(head->associated_binding_table->tool);
-    if(priority < insert_priority){ // if I'm the new head of the list of calls
-      binding->next_binding = head;
-      (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
-      removefrom_hashtable(function_hash_table, (void*)name);
-      addto_hashtable(function_hash_table, (void*)name, (void*)binding);
-    }
-    else{
-      while((head->next_binding) && (get_priority(head->next_binding->associated_binding_table->tool) >= insert_priority) ){
-        if(head->user_binding->wrapper_pointer==binding->user_binding->wrapper_pointer){
-          return;
-        }
-        head = head->next_binding;
-      }
-      if(head->user_binding->wrapper_pointer != binding->user_binding->wrapper_pointer){ // Ensure we aren't rewriting a wrapper to call itself
-        if(head->next_binding){
-          *(void**)(binding->user_binding->function_address_pointer) = head->next_binding->user_binding->wrapper_pointer;
-          binding->next_binding = head->next_binding;
-        }
-        head->next_binding = binding;
-        *(void**)(head->user_binding->function_address_pointer) = binding->user_binding->wrapper_pointer;
-      }
-    }
+
+  int head_priority = get_priority(head->associated_binding_table->tool);
+    if (head_priority < insert_priority) {
+     debug_printf(2, "New binding priority %d is greater than head priority %d, adding to head\n",
+                   insert_priority, head_priority);
+     insert_at_head(binding, head);
+     return;
   }
+
+  struct internal_binding_t* cur;
+  for (cur = head; cur->next_binding; cur = cur->next_binding) {
+     int next_priority = get_priority(cur->next_binding->associated_binding_table->tool);
+     debug_printf(3, "Comparing binding for new insertion %d to binding for tool %s at %d\n",
+                   insert_priority, cur->next_binding->associated_binding_table->tool->tool_name,
+                   next_priority);
+     if (next_priority < insert_priority) {
+        break;
+     }
+     if (cur->user_binding->wrapper_pointer == binding->user_binding->wrapper_pointer) {
+        debug_printf(3, "Tool is already inserted.  Skipping binding rewrite\n");
+        return;
+     }
+  }
+  debug_printf(2, "Inserting binding after tool %s\n", cur->associated_binding_table->tool->tool_name);
+  insert_after_pos(binding, cur);
 }
 
 static void gotcha_rewrite_got(struct internal_binding_t* binding,  void** got_entry){
@@ -184,11 +214,21 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
 
   gotcha_init();
 
-  //First we rewrite anything being wrapped to NULL, so that we can recognize unfound entries   
+  debug_printf(1, "User called gotcha_wrap for tool %s with %d bindings\n",
+               tool_name, num_actions);
+  if (debug_level >= 3) {
+    for (i = 0; i < num_actions; i++) {
+       debug_bare_printf(3, "\t%d: %s will map to %p\n", i, user_bindings[i].name,
+                         user_bindings[i].wrapper_pointer);
+    }
+  }
+
+  debug_printf(2, "Setting %d user binding entries to NULL\n", num_actions);
   for (i = 0; i < num_actions; i++) {
     setBindingAddressPointer(&user_bindings[i], NULL);
   }
 
+  debug_printf(2, "Setting all GOT tables to be writable\n");
   for(lib_iter=_r_debug.r_map;lib_iter;lib_iter=lib_iter->l_next){
     INIT_DYNAMIC(lib_iter);
     if(got){
@@ -197,21 +237,14 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
         protect_size += page_size -  ((protect_size) %page_size);
       }
       ElfW(Addr) prot_address = BOUNDARY_BEFORE(got,(ElfW(Addr))page_size);
+      debug_printf(3, "Setting library %s GOT table from %p to +%lu to writeable\n",
+                   LIB_NAME(lib_iter), prot_address, protect_size);
       int res = gotcha_mprotect((void*)prot_address,protect_size,PROT_READ | PROT_WRITE | PROT_EXEC );
       if(res == -1){ // mprotect returns -1 on an error
-        debug_printf(1, "GOTCHA attempted to mark the GOT table as writable and was unable to do so, calls to wrapped functions will likely fail\n");
+        error_printf("GOTCHA attempted to mark the GOT table as writable and was unable to do so, calls to wrapped functions will likely fail\n");
       }
     }
   } 
-  debug_printf(1, "User called gotcha_wrap for tool %s with %d bindings\n",
-               tool_name, num_actions);
-
-  if (debug_level >= 3) {
-    for (i = 0; i < num_actions; i++) {
-       debug_bare_printf(3, "\t%d: %s will map to %p\n", i, user_bindings[i].name,
-                         user_bindings[i].wrapper_pointer);
-    }
-  }
 
   if (!tool_name)
      tool_name = "[UNSPECIFIED]";
@@ -223,19 +256,24 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      return GOTCHA_INTERNAL;
   }
 
+  debug_printf(2, "Creating internal binding data structures and adding binding to tool\n");
   binding_t *bindings = add_binding_to_tool(tool, user_bindings, num_actions);
   if (!bindings) {
      error_printf("Failed to create bindings for tool %s\n", tool_name);
      return GOTCHA_INTERNAL;
   }
 
+  debug_printf(2, "Matching exported symbols to binding table\n");
   gotcha_prepare_symbols(bindings, num_actions);
+
+  debug_printf(2, "Looking through callsites to identify wrapping locations\n");
   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
     debug_printf(2, "Looking for wrapped callsites in %s\n", LIB_NAME(lib_iter));
     if(libraryFilterFunc(lib_iter)){
       FOR_EACH_PLTREL(lib_iter, gotcha_wrap_impl, lib_iter, bindings);
     }
   }
+  
   int binding_iter; 
   for(binding_iter = 0; binding_iter < num_actions; binding_iter++){
     gotcha_rewrite_wrapper_orders(&bindings->internal_bindings[binding_iter]);
@@ -268,6 +306,8 @@ static enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotc
 }
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value){
+  gotcha_init();
+  debug_printf(1, "User called gotcha_set_priority(%s, %d)\n", tool_name, value);
   enum gotcha_error_t error_on_set = gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
   if(error_on_set != GOTCHA_SUCCESS) {
     return error_on_set;
@@ -282,6 +322,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int
 }
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int *priority){
+  gotcha_init();
   return get_configuration_value(tool_name, GOTCHA_PRIORITY, priority);
 }
 

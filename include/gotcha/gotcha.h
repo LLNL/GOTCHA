@@ -83,7 +83,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings,
  *
  * \param tool_name   The tool name to set the priority of
  * \param priority    The new priority value for the tool.  Lower values
- *                    are stacked intermost.
+ *                    are called innermost.
  *
  ******************************************************************************
  */
