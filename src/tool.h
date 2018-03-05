@@ -38,7 +38,6 @@ struct gotcha_configuration_t {
 /**
  * The internal structure that matches the external gotcha_binding_t.
  * In addition to the data specified in the gotcha_binding_t, we add:
- * - a hash table mapping function names to binding_ref_t
  * - a linked-list pointer to the next binding table for this tool
  * - a linked-list pointer to the next binding table
  **/
@@ -64,20 +63,9 @@ typedef struct tool_t {
    struct tool_t * parent_tool;
 } tool_t;
 
-/**
- * The target for hash tables that map from symbol names to 
- * binding_t entries.
- **/
-typedef struct binding_ref_t {
-   char *symbol_name;
-   binding_t *binding;
-   int index;
-} binding_ref_t;
-
 struct internal_binding_t {
   struct binding_t* associated_binding_table;
   struct gotcha_binding_t* user_binding;
-  int is_rewritten;
   struct internal_binding_t* next_binding;
 };
 

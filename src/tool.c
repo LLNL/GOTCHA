@@ -29,7 +29,6 @@ int tool_equal(tool_t* t1, tool_t* t2){
 }
 
 void remove_tool_from_list(struct tool_t* target){
-     const char* name = target->tool_name;
      if(!tools){
         return;
      }
@@ -47,7 +46,6 @@ void remove_tool_from_list(struct tool_t* target){
 }
 
 void reorder_tool(tool_t* new_tool) {
-  const char* name = new_tool->tool_name;
   int new_priority = new_tool->config.priority;
   if(tools==NULL || tools->config.priority >= new_priority ){
      new_tool->next_tool = tools;
@@ -99,13 +97,11 @@ tool_t *get_tool(const char *tool_name)
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size)
 {
    binding_t *newbinding;
-   binding_ref_t *ref_table = NULL;
    int result, i;
    newbinding = (binding_t *) gotcha_malloc(sizeof(binding_t));
    newbinding->tool = tool;
    struct internal_binding_t* internal_bindings = (struct internal_binding_t*)gotcha_malloc(sizeof(struct internal_binding_t)*user_binding_size);
    for(i=0;i<user_binding_size;i++){
-      internal_bindings[i].is_rewritten = 0;
       internal_bindings[i].user_binding = &user_binding[i];
       user_binding[i].opaque_handle = &internal_bindings[i]; 
       internal_bindings[i].associated_binding_table = newbinding;
@@ -119,15 +115,13 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
       error_printf("Could not create hash table for %s\n", tool->tool_name);
       goto error; // error is a label which frees allocated resources and returns NULL
    }
-   ref_table = (binding_ref_t *) gotcha_malloc(sizeof(binding_ref_t) * user_binding_size);
+
    for (i = 0; i < user_binding_size; i++) {
-      ref_table[i].symbol_name = (char *) user_binding[i].name;
-      ref_table[i].binding = newbinding;
-      ref_table[i].index = i;
-      result = addto_hashtable(&newbinding->binding_hash, ref_table[i].symbol_name, ref_table+i);
+      result = addto_hashtable(&newbinding->binding_hash, (void *) user_binding[i].name,
+                               (void *) (internal_bindings + i));
       if (result != 0) {
          error_printf("Could not add hash entry for %s to table for tool %s\n", 
-                      ref_table[i].symbol_name, tool->tool_name);
+                      user_binding[i].name, tool->tool_name);
          goto error; // error is a label which frees allocated resources and returns NULL
       }
    }
@@ -144,8 +138,6 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
   error:
    if (newbinding)
       gotcha_free(newbinding);
-   if (ref_table)
-      gotcha_free(ref_table);
    return NULL;
 }
 
@@ -216,7 +208,6 @@ struct gotcha_configuration_t get_default_configuration(){
 enum gotcha_error_t get_default_configuration_value(enum gotcha_config_key_t key, void* data){
   struct gotcha_configuration_t config = get_default_configuration();
   if(key==GOTCHA_PRIORITY){
-    int current_priority = config.priority;
     *((int*)(data)) = config.priority; 
   }
   return GOTCHA_SUCCESS;
