@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 int alwaysTrue(struct link_map* candidate KNOWN_UNUSED);
 extern int (*libraryFilterFunc)(struct link_map*);
 
-static const char* filter;
 int trueIfNameMatches(struct link_map* target);
 int trueIfLast(struct link_map* target);
 void filterLibrariesByName(const char* nameFilter);
