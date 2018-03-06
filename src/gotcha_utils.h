@@ -32,7 +32,6 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 // END TODO
 #include <elf.h>
 #include <link.h>
@@ -43,7 +42,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;
 void gotcha_init();
-hash_table_t* function_hash_table;
+extern hash_table_t function_hash_table;
 
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \

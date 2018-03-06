@@ -45,9 +45,10 @@ static void debug_init()
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }
 
+hash_table_t function_hash_table;
+
 static void setup_function_hash_table(){
-  function_hash_table = (hash_table_t*)malloc(sizeof(hash_table_t));
-  create_hashtable(function_hash_table, 4096, (hash_func_t)strhash, (hash_cmp_t) gotcha_strcmp); 
+  create_hashtable(&function_hash_table, 4096, (hash_func_t)strhash, (hash_cmp_t) gotcha_strcmp); 
 }
 
 void gotcha_init(){

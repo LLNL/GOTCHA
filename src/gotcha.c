@@ -94,8 +94,8 @@ static void insert_at_head(struct internal_binding_t *binding, struct internal_b
 {
    binding->next_binding = head;
    (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
-   removefrom_hashtable(function_hash_table, (void*) binding->user_binding->name);
-   addto_hashtable(function_hash_table, (void*)binding->user_binding->name, (void*)binding);
+   removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
+   addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
@@ -119,10 +119,10 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
 
   struct internal_binding_t* head;
   int hash_result;
-  hash_result = lookup_hashtable(function_hash_table, (void*)name, (void**)&head);
+  hash_result = lookup_hashtable(&function_hash_table, (void*)name, (void**)&head);
   if(hash_result != 0) {
     debug_printf(2, "Adding new entry for %s to hash table\n", name);
-    addto_hashtable(function_hash_table, (void *) name, (void *) binding);
+    addto_hashtable(&function_hash_table, (void *) name, (void *) binding);
     return (RWO_NEED_LOOKUP | RWO_NEED_BINDING);
   }
 
