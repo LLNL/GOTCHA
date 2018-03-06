@@ -11,13 +11,13 @@ static void*(*orig_dlopen)(const char* filename, int flags);
 static void*(*orig_dlsym)(void* handle, const char* name);
 
 static struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
-  struct rev_iter* rev_builder = (struct rev_iter*)malloc(sizeof(struct rev_iter));
+  struct rev_iter* rev_builder = (struct rev_iter*) gotcha_malloc(sizeof(struct rev_iter));
   rev_builder->next = NULL;
   struct rev_iter* rever;
   struct binding_t* tool_iter = in;
   for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
     rev_builder->data = tool_iter;
-    rever =  (struct rev_iter*)malloc(sizeof(struct rev_iter));
+    rever =  (struct rev_iter*) gotcha_malloc(sizeof(struct rev_iter));
     rever->next = rev_builder;
     rev_builder = rever;
   }
@@ -28,7 +28,7 @@ static void free_reverse_iterator(struct rev_iter* free_me){
   struct rev_iter* next;
   while(free_me){
     next = free_me->next;
-    free(free_me);
+    gotcha_free(free_me);
     free_me = next;
   }
 }
