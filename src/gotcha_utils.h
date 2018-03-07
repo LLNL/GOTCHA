@@ -43,7 +43,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 extern int debug_level;
 void gotcha_init();
 extern hash_table_t function_hash_table;
-
+extern hash_table_t notfound_binding_table;
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \
      if (debug_level >= lvl) {                    \

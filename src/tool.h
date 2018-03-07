@@ -36,6 +36,23 @@ struct gotcha_configuration_t {
 };
 
 /**
+ * A per-library structure
+ **/
+#define LIB_GOT_MARKED_WRITEABLE (1 << 0)
+#define LIB_PRESENT              (1 << 1)
+typedef struct library_t {
+   struct link_map *map;
+   struct library_t *next;
+   struct library_t *prev;
+   unsigned int generation;
+   int flags;
+} library_t;
+struct library_t *get_library(struct link_map *map);
+struct library_t *add_library(struct link_map *map);
+void remove_library(struct link_map *map);
+extern unsigned int current_generation;
+   
+/**
  * The internal structure that matches the external gotcha_binding_t.
  * In addition to the data specified in the gotcha_binding_t, we add:
  * - a linked-list pointer to the next binding table for this tool

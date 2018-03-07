@@ -33,18 +33,42 @@ static void free_reverse_iterator(struct rev_iter* free_me){
   }
 }
 
-static void* dlopen_wrapper(const char* filename, int flags){
-  void* handle = orig_dlopen(filename,flags);
-  struct binding_t* tool_iter = get_bindings();
-  /**
-   * The dlopen'ed file is added to the end of the link map. We only have to overwrite symbols in it, and so we only look there
-   */
-  onlyFilterLast();
-  for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
-      gotcha_wrap(tool_iter->internal_bindings->user_binding,tool_iter->internal_bindings_size,tool_iter->tool->tool_name);
-  }
-  restoreLibraryFilterFunc();
-  return handle;
+static int per_binding(hash_key_t key, hash_data_t data, void *opaque)
+{
+   int result;
+   struct internal_binding_t *binding = (struct internal_binding_t *) data;
+
+   debug_printf(3, "Trying to re-bind %s from tool %s after dlopen\n",
+                binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+   
+   while (binding->next_binding) {
+      binding = binding->next_binding;
+      debug_printf(3, "Selecting new innermost version of binding %s from tool %s.\n",
+                   binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+   }
+   
+   result = prepare_symbol(binding);
+   if (result == -1) {
+      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding->name);
+      return 0;
+   }
+
+   removefrom_hashtable(&notfound_binding_table, key);
+   return 0;
+}
+
+static void* dlopen_wrapper(const char* filename, int flags) {
+   void *handle;
+   debug_printf(1, "User called dlopen(%s, 0x%x)\n", filename, (unsigned int) flags);
+   handle = orig_dlopen(filename,flags);
+
+   debug_printf(2, "Searching new dlopened libraries for previously-not-found exports\n");
+   foreach_hash_entry(&notfound_binding_table, NULL, per_binding);
+
+   debug_printf(2, "Updating GOT entries for new dlopened libraries\n");
+   update_all_library_gots(&function_hash_table);
+  
+   return handle;
 }
 
 static void* dlsym_wrapper(void* handle, const char* symbol_name){

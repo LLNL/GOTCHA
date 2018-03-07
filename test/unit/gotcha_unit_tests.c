@@ -62,19 +62,6 @@ int check_pointer(void* ptr){
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
 int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
-START_TEST(symbol_prep_test)
-{
-  int(*my_main)(int argc, char* argv[]) = 0;
-  struct gotcha_binding_t bindings[] = {
-    { "main", &dummy_main, &my_main  }
-  };
-  struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
-  ck_assert_msg(check_pointer(get_bindings()),"get_bindings shows no bindings");
-  ck_assert_msg(check_pointer(get_tool_bindings(new_tool)),"couldn't get bindings for created tool");
-  gotcha_prepare_symbols(internal_bindings,1);
-  ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
-}
-END_TEST
 
 int(*orig_func)();
 int wrap_sample_func(){
@@ -113,7 +100,6 @@ Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
   TCase* core_case = configured_case_create("Wrapping");
   tcase_add_checked_fixture(core_case, setup_infrastructure, teardown_infrastructure);
-  tcase_add_test(core_case, symbol_prep_test);
   tcase_add_test(core_case, symbol_wrap_test);
   tcase_add_test(core_case, bad_lookup_test);
   tcase_add_test(core_case, auto_tool_creation);
@@ -124,13 +110,6 @@ Suite* gotcha_core_suite(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////Libc Wrapper Tests//////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// TODO: this test has no way to fail except segfaults. Need to ensure it does sane things
-START_TEST(debug_print_test){
-  struct link_map* print_me = _r_debug.r_map;
-  debug_print(print_me,"");
-}
-END_TEST
 
 START_TEST(gotcha_malloc_test){
   int* x = (int*)gotcha_malloc(sizeof(int)*10);
@@ -347,7 +326,6 @@ END_TEST
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
   TCase* libc_case = configured_case_create("Basic tests");
-  tcase_add_test(libc_case, debug_print_test);
   tcase_add_test(libc_case, gotcha_malloc_test);
   tcase_add_test(libc_case, gotcha_free_test);
   tcase_add_test(libc_case, gotcha_realloc_test);

@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha/gotcha_types.h"
 #include "gotcha_utils.h"
 #include "gotcha_auxv.h"
+#include "gotcha_dl.h"
 #include "elf_ops.h"
 #include "tool.h"
 
@@ -35,7 +36,7 @@ static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
    writeAddress(target, value);
 }
 
-static int prepare_symbol(struct internal_binding_t *binding)
+int prepare_symbol(struct internal_binding_t *binding)
 {
    int result;
    struct link_map *lib;
@@ -43,6 +44,12 @@ static int prepare_symbol(struct internal_binding_t *binding)
 
    debug_printf(2, "Looking up exported symbols for %s\n", user_binding->name);
    for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
+      struct library_t *int_library = get_library(lib);
+      if (!int_library) {
+         debug_printf(3, "Creating new library object for %s\n", LIB_NAME(lib));
+         int_library = add_library(lib);
+      }
+      
       if (is_vdso(lib)) {
          debug_printf(2, "Skipping VDSO library at 0x%lx with name %s\n",
                       lib->l_addr, LIB_NAME(lib));
@@ -85,8 +92,7 @@ static int prepare_symbol(struct internal_binding_t *binding)
       setBindingAddressPointer(user_binding,(void *)(symtab[result].st_value + lib->l_addr));
       return 0;
    }
-   debug_printf(1, "WARNING: Symbol %s was found in program\n",
-                user_binding->name);
+   debug_printf(1, "Symbol %s was found in program\n", user_binding->name);
    return -1;
 }
 
@@ -165,7 +171,7 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
      return 0;
   got_address = (void**) (lmap->l_addr + offset);
   writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
-  debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p on INDEX\n",
+  debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
              name, (lmap->l_addr + offset), LIB_NAME(lmap),
              internal_binding->user_binding->wrapper_pointer);
   return 0;
@@ -194,26 +200,54 @@ static int mark_got_writable(struct link_map *lib)
                 LIB_NAME(lib), (void *) prot_address, protect_size);
    int res = gotcha_mprotect((void*)prot_address,protect_size,PROT_READ | PROT_WRITE | PROT_EXEC );
    if(res == -1){ // mprotect returns -1 on an error
-      error_printf("GOTCHA attempted to mark the GOT table as writable and was unable to do so,"
+      error_printf("GOTCHA attempted to mark the GOT table as writable and was unable to do so, "
                    "calls to wrapped functions may likely fail\n");
    }
 
    return 0;
 }
 
-static void mark_gots_writable()
+static int update_library_got(struct link_map *map, hash_table_t *bindingtable)
 {
-  struct link_map *lib_iter;
-  debug_printf(2, "Setting all GOT tables to be writable\n");
-  for (lib_iter = _r_debug.r_map; lib_iter; lib_iter = lib_iter->l_next){
-     mark_got_writable(lib_iter);
-  }
+   struct library_t *lib = get_library(map);
+   if (!lib) {
+      debug_printf(3, "Creating new library object for %s\n", LIB_NAME(map));
+      lib = add_library(map);
+   }
+
+   if (!libraryFilterFunc(map)) {
+      debug_printf(3, "Skipping library %s due to libraryFilterFunc\n", LIB_NAME(map));
+      return 0;
+   }
+
+   if (lib->generation == current_generation) {
+      debug_printf(2, "Library %s is already up-to-date.  Skipping GOT rewriting\n", LIB_NAME(map));
+      return 0;
+   }
+   
+   if (!(lib->flags & LIB_GOT_MARKED_WRITEABLE)) {
+      mark_got_writable(map);
+      lib->flags |= LIB_GOT_MARKED_WRITEABLE;
+   }
+
+   FOR_EACH_PLTREL(map, update_lib_bindings, map, bindingtable);
+
+   lib->generation = current_generation;
+   return 0;
+}
+
+void update_all_library_gots(hash_table_t *bindings)
+{
+   struct link_map *lib_iter;
+   debug_printf(2, "Searching all callsites for %d bindings\n", bindings->entry_count);
+   for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
+      update_library_got(lib_iter, bindings);
+   }   
 }
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name)
 {
   int i, not_found = 0, new_bindings_count = 0;
-  struct link_map *lib_iter;
   tool_t *tool;
   hash_table_t new_bindings;
 
@@ -242,6 +276,9 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      return GOTCHA_INTERNAL;
   }
 
+  current_generation++;
+  debug_printf(2, "Moved current_generation to %u in gotcha_wrap\n", current_generation);
+
   debug_printf(2, "Creating internal binding data structures and adding binding to tool\n");
   binding_t *bindings = add_binding_to_tool(tool, user_bindings, num_actions);
   if (!bindings) {
@@ -259,6 +296,9 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
         gotcha_assert(*((void **) binding->user_binding->function_address_pointer) == NULL);
         int presult = prepare_symbol(binding);
         if (presult == -1) {
+           debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",
+                        binding->user_binding->name);
+           addto_hashtable(&notfound_binding_table, (hash_key_t) binding->user_binding->name, (hash_data_t) binding);
            not_found++;
         }
      }
@@ -273,15 +313,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
   
   if (new_bindings_count) {
-     mark_gots_writable();
-     debug_printf(2, "Searching callsites for %d bindings\n", new_bindings_count);
-     for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
-        if(!libraryFilterFunc(lib_iter)) {
-           debug_printf(3, "Skipping library %s due to libraryFilterFunc\n", LIB_NAME(lib_iter));
-           continue;
-        }
-        FOR_EACH_PLTREL(lib_iter, update_lib_bindings, lib_iter, &new_bindings);
-     }
+     update_all_library_gots(&new_bindings);
      destroy_hashtable(&new_bindings);
   }
 
