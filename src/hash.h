@@ -34,6 +34,7 @@ typedef struct
    hash_func_t hashfunc;
    hash_cmp_t keycmp;
    struct hash_entry_t *table;
+   struct hash_entry_t *head;
 } hash_table_t;
 
 int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t func, 
@@ -44,6 +45,7 @@ int destroy_hashtable(hash_table_t *table);
 int lookup_hashtable(hash_table_t *table, hash_key_t key, hash_data_t *data);
 int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data);
 int removefrom_hashtable(hash_table_t *table, hash_key_t key);
+int foreach_hash_entry(hash_table_t *table, void *opaque, int (*cb)(hash_key_t key, hash_data_t data, void *opaque));
 
 hash_hashvalue_t strhash(const char *str);
 
