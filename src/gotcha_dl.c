@@ -10,29 +10,6 @@ void* _dl_sym(void* handle, const char* name, void* where);
 static void*(*orig_dlopen)(const char* filename, int flags);
 static void*(*orig_dlsym)(void* handle, const char* name);
 
-static struct rev_iter* get_reverse_tool_iterator(struct binding_t* in){
-  struct rev_iter* rev_builder = (struct rev_iter*) gotcha_malloc(sizeof(struct rev_iter));
-  rev_builder->next = NULL;
-  struct rev_iter* rever;
-  struct binding_t* tool_iter = in;
-  for(;tool_iter!=NULL;tool_iter = tool_iter->next_binding){
-    rev_builder->data = tool_iter;
-    rever =  (struct rev_iter*) gotcha_malloc(sizeof(struct rev_iter));
-    rever->next = rev_builder;
-    rev_builder = rever;
-  }
-  return rev_builder;
-}
-
-static void free_reverse_iterator(struct rev_iter* free_me){
-  struct rev_iter* next;
-  while(free_me){
-    next = free_me->next;
-    gotcha_free(free_me);
-    free_me = next;
-  }
-}
-
 static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUSED)
 {
    int result;
@@ -72,26 +49,18 @@ static void* dlopen_wrapper(const char* filename, int flags) {
 }
 
 static void* dlsym_wrapper(void* handle, const char* symbol_name){
+  struct internal_binding_t *binding;
+  int result;
+  
   if(handle == RTLD_NEXT){
     return _dl_sym(RTLD_NEXT, symbol_name ,__builtin_return_address(0));
   }
-  struct binding_t* tool_iter = get_bindings();
-  // TODO: free this chain
-  struct rev_iter* rev = get_reverse_tool_iterator(tool_iter);
-  for(;rev!=NULL;rev = rev->next){
-    struct binding_t* tool_iter = rev->data;
-    if(tool_iter){
-      int loop = 0;
-      for(loop=0;loop<tool_iter->internal_bindings_size;loop++){
-        if(gotcha_strcmp(tool_iter->internal_bindings->user_binding[loop].name,symbol_name)==0){
-          free_reverse_iterator(rev);
-          return tool_iter->internal_bindings->user_binding[loop].wrapper_pointer;
-        }
-      }
-    }
-  }
-  free_reverse_iterator(rev);
-  return orig_dlsym(handle,symbol_name);
+  
+  result = lookup_hashtable(&function_hash_table, (hash_key_t) symbol_name, (hash_data_t *) &binding);
+  if (result == -1)
+     return orig_dlsym(handle, symbol_name);
+  else
+     return binding->user_binding->wrapper_pointer;
 }
 
 void handle_libdl(){
