@@ -61,20 +61,32 @@ static hash_entry_t *insert(hash_table_t *table, hash_key_t key, hash_data_t dat
    unsigned long index = (unsigned long)value % table->table_size;
    unsigned long startindex = index;
 
+   hash_entry_t *entry = NULL;
    do {
-      hash_entry_t *entry = table->table + index;
+      entry = table->table + index;
       if (entry->status == EMPTY || entry->status == TOMBSTONE) {
          entry->key = key;
          entry->data = data;
          entry->hash_value = value;
          entry->status = INUSE;
-         return entry;
+         break;
       }
       index++;
       if (index == table->table_size)
          index = 0;
    } while (index != startindex);
-   return NULL;
+
+   if (!entry)
+      return NULL;
+
+   entry->next = table->head;
+   entry->prev = NULL;
+   if (table->head)
+      table->head->prev = entry;
+   table->head = entry;
+   table->entry_count++;         
+
+   return entry;
 }
 
 int grow_hashtable(hash_table_t *table, size_t new_size)
@@ -88,6 +100,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
    newtable.hashfunc = table->hashfunc;
    newtable.keycmp = table->keycmp;
    newtable.table = (hash_entry_t *) gotcha_malloc(new_size * sizeof(hash_entry_t));
+   newtable.head = NULL;
    gotcha_memset(newtable.table, 0, new_size * sizeof(hash_entry_t));
 
    for (i = 0; i < table->table_size; i++) {
@@ -178,13 +191,6 @@ int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data)
    if (!entry)
       return -1;
 
-   entry->next = table->head;
-   entry->prev = NULL;
-   if (table->head)
-      table->head->prev = entry;
-   table->head = entry;
-   table->entry_count++;         
-   
    return 0;
 }
 
