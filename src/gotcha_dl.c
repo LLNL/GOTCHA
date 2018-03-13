@@ -33,7 +33,7 @@ static void free_reverse_iterator(struct rev_iter* free_me){
   }
 }
 
-static int per_binding(hash_key_t key, hash_data_t data, void *opaque)
+static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUSED)
 {
    int result;
    struct internal_binding_t *binding = (struct internal_binding_t *) data;

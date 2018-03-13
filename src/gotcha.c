@@ -239,7 +239,7 @@ static int update_library_got(struct link_map *map, hash_table_t *bindingtable)
 void update_all_library_gots(hash_table_t *bindings)
 {
    struct link_map *lib_iter;
-   debug_printf(2, "Searching all callsites for %d bindings\n", bindings->entry_count);
+   debug_printf(2, "Searching all callsites for %lu bindings\n", (unsigned long) bindings->entry_count);
    for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
       update_library_got(lib_iter, bindings);
    }   
