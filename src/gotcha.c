@@ -191,7 +191,7 @@ static int mark_got_writable(struct link_map *lib)
    if (!page_size)
       page_size = gotcha_getpagesize();
 
-   size_t protect_size = MAX(rel_count * rel_size, page_size);
+   size_t protect_size = MAX(rel_size, page_size);
    if(protect_size % page_size){
       protect_size += page_size -  ((protect_size) %page_size);
    }
@@ -201,7 +201,7 @@ static int mark_got_writable(struct link_map *lib)
    int res = gotcha_mprotect((void*)prot_address,protect_size,PROT_READ | PROT_WRITE | PROT_EXEC );
    if(res == -1){ // mprotect returns -1 on an error
       error_printf("GOTCHA attempted to mark the GOT table as writable and was unable to do so, "
-                   "calls to wrapped functions may likely fail\n");
+                   "calls to wrapped functions may likely fail.\n");
    }
 
    return 0;
