@@ -46,11 +46,7 @@ enum gotcha_error_t {
   GOTCHA_SUCCESS = 0,          //!< The call succeeded
   GOTCHA_FUNCTION_NOT_FOUND,   //!< The call looked up a function which could not be found
   GOTCHA_INTERNAL,             //!< Internal gotcha error
-  GOTCHA_INVALID_CONFIGURATION //!< Failure on a configuration call
-};
-
-enum gotcha_config_key_t {
-  GOTCHA_PRIORITY
+  GOTCHA_INVALID_TOOL          //!< Invalid tool name
 };
 
 #if defined(__cplusplus) 

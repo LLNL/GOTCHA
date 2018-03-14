@@ -24,6 +24,8 @@ struct hash_entry_t {
    hash_key_t key;
    hash_data_t data;
    hash_hashvalue_t hash_value;
+   struct hash_entry_t *next;
+   struct hash_entry_t *prev;
    uint32_t status;
 };
 
@@ -39,7 +41,6 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
    if (initial_size % entries_per_page)
       initial_size += entries_per_page - (initial_size % entries_per_page);
 
-   // TODO: ensure free
    newtable = (hash_entry_t *) gotcha_malloc(initial_size * sizeof(hash_entry_t));
    if (!newtable)
       return -1;
@@ -50,36 +51,48 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
    table->hashfunc = hashfunc;
    table->keycmp = keycmp;
    table->table = newtable;
+   table->head = NULL;
    
    return 0;
 }
 
-static int insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value)
+static hash_entry_t *insert(hash_table_t *table, hash_key_t key, hash_data_t data, hash_hashvalue_t value)
 {
    unsigned long index = (unsigned long)value % table->table_size;
    unsigned long startindex = index;
 
+   hash_entry_t *entry = NULL;
    do {
-      hash_entry_t *entry = table->table + index;
+      entry = table->table + index;
       if (entry->status == EMPTY || entry->status == TOMBSTONE) {
          entry->key = key;
          entry->data = data;
          entry->hash_value = value;
          entry->status = INUSE;
-         table->entry_count++;
-         return 0;
+         break;
       }
       index++;
       if (index == table->table_size)
          index = 0;
    } while (index != startindex);
-   return -1;
+
+   if (!entry)
+      return NULL;
+
+   entry->next = table->head;
+   entry->prev = NULL;
+   if (table->head)
+      table->head->prev = entry;
+   table->head = entry;
+   table->entry_count++;         
+
+   return entry;
 }
 
 int grow_hashtable(hash_table_t *table, size_t new_size)
 {
    hash_table_t newtable;
-   int result;
+   hash_entry_t *result;
    size_t i;
 
    newtable.table_size = new_size;
@@ -87,6 +100,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
    newtable.hashfunc = table->hashfunc;
    newtable.keycmp = table->keycmp;
    newtable.table = (hash_entry_t *) gotcha_malloc(new_size * sizeof(hash_entry_t));
+   newtable.head = NULL;
    gotcha_memset(newtable.table, 0, new_size * sizeof(hash_entry_t));
 
    for (i = 0; i < table->table_size; i++) {
@@ -94,7 +108,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
          continue;
       result = insert(&newtable, table->table[i].key, table->table[i].data,
                       table->table[i].hash_value);
-      if (result == -1) {
+      if (!result) {
          return -1;
       }
    }
@@ -112,6 +126,7 @@ int destroy_hashtable(hash_table_t *table)
    table->hashfunc = NULL;
    table->keycmp = NULL;
    table->table = NULL;
+   table->head = NULL;
    return 0;
 }
 
@@ -157,9 +172,10 @@ int lookup_hashtable(hash_table_t *table, hash_key_t key, hash_data_t *data)
 
 int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data)
 {
-   size_t newsize, index, startindex;
+   size_t newsize;
    int result;
    hash_hashvalue_t val;
+   hash_entry_t *entry;
 
    newsize = table->table_size;
    while (table->entry_count > newsize/2)
@@ -171,25 +187,11 @@ int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data)
    }
 
    val = table->hashfunc(key);
-   index = val % table->table_size;
-   startindex = index;
+   entry = insert(table, key, data, val);
+   if (!entry)
+      return -1;
 
-   for (;;) {
-      hash_entry_t *entry = table->table + index;
-      if (entry->status != INUSE) {
-         entry->key = key;
-         entry->data = data;
-         entry->hash_value = val;
-         entry->status = INUSE;
-         table->entry_count++;
-         return 0;
-      }
-      index++;
-      if (index == table->table_size)
-         index = 0;
-      if (index == startindex)
-         return -1;
-   }
+   return 0;
 }
 
 int removefrom_hashtable(hash_table_t *table, hash_key_t key)
@@ -205,8 +207,28 @@ int removefrom_hashtable(hash_table_t *table, hash_key_t key)
    entry->data = NULL;
    entry->hash_value = 0;
    entry->status = TOMBSTONE;
-
+   if (entry->next)
+      entry->next->prev = entry->prev;
+   if (entry->prev)
+      entry->prev->next = entry->next;
+   if (table->head == entry)
+      table->head = entry->next;
+   //Do not set entry->next to NULL, which would break the iterate & delete
+   //idiom used under dlopen_wrapper.
+   
    table->entry_count--;
+   return 0;
+}
+
+int foreach_hash_entry(hash_table_t *table, void *opaque, int (*cb)(hash_key_t key, hash_data_t data, void *opaque))
+{
+   int result;
+   struct hash_entry_t *i;
+   for (i = table->head; i != NULL; i = i->next) {
+      result = cb(i->key, i->data, opaque);
+      if (result != 0)
+         return result;
+   }
    return 0;
 }
 

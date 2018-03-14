@@ -71,11 +71,39 @@ extern "C" {
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
 
-//GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value);
-//GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_float(const char* tool_name, enum gotcha_config_key_t configuration_key , float value);
-//GOTCHA_EXPORT enum gotcha_error_t gotcha_configure_string(const char* tool_name, enum gotcha_config_key_t configuration_key , const char* value);
-GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int value);
 
+/*!
+ ******************************************************************************
+ *
+ * \fn enum gotcha_error_t gotcha_set_priority(const char *tool_name,
+ *                                             int value);
+ *
+ * \brief Set the tool priority, which controls how multiple tools stack
+ *        wrappings over the same functions.
+ *
+ * \param tool_name   The tool name to set the priority of
+ * \param priority    The new priority value for the tool.  Lower values
+ *                    are called innermost.
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int priority);
+
+/*!
+ ******************************************************************************
+ *
+ * \fn enum gotcha_error_t gotcha_get_priority(const char *tool_name,
+ *                                             int *value);
+ *
+ * \brief Gets the tool priority, which controls how multiple tools stack
+ *        wrappings over the same functions.
+ *
+ * \param tool_name   The tool name to get the priority of
+ * \param num_actions Output parameters with the priority for the tool.
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int *priority);
 
 #if defined(__cplusplus) 
 }

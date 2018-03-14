@@ -1,6 +1,11 @@
 #ifndef GOTCHA_DL_H
 #define GOTCHA_DL_H
-void* dlopen_wrapper(const char* filename, int flags);
-void* dlsym_wrapper(void* handle, const char* symbol_name);
+
+#include "hash.h"
+#include "tool.h"
+
 void handle_libdl();
+extern void update_all_library_gots(hash_table_t *bindings);
+extern int prepare_symbol(struct internal_binding_t *binding);
+
 #endif
