@@ -105,9 +105,28 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int
  */
 GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int *priority);
 
+/*!
+ ******************************************************************************
+ *
+ * \fn enum void* gotcha_get_wrappee(gotcha_wrappee_handle_t)
+ *
+ * \brief Given a GOTCHA wrapper's handle, returns the wrapped function for it to call
+ *
+ * \param handle The wrappee handle to return the function pointer for
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
+
 #if defined(__cplusplus) 
 }
 #endif
 
+#if defined(__cplusplus)
+template<typename T,typename DataPointerType>
+T* castFunctionPointer(DataPointerType in){
+  return reinterpret_cast<T*>(in);
+}
+#endif
 
 #endif

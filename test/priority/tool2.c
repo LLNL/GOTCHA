@@ -23,14 +23,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 __attribute__((unused)) static char* retX_wrapper(char* x);
 
-static char*(*origRetX)(char*) = 0x0;
+static gotcha_wrappee_handle_t origRetX_handle = 0x0;
 
 #define NUM_IOFUNCS 1
 struct gotcha_binding_t iofuncs2[] = {
-   { "retX",retX_wrapper,&origRetX}
+   { "retX",retX_wrapper,&origRetX_handle}
 };
 
 char* retX_wrapper(char* x){
+  typeof(&retX_wrapper) origRetX = gotcha_get_wrappee(origRetX_handle);
   strcat(x,"t2=>");
  
   return origRetX ? (origRetX(x) ) : 0;

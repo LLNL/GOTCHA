@@ -63,8 +63,10 @@ extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
 int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
 
-int(*orig_func)();
+//int(*orig_func)();
+gotcha_wrappee_handle_t orig_func_handle;
 int wrap_sample_func(){
+  typeof(&wrap_sample_func) orig_func = gotcha_get_wrappee(orig_func_handle);
   return orig_func()+5;
 }
 
@@ -80,7 +82,7 @@ END_TEST
 
 START_TEST(symbol_wrap_test){
   struct gotcha_binding_t bindings[] = {
-    { "simpleFunc", &wrap_sample_func, &orig_func }
+    { "simpleFunc", &wrap_sample_func, &orig_func_handle }
   };
   gotcha_wrap(bindings,1,"internal_test_tool");
   int x = simpleFunc(); 
@@ -90,7 +92,7 @@ END_TEST
 
 START_TEST(bad_lookup_test){
   struct gotcha_binding_t bindings[] = {
-    { "this_is_the_story_of_a_function_we_shouldnt_find", &wrap_sample_func, &orig_func }
+    { "this_is_the_story_of_a_function_we_shouldnt_find", &wrap_sample_func, &orig_func_handle }
   };
   enum gotcha_error_t errcode = gotcha_wrap(bindings,1,"internal_test_tool");
   ck_assert_msg((errcode==GOTCHA_FUNCTION_NOT_FOUND),"Looked up a function that shouldn't be found and did not get correct error code");

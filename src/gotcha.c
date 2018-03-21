@@ -361,3 +361,6 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int
   return get_configuration_value(tool_name, GOTCHA_PRIORITY, priority);
 }
 
+GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle){
+  return handle;
+}

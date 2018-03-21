@@ -28,15 +28,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 extern "C" {
 #endif
 
+typedef void* gotcha_wrappee_handle_t;
+
 /*!
  * The representation of a Gotcha action
  * as it passes through the pipeline
  */
 struct gotcha_binding_t {
-  const char* name;                //!< The name of the function being wrapped
-  void* wrapper_pointer;           //!< A pointer to the wrapper function
-  void* function_address_pointer;  //!< A pointer to the function being wrapped
-  void* opaque_handle;             //!< This pointer is for Gotcha developer use only
+  const char* name;                                //!< The name of the function being wrapped
+  void* wrapper_pointer;                           //!< A pointer to the wrapper function
+  gotcha_wrappee_handle_t function_address_pointer;  //!< A pointer to the function being wrapped
+  void* opaque_handle;                             //!< This pointer is for Gotcha developer use only
 };
 
 /*!
@@ -51,6 +53,13 @@ enum gotcha_error_t {
 
 #if defined(__cplusplus) 
 }
+#endif
+
+#if defined(__cplusplus)
+//template<typename T>
+//T* castFunctionPointer(void* in){
+//  return reinterpret_cast<T*>(in);
+//}
 #endif
 
 #endif
