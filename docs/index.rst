@@ -11,10 +11,8 @@ Table of Contents
    :maxdepth: 2
    :caption: Contents:
 
-   Quickstart
-   Building
+   index
    other_section
-   Indices and tables
 
 Quickstart
 ==================================
