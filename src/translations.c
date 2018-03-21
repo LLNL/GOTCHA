@@ -22,7 +22,8 @@ int gotcha_internal_main(int argc, char** argv, char** envp){
   main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle); 
   return underlying_main(argc, argv, envp);
 }
-int gotcha_internal_main_wrapper(int (*main_arg)(int, char**, char**), int argc, char** argv, void (*init)(), void (*fini)(), void (*rtld_fini)(), void* stack_end){
+int gotcha_internal_libc_start_main(int (*main_arg)(int, char**, char**), int argc, char** argv, void (*init)(), void (*fini)(), void (*rtld_fini)(), void* stack_end){
    libc_start_main_t underlying_libc_main = gotcha_get_wrappee(gotcha_internal_libc_main_wrappee_handle);
-   return underlying_libc_main(&gotcha_internal_main, argc, argv, init, fini, rtld_fini, stack_end);
+   main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle);
+   return underlying_libc_main(underlying_main, argc, argv, init, fini, rtld_fini, stack_end);
 }

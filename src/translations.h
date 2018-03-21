@@ -18,13 +18,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 #ifndef GOTCHA_SRC_TRANSLATIONS_H
 #define GOTCHA_SRC_TRANSLATIONS_H
+#include <gotcha/gotcha.h>
 /** "int main" wrapping handling */
 typedef int (*libc_start_main_t) (int (*)(int, char**, char**), int, char**, void (*)(), void (*)(), void (*)(), void*);
 typedef int (*main_t)            (int argc, char** argv, char** envp);
 static int main_wrapped;
-
-static gotcha_wrappee_handle_t gotcha_internal_libc_main_wrappee_handle;
-static gotcha_wrappee_handle_t gotcha_internal_main_wrappee_handle;
+gotcha_wrappee_handle_t gotcha_internal_libc_main_wrappee_handle;
+gotcha_wrappee_handle_t gotcha_internal_main_wrappee_handle;
 int gotcha_internal_main(int argc, char** argv, char** envp);
 int gotcha_internal_libc_start_main (int (*)(int, char**, char**), int, char**, void (*)(), void (*)(), void (*)(), void*);
+static struct gotcha_binding_t libc_main_wrappers[] = {
+  {"__libc_start_main", gotcha_internal_libc_start_main, &gotcha_internal_libc_main_wrappee_handle}
+};
+static struct gotcha_binding_t main_wrappers[] = {
+  {"main", gotcha_internal_main, &gotcha_internal_main_wrappee_handle}
+};
 #endif

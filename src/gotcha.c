@@ -13,6 +13,7 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#include "translations.h"
 #include "libc_wrappers.h"
 #include "gotcha/gotcha.h"
 #include "gotcha/gotcha_types.h"
@@ -119,6 +120,15 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
 {
   const char* name = binding->user_binding->name;
   int insert_priority = get_priority(binding->associated_binding_table->tool);
+  
+  if(gotcha_strncmp(name,"main",4)==0){
+    if(!main_wrapped){
+      debug_printf(2, "Wrapping main with Gotcha's internal wrappers");
+      main_wrapped = 1;
+      gotcha_wrap(libc_main_wrappers,1,"gotcha");
+      gotcha_wrap(main_wrappers,1,"gotcha");
+    }
+  }
 
   debug_printf(2, "gotcha_rewrite_wrapper_orders for binding %s in tool %s of priority %d\n",
                name, binding->associated_binding_table->tool->tool_name, insert_priority);

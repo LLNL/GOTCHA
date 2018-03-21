@@ -1,0 +1,5 @@
+add_library(main_functions SHARED lib.c)
+add_executable(main app.c)
+target_link_libraries(main_functions gotcha)
+target_link_libraries(main main_functions)
+gotcha_add_test(main_test main)
