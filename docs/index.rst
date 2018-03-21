@@ -3,19 +3,29 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Gotcha's documentation!
+
+Table of Contents
 ==================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+Quickstart
+==================================
+
+This documentation is a nonfunctional skeleton, we are filling it out
+
+Use CMake commands. For more data, follow this see :ref:`Building`.
+
+Building
+==================================
+
+No really, use CMake
 
 
 Indices and tables
 ==================
-
-This is sample text content, are the webhooks working
 
 * :ref:`genindex`
 * :ref:`modindex`
