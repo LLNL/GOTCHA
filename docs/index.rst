@@ -18,6 +18,7 @@ This documentation is a nonfunctional skeleton, we are filling it out
 
 Use CMake commands. For more data, follow this see :ref:`Building`.
 
+.. Building:
 Building
 ==================================
 
