@@ -1,3 +1,4 @@
-int main(int argc, char** argv){
+int main(){
+
   return 1; // Should return 0
 }
