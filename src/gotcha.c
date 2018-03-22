@@ -27,7 +27,7 @@ static void writeAddress(void* write, void* value){
 }
 
 static void** getBindingAddressPointer(struct gotcha_binding_t* in){
-  return (void**)in->function_address_pointer;
+  return (void**)in->function_handle;
 }
 
 static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
@@ -99,14 +99,14 @@ int prepare_symbol(struct internal_binding_t *binding)
 static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
 {
    binding->next_binding = head;
-   (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
+   (*(void**)binding->user_binding->function_handle) = head->user_binding->wrapper_pointer;
    removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
    addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_address_pointer));
+   setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_handle));
    setBindingAddressPointer(pos->user_binding, binding->user_binding->wrapper_pointer);
    binding->next_binding = pos->next_binding;
    pos->next_binding = binding;
@@ -293,7 +293,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
         debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
-        gotcha_assert(*((void **) binding->user_binding->function_address_pointer) == NULL);
+        gotcha_assert(*((void **) binding->user_binding->function_handle) == NULL);
         int presult = prepare_symbol(binding);
         if (presult == -1) {
            debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",

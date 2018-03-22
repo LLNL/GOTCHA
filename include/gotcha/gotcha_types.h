@@ -37,7 +37,7 @@ typedef void* gotcha_wrappee_handle_t;
 struct gotcha_binding_t {
   const char* name;                                //!< The name of the function being wrapped
   void* wrapper_pointer;                           //!< A pointer to the wrapper function
-  gotcha_wrappee_handle_t function_address_pointer;  //!< A pointer to the function being wrapped
+  gotcha_wrappee_handle_t function_handle;         //!< A pointer to the function being wrapped
   void* opaque_handle;                             //!< This pointer is for Gotcha developer use only
 };
 
@@ -53,13 +53,6 @@ enum gotcha_error_t {
 
 #if defined(__cplusplus) 
 }
-#endif
-
-#if defined(__cplusplus)
-//template<typename T>
-//T* castFunctionPointer(void* in){
-//  return reinterpret_cast<T*>(in);
-//}
 #endif
 
 #endif

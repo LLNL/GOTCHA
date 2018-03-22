@@ -69,7 +69,7 @@ bool WrapperInfo::dowrap(std::string toolname)
 
       bindings[j].name = i->second.c_str();
       bindings[j].wrapper_pointer = neg->second.first;
-      bindings[j].function_address_pointer = neg->second.second;
+      bindings[j].function_handle = neg->second.second;
    }
 
    auto start = chrono::steady_clock::now();
