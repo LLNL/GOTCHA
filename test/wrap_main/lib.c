@@ -7,7 +7,7 @@ int couldnt_find_a_better_main(int argc, char** argv){
     printf("%d : %s\n",i,argv[i]);
   }
   int return_code = orig_main(argc, argv) - 1;
-  printf("Returning eturn %d\n",return_code);
+  printf("Returning %d\n",return_code);
   return return_code;
 }
 struct gotcha_binding_t actions[] = {
