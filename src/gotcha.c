@@ -113,7 +113,8 @@ static void insert_at_head(struct internal_binding_t *binding, struct internal_b
 {
    binding->next_binding = head;
    /** OPAQUE */
-   (*(void**)binding->user_binding->function_handle) = head->user_binding->wrapper_pointer;
+   setInternalBindingAddressPointer(binding->user_binding->function_handle, head->user_binding->wrapper_pointer);
+   //(*(void**)binding->user_binding->function_handle) = head->user_binding->wrapper_pointer;
    /** END OPAQUE */
    removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
    addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
@@ -288,7 +289,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   for (i = 0; i < num_actions; i++) {
     /** OPAQUE */
     //user_bindings[i].function_handle
-    //setBindingAddressPointer(&user_bindings[i], NULL);
+    setBindingAddressPointer(&user_bindings[i], NULL);
     /** END OPAQUE */
   }
 
