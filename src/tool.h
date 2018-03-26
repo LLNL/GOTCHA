@@ -84,6 +84,9 @@ struct internal_binding_t {
   struct binding_t* associated_binding_table;
   struct gotcha_binding_t* user_binding;
   struct internal_binding_t* next_binding;
+  /** OPAQUE */
+  void* wrappee_pointer;
+  /** END OPAQUE */
 };
 
 tool_t *create_tool(const char *tool_name);

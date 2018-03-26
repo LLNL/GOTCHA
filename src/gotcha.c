@@ -36,6 +36,15 @@ static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
    writeAddress(target, value);
 }
 
+static void** getInternalBindingAddressPointer(struct internal_binding_t** in){
+  return (void**)&((*in)->wrappee_pointer);
+}
+
+static void setInternalBindingAddressPointer(struct internal_binding_t** in, void* value){
+  void** target = getInternalBindingAddressPointer(in);
+  writeAddress(target, value);
+}
+
 int prepare_symbol(struct internal_binding_t *binding)
 {
    int result;
@@ -89,7 +98,11 @@ int prepare_symbol(struct internal_binding_t *binding)
       debug_printf(2, "Symbol %s found in %s at 0x%lx\n", 
                    user_binding->name, LIB_NAME(lib),
                    symtab[result].st_value + lib->l_addr);
-      setBindingAddressPointer(user_binding,(void *)(symtab[result].st_value + lib->l_addr));
+      /** OPAQUE */
+      *(struct internal_binding_t**)user_binding->function_handle = user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
+      setInternalBindingAddressPointer((struct internal_binding_t**)&user_binding->opaque_handle,(void *)(symtab[result].st_value + lib->l_addr));
+      //setBindingAddressPointer(user_binding,(void *)(user_binding->opaque_handle));
+      /** END OPAQUE */
       return 0;
    }
    debug_printf(1, "Symbol %s was found in program\n", user_binding->name);
@@ -99,15 +112,24 @@ int prepare_symbol(struct internal_binding_t *binding)
 static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
 {
    binding->next_binding = head;
+   /** OPAQUE */
    (*(void**)binding->user_binding->function_handle) = head->user_binding->wrapper_pointer;
+   /** END OPAQUE */
    removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
    addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_handle));
-   setBindingAddressPointer(pos->user_binding, binding->user_binding->wrapper_pointer);
+   /** OPAQUE */
+   //setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_handle));
+   setInternalBindingAddressPointer(binding->user_binding->function_handle, /***((void **)*/ pos->wrappee_pointer);
+   //((struct internal_binding_t*)(binding->user_binding->function_handle))->wrappee_pointer = pos->wrappee_pointer;
+   setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
+   //((struct internal_binding_t*)(pos->user_binding->function_handle))->wrappee_pointer = binding->user_binding->wrapper_pointer;
+   //setInternalBindingAddressPointer(pos, binding->user_binding->wrapper_pointer);
+   //setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
+   /** END OPAQUE */
    binding->next_binding = pos->next_binding;
    pos->next_binding = binding;
 }
@@ -126,6 +148,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   struct internal_binding_t* head;
   int hash_result;
   hash_result = lookup_hashtable(&function_hash_table, (void*)name, (void**)&head);
+  *(struct internal_binding_t**)binding->user_binding->function_handle = binding->user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
   if(hash_result != 0) {
     debug_printf(2, "Adding new entry for %s to hash table\n", name);
     addto_hashtable(&function_hash_table, (void *) name, (void *) binding);
@@ -263,7 +286,10 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
   debug_printf(3, "Initializing %d user binding entries to NULL\n", num_actions);
   for (i = 0; i < num_actions; i++) {
-    setBindingAddressPointer(&user_bindings[i], NULL);
+    /** OPAQUE */
+    //user_bindings[i].function_handle
+    //setBindingAddressPointer(&user_bindings[i], NULL);
+    /** END OPAQUE */
   }
 
   if (!tool_name)
@@ -293,7 +319,9 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
         debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
-        gotcha_assert(*((void **) binding->user_binding->function_handle) == NULL);
+        /** OPAQUE */
+        //gotcha_assert(*((void **) binding->user_binding->function_handle) == NULL);
+        /** END OPAQUE */
         int presult = prepare_symbol(binding);
         if (presult == -1) {
            debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",
@@ -362,5 +390,5 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int
 }
 
 GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle){
-  return handle;
+  return ((struct internal_binding_t*)handle)->wrappee_pointer;
 }
