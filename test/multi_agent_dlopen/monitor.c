@@ -33,13 +33,13 @@ wrap_dlopen(const char *file, int flag)
 
     return ans;
 }
-
+void* opaque;
 struct gotcha_binding_t binds[] = {
   { "dlopen", wrap_dlopen, &reel_dlopen_handle}
 };
 __attribute__((constructor)) void fix_things(){
-  //reel_dlopen_handle = NULL;
-  printf("OOPS\n");
+  reel_dlopen_handle = NULL;
+  printf("OOPS %p\n", &reel_dlopen_handle);
   gotcha_wrap(binds, 1, "silly");
   printf("OOPS\n");
   typeof(&wrap_dlopen) reel_dlopen = gotcha_get_wrappee(reel_dlopen_handle);
