@@ -63,7 +63,6 @@ extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
 int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
 
-//int(*orig_func)();
 gotcha_wrappee_handle_t orig_func_handle;
 int wrap_sample_func(){
   typeof(&wrap_sample_func) orig_func = gotcha_get_wrappee(orig_func_handle);

@@ -37,15 +37,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static int tee_fd = -1;
 static FILE *tee_FILE = NULL;
 
-//static int (*orig_printf)(const char *, ...);
-//static int (*orig_fprintf)(FILE *, const char *, ...);
-//static int (*orig_vfprintf)(FILE *, const char *, va_list);
-//static int (*orig_vprintf)(const char *, va_list);
-//static ssize_t (*orig_write)(int, const void *, size_t);
-//static int (*orig_puts)(const char *);
-//static int (*orig_fputs)(const char *, FILE *);
-//static int (*orig_fwrite)(const void *, size_t, size_t, FILE *);
-//
 static int printf_wrapper(const char *format, ...);
 static int fprintf_wrapper(FILE *stream, const char *format, ...);
 static int vfprintf_wrapper(FILE *stream, const char *str, va_list args);

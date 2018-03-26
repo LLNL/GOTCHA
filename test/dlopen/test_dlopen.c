@@ -41,8 +41,6 @@ int correct_return_five()
    return 5;
 }
 
-//static int (*buggy_return_four)(void);
-//static int (*buggy_return_five)(void);
 
 static gotcha_wrappee_handle_t buggy_return_four;
 static gotcha_wrappee_handle_t buggy_return_five;

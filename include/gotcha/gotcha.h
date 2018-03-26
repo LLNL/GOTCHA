@@ -122,11 +122,4 @@ GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
 }
 #endif
 
-#if defined(__cplusplus)
-template<typename T,typename DataPointerType>
-T* castFunctionPointer(DataPointerType in){
-  return reinterpret_cast<T*>(in);
-}
-#endif
-
 #endif
