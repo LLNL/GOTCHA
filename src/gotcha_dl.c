@@ -7,8 +7,8 @@
 
 void* _dl_sym(void* handle, const char* name, void* where);
 
-static gotcha_wrappee_handle_t orig_dlopen_handle;
-static gotcha_wrappee_handle_t orig_dlsym_handle;
+gotcha_wrappee_handle_t orig_dlopen_handle;
+gotcha_wrappee_handle_t orig_dlsym_handle;
 
 static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUSED)
 {
@@ -65,11 +65,11 @@ static void* dlsym_wrapper(void* handle, const char* symbol_name){
      return binding->user_binding->wrapper_pointer;
 }
 
+struct gotcha_binding_t dl_binds[] = {
+  {"dlopen", dlopen_wrapper, &orig_dlopen_handle},
+  {"dlsym", dlsym_wrapper, &orig_dlsym_handle}
+};     
 void handle_libdl(){
-  struct gotcha_binding_t dl_binds[] = {
-    {"dlopen", dlopen_wrapper, &orig_dlopen_handle},
-    {"dlsym", dlsym_wrapper, &orig_dlsym_handle}
-  };     
   gotcha_wrap(dl_binds, 2, "gotcha");
 }
 
