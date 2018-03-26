@@ -117,7 +117,7 @@ static void insert_at_head(struct internal_binding_t *binding, struct internal_b
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   setInternalBindingAddressPointer(binding->user_binding->function_handle, /***((void **)*/ pos->wrappee_pointer);
+   setInternalBindingAddressPointer(binding->user_binding->function_handle, pos->wrappee_pointer);
    setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
    binding->next_binding = pos->next_binding;
    pos->next_binding = binding;

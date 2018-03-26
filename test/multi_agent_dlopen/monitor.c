@@ -39,9 +39,7 @@ struct gotcha_binding_t binds[] = {
 };
 void fix_things(){
   reel_dlopen_handle = NULL;
-  printf("OOPS %p\n", &reel_dlopen_handle);
   gotcha_wrap(binds, 1, "silly");
-  printf("OOPS\n");
   typeof(&wrap_dlopen) reel_dlopen = gotcha_get_wrappee(reel_dlopen_handle);
   fprintf(stderr, "IMMEDIATE WRITE: %p\n", reel_dlopen);
 }
