@@ -64,12 +64,12 @@ public:
    }
 
    static result_t mult_math_wrapper() {
-      auto mathfn_mult = reinterpret_cast<decltype(&mult_math_wrapper)>(mathfn_mult_handle);
+      auto mathfn_mult = reinterpret_cast<decltype(&mult_math_wrapper)>(gotcha_get_wrappee(mathfn_mult_handle));
       return mathfn_mult() * -1;
    }
 
    static result_t add_math_wrapper() {
-      auto mathfn_add = reinterpret_cast<decltype(&add_math_wrapper)>(mathfn_add_handle);
+      auto mathfn_add = reinterpret_cast<decltype(&add_math_wrapper)>(gotcha_get_wrappee(mathfn_add_handle));
       return mathfn_add() * -1;
    }
 };
