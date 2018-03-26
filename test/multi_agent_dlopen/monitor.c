@@ -46,5 +46,5 @@ void fix_things(){
   fprintf(stderr, "IMMEDIATE WRITE: %p\n", reel_dlopen);
 }
 __attribute__((constructor)) void startup_fix_things(){
-  //fix_things(); 
+  fix_things(); 
 }

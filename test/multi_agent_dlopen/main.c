@@ -15,9 +15,6 @@ typedef double sin_fcn_t(double);
 int
 main(int argc, char **argv)
 {
-    void* mon_hand = dlopen("libmon.so",RTLD_NOW);
-    void (*init)() = dlsym(mon_hand, "fix_things");
-    init();
     sin_fcn_t *sin_fcn = NULL;
     double val = 4.0;
     double ans = 0.0;

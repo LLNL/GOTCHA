@@ -37,12 +37,10 @@ static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
 }
 
 static void** getInternalBindingAddressPointer(struct internal_binding_t** in){
-  debug_printf(4,"Innermost1: %p\n",*in);
   return (void**)&((*in)->wrappee_pointer);
 }
 
 static void setInternalBindingAddressPointer(struct internal_binding_t** in, void* value){
-  debug_printf(4, "Attempting to write a value of %p to %p\n",value, in);
   void** target = getInternalBindingAddressPointer(in);
   debug_printf(3, "Updating binding address pointer at %p to %p\n", target, value);
   writeAddress(target, value);
@@ -101,11 +99,8 @@ int prepare_symbol(struct internal_binding_t *binding)
       debug_printf(2, "Symbol %s found in %s at 0x%lx\n", 
                    user_binding->name, LIB_NAME(lib),
                    symtab[result].st_value + lib->l_addr);
-      /** OPAQUE */
       *(struct internal_binding_t**)user_binding->function_handle = user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
       setInternalBindingAddressPointer((struct internal_binding_t**)&user_binding->opaque_handle,(void *)(symtab[result].st_value + lib->l_addr));
-      //setBindingAddressPointer(user_binding,(void *)(user_binding->opaque_handle));
-      /** END OPAQUE */
       return 0;
    }
    debug_printf(1, "Symbol %s was found in program\n", user_binding->name);
@@ -115,32 +110,17 @@ int prepare_symbol(struct internal_binding_t *binding)
 static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
 {
    binding->next_binding = head;
-   /** OPAQUE */
    setInternalBindingAddressPointer(binding->user_binding->function_handle, head->user_binding->wrapper_pointer);
-   //(*(void**)binding->user_binding->function_handle) = head->user_binding->wrapper_pointer;
-   /** END OPAQUE */
    removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
    addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   debug_printf(4, "1\n");
-   /** OPAQUE */
-   //setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_handle));
    setInternalBindingAddressPointer(binding->user_binding->function_handle, /***((void **)*/ pos->wrappee_pointer);
-   debug_printf(4, "2 %p %p %p %p %p %p\n", pos, pos->user_binding, pos->user_binding->function_handle, binding, binding->user_binding, binding->user_binding->wrapper_pointer);
-   //((struct internal_binding_t*)(binding->user_binding->function_handle))->wrappee_pointer = pos->wrappee_pointer;
    setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
-   debug_printf(4, "3\n");
-   //((struct internal_binding_t*)(pos->user_binding->function_handle))->wrappee_pointer = binding->user_binding->wrapper_pointer;
-   //setInternalBindingAddressPointer(pos, binding->user_binding->wrapper_pointer);
-   //setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
-   /** END OPAQUE */
    binding->next_binding = pos->next_binding;
-   debug_printf(4, "5\n");
    pos->next_binding = binding;
-   debug_printf(4, "6\n");
 }
 
 #define RWO_NOCHANGE 0
@@ -295,10 +275,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
   debug_printf(3, "Initializing %d user binding entries to NULL\n", num_actions);
   for (i = 0; i < num_actions; i++) {
-    /** OPAQUE */
-    //user_bindings[i].function_handle
     setBindingAddressPointer(&user_bindings[i], NULL);
-    /** END OPAQUE */
   }
 
   if (!tool_name)
@@ -328,9 +305,6 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
         debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
-        /** OPAQUE */
-        //gotcha_assert(*((void **) binding->user_binding->function_handle) == NULL);
-        /** END OPAQUE */
         int presult = prepare_symbol(binding);
         if (presult == -1) {
            debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",
