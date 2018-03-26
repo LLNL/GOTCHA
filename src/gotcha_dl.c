@@ -7,8 +7,8 @@
 
 void* _dl_sym(void* handle, const char* name, void* where);
 
-static void*(*orig_dlopen)(const char* filename, int flags);
-static void*(*orig_dlsym)(void* handle, const char* name);
+static gotcha_wrappee_handle_t orig_dlopen_handle;
+static gotcha_wrappee_handle_t orig_dlsym_handle;
 
 static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUSED)
 {
@@ -35,6 +35,7 @@ static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUS
 }
 
 static void* dlopen_wrapper(const char* filename, int flags) {
+   typeof(&dlopen_wrapper) orig_dlopen = gotcha_get_wrappee(orig_dlopen_handle);
    void *handle;
    debug_printf(1, "User called dlopen(%s, 0x%x)\n", filename, (unsigned int) flags);
    handle = orig_dlopen(filename,flags);
@@ -49,6 +50,7 @@ static void* dlopen_wrapper(const char* filename, int flags) {
 }
 
 static void* dlsym_wrapper(void* handle, const char* symbol_name){
+  typeof(&dlsym_wrapper) orig_dlsym = gotcha_get_wrappee(orig_dlsym_handle);
   struct internal_binding_t *binding;
   int result;
   
@@ -64,9 +66,9 @@ static void* dlsym_wrapper(void* handle, const char* symbol_name){
 }
 
 void handle_libdl(){
-  static struct gotcha_binding_t dl_binds[] = {
-    {"dlopen", dlopen_wrapper, &orig_dlopen},
-    {"dlsym", dlsym_wrapper, &orig_dlsym}
+  struct gotcha_binding_t dl_binds[] = {
+    {"dlopen", dlopen_wrapper, &orig_dlopen_handle},
+    {"dlsym", dlsym_wrapper, &orig_dlsym_handle}
   };     
   gotcha_wrap(dl_binds, 2, "gotcha");
 }
