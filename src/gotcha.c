@@ -132,7 +132,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   const char* name = binding->user_binding->name;
   int insert_priority = get_priority(binding->associated_binding_table->tool);
   
-  if(gotcha_strncmp(name,"main",4)==0){
+  if(gotcha_strcmp(name,"main")==0){
     if(!main_wrapped){
       debug_printf(2, "Wrapping main with Gotcha's internal wrappers");
       main_wrapped = 1;
