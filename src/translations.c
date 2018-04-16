@@ -15,10 +15,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <gotcha/gotcha.h>
 #include "translations.h"
 #include "gotcha_utils.h"
-/** "int main" wrapping handling */
-int gotcha_main_wrapper(int* argc, char** argv);
-//gotcha_wrappee_handle_t gotcha_internal_libc_main_wrappee_handle;
-//gotcha_wrappee_handle_t gotcha_internal_main_wrappee_handle;
+
+int main_wrapped;
+gotcha_wrappee_handle_t gotcha_internal_libc_main_wrappee_handle;
+gotcha_wrappee_handle_t gotcha_internal_main_wrappee_handle;
+
 int gotcha_internal_main(int argc, char** argv, char** envp){
   main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle); 
   return underlying_main(argc, argv, envp);
@@ -28,3 +29,10 @@ int gotcha_internal_libc_start_main(int (*main_arg)(int, char**, char**) KNOWN_U
    main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle);
    return underlying_libc_main(underlying_main, argc, argv, init, fini, rtld_fini, stack_end);
 }
+
+struct gotcha_binding_t libc_main_wrappers[] = {
+  {"__libc_start_main", gotcha_internal_libc_start_main, &gotcha_internal_libc_main_wrappee_handle}
+};
+struct gotcha_binding_t main_wrappers[] = {
+  {"main", gotcha_internal_main, &gotcha_internal_main_wrappee_handle}
+};
