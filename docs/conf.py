@@ -20,11 +20,11 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Gotcha'
-copyright = u'2018, David Poliakoff, Matt Legendre'
+copyright = u'2018, Lawrence Livermore National Security, LLC'
 author = u'David Poliakoff, Matt Legendre'
 
 # The short X.Y version
-version = u''
+version = u'0.1'
 # The full version, including alpha/beta/rc tags
 release = u'0.1.0'
 
