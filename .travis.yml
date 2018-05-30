@@ -85,6 +85,7 @@ script:
   - readelf -S test/wrap_main/libmain_functions.so
   - readelf -d test/wrap_main/libmain_functions.so
   - readelf -d test/wrap_main/main
+  - env
   - /lib/x86_64-linux-gnu/libc.so.6
   - ldd test/wrap_main/main
 after_success:
