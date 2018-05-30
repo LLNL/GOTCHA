@@ -27,13 +27,23 @@ static void writeAddress(void* write, void* value){
 }
 
 static void** getBindingAddressPointer(struct gotcha_binding_t* in){
-  return (void**)in->function_address_pointer;
+  return (void**)in->function_handle;
 }
 
 static void setBindingAddressPointer(struct gotcha_binding_t* in, void* value){
    void **target = getBindingAddressPointer(in);
    debug_printf(3, "Updating binding address pointer at %p to %p\n", target, value);
    writeAddress(target, value);
+}
+
+static void** getInternalBindingAddressPointer(struct internal_binding_t** in){
+  return (void**)&((*in)->wrappee_pointer);
+}
+
+static void setInternalBindingAddressPointer(struct internal_binding_t** in, void* value){
+  void** target = getInternalBindingAddressPointer(in);
+  debug_printf(3, "Updating binding address pointer at %p to %p\n", target, value);
+  writeAddress(target, value);
 }
 
 int prepare_symbol(struct internal_binding_t *binding)
@@ -89,7 +99,8 @@ int prepare_symbol(struct internal_binding_t *binding)
       debug_printf(2, "Symbol %s found in %s at 0x%lx\n", 
                    user_binding->name, LIB_NAME(lib),
                    symtab[result].st_value + lib->l_addr);
-      setBindingAddressPointer(user_binding,(void *)(symtab[result].st_value + lib->l_addr));
+      *(struct internal_binding_t**)user_binding->function_handle = user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
+      setInternalBindingAddressPointer((struct internal_binding_t**)&user_binding->opaque_handle,(void *)(symtab[result].st_value + lib->l_addr));
       return 0;
    }
    debug_printf(1, "Symbol %s was found in program\n", user_binding->name);
@@ -99,15 +110,15 @@ int prepare_symbol(struct internal_binding_t *binding)
 static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
 {
    binding->next_binding = head;
-   (*(void**)binding->user_binding->function_address_pointer) = head->user_binding->wrapper_pointer;
+   setInternalBindingAddressPointer(binding->user_binding->function_handle, head->user_binding->wrapper_pointer);
    removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
    addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   setBindingAddressPointer(binding->user_binding, *((void **) pos->user_binding->function_address_pointer));
-   setBindingAddressPointer(pos->user_binding, binding->user_binding->wrapper_pointer);
+   setInternalBindingAddressPointer(binding->user_binding->function_handle, pos->wrappee_pointer);
+   setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
    binding->next_binding = pos->next_binding;
    pos->next_binding = binding;
 }
@@ -126,6 +137,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   struct internal_binding_t* head;
   int hash_result;
   hash_result = lookup_hashtable(&function_hash_table, (void*)name, (void**)&head);
+  *(struct internal_binding_t**)binding->user_binding->function_handle = binding->user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
   if(hash_result != 0) {
     debug_printf(2, "Adding new entry for %s to hash table\n", name);
     addto_hashtable(&function_hash_table, (void *) name, (void *) binding);
@@ -293,7 +305,6 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
         debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
-        gotcha_assert(*((void **) binding->user_binding->function_address_pointer) == NULL);
         int presult = prepare_symbol(binding);
         if (presult == -1) {
            debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",
@@ -361,3 +372,6 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int
   return get_configuration_value(tool_name, GOTCHA_PRIORITY, priority);
 }
 
+GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle){
+  return ((struct internal_binding_t*)handle)->wrappee_pointer;
+}

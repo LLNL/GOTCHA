@@ -16,11 +16,12 @@
 
 typedef void *dlopen_fcn_t(const char *, int);
 
-void*(*reel_dlopen)(const char*, int);
+gotcha_wrappee_handle_t reel_dlopen_handle;
 
 void *
 wrap_dlopen(const char *file, int flag)
 {
+    typeof(&wrap_dlopen) reel_dlopen = gotcha_get_wrappee(reel_dlopen_handle);
     fprintf(stderr, "ENTER WRAP: %p\n", reel_dlopen);
     fprintf(stderr, "%s:  enter dlopen:  file = %s\n", MYNAME, file);
 
@@ -32,13 +33,16 @@ wrap_dlopen(const char *file, int flag)
 
     return ans;
 }
-
+void* opaque;
 struct gotcha_binding_t binds[] = {
-  { "dlopen", wrap_dlopen, &reel_dlopen}
+  { "dlopen", wrap_dlopen, &reel_dlopen_handle}
 };
-__attribute__((constructor)) void fix_things(){
-  reel_dlopen = NULL;
+void fix_things(){
+  reel_dlopen_handle = NULL;
   gotcha_wrap(binds, 1, "silly");
+  typeof(&wrap_dlopen) reel_dlopen = gotcha_get_wrappee(reel_dlopen_handle);
   fprintf(stderr, "IMMEDIATE WRITE: %p\n", reel_dlopen);
-  
+}
+__attribute__((constructor)) void startup_fix_things(){
+  fix_things(); 
 }

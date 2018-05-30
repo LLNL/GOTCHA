@@ -23,14 +23,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 static int retX_wrapper(int x);
 
-static int(*origRetX)(int) = 0x0;
+static gotcha_wrappee_handle_t origRetX_handle = 0x0;
 
 #define NUM_IOFUNCS 1
 struct gotcha_binding_t iofuncs[] = {
-   { "retX",retX_wrapper,&origRetX}
+   { "retX",retX_wrapper,&origRetX_handle}
 };
 
 int retX_wrapper(int x){
+  typeof(&retX_wrapper) origRetX = gotcha_get_wrappee(origRetX_handle);
   printf("In tool1 wrapper, calling %p\n", origRetX);
   return origRetX ? (origRetX(x) + 1) : 0;
 }

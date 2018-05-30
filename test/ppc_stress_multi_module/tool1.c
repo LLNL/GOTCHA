@@ -26,14 +26,15 @@ int storage2test = 5;
 
 static int retX_wrapper(int x);
 
-static int(*origRetX)(int) = 0x0;
+static gotcha_wrappee_handle_t origRetX_handle = 0x0;
 
 #define NUM_IOFUNCS 1
 struct gotcha_binding_t iofuncs[] = {
-   { "retX",retX_wrapper,&origRetX}
+   { "retX",retX_wrapper,&origRetX_handle}
 };
 
 int retX_wrapper(int x){
+  typeof(&retX_wrapper) origRetX = gotcha_get_wrappee(origRetX_handle);
   printf("In tool1 wrapper, calling %p\n", origRetX);
   return origRetX ? (origRetX(x) + storage1test + storage2test ) : 0;
 }
