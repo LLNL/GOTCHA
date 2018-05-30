@@ -60,10 +60,10 @@ public:
 };
 
 template<int A, int B>
-result_t (*Neg<A, B>::mathfn_mult)(void) = NULL;
+gotcha_wrappee_handle_t Neg<A, B>::mathfn_mult_handle= NULL;
 
 template<int A, int B>
-result_t (*Neg<A, B>::mathfn_add)(void) = NULL;
+gotcha_wrappee_handle_t Neg<A, B>::mathfn_add_handle= NULL;
 
 void initMath()
 {

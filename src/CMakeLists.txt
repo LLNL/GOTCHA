@@ -9,6 +9,7 @@ set(GOTCHA_SOURCES
   tool.c 
   library_filters.c
   gotcha_dl.c
+  translations.c
 )
 
 add_library(gotcha SHARED ${GOTCHA_SOURCES})
