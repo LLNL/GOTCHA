@@ -23,6 +23,5 @@ struct gotcha_binding_t actions[] = {
 __attribute__((constructor)) void phnglui(){
   x+=1;
   printf("In attr constructor func\n");
-  setenv("GOTCHA_DEBUG","3",1); // TODO: DEBUG DELETE
   gotcha_wrap(actions,1,"test_tool");
 }
