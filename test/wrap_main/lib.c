@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 gotcha_wrappee_handle_t orig_main_handle;
+int x;
+int getX(){
+  return x;
+}
 int couldnt_find_a_better_main(int argc, char** argv){
   printf("In wrapper main\n");
   typeof(&couldnt_find_a_better_main) orig_main = gotcha_get_wrappee(orig_main_handle);
@@ -17,6 +21,7 @@ struct gotcha_binding_t actions[] = {
   {"main", couldnt_find_a_better_main, &orig_main_handle}
 };
 __attribute__((constructor)) void phnglui(){
+  x+=1;
   printf("In attr constructor func\n");
   setenv("GOTCHA_DEBUG","3",1); // TODO: DEBUG DELETE
   gotcha_wrap(actions,1,"test_tool");
