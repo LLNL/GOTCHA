@@ -14,5 +14,6 @@ struct gotcha_binding_t actions[] = {
   {"main", couldnt_find_a_better_main, &orig_main_handle}
 };
 __attribute__((constructor)) void phnglui(){
+  setenv("GOTCHA_DEBUG","3"); // TODO: DEBUG DELETE
   gotcha_wrap(actions,1,"test_tool");
 }
