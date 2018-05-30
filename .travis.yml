@@ -79,7 +79,7 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
   - cmake -DDEPENDENCIES_PREINSTALLED=ON -DCMAKE_C_COMPILER="$COMPILER" -DGOTCHA_ENABLE_TESTS=TRUE $CMAKE_EXTRA_FLAGS -DCMAKE_C_FLAGS="-Wall -Werror -Wextra -Wno-unused-variable -Wno-missing-field-initializers" ../
-  - make -j=1 VERBOSE=1
+  - make -j 1 VERBOSE=1
   - ctest --verbose
 after_success:
   - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
