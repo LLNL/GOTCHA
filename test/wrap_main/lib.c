@@ -20,7 +20,8 @@ int couldnt_find_a_better_main(int argc, char** argv){
 struct gotcha_binding_t actions[] = {
   {"main", couldnt_find_a_better_main, &orig_main_handle}
 };
-__attribute__((constructor)) void phnglui(){
+void phnglui() __attribute__((constructor));
+void phnglui(){
   x+=1;
   printf("In attr constructor func\n");
   gotcha_wrap(actions,1,"test_tool");
