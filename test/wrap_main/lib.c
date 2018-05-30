@@ -1,4 +1,5 @@
 #include "lib.h"
+#include <stdlib.h>
 gotcha_wrappee_handle_t orig_main_handle;
 int couldnt_find_a_better_main(int argc, char** argv){
   typeof(&couldnt_find_a_better_main) orig_main = gotcha_get_wrappee(orig_main_handle);
@@ -14,6 +15,6 @@ struct gotcha_binding_t actions[] = {
   {"main", couldnt_find_a_better_main, &orig_main_handle}
 };
 __attribute__((constructor)) void phnglui(){
-  setenv("GOTCHA_DEBUG","3"); // TODO: DEBUG DELETE
+  setenv("GOTCHA_DEBUG","3",1); // TODO: DEBUG DELETE
   gotcha_wrap(actions,1,"test_tool");
 }
