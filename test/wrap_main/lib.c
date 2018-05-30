@@ -1,4 +1,5 @@
 #include "lib.h"
+#include <stdio.h>
 #include <stdlib.h>
 gotcha_wrappee_handle_t orig_main_handle;
 int couldnt_find_a_better_main(int argc, char** argv){
