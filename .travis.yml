@@ -83,7 +83,9 @@ script:
   - readelf -r test/wrap_main/libmain_functions.so
   - readelf -S test/wrap_main/libmain_functions.so
   - readelf -d test/wrap_main/libmain_functions.so
-  - /lib64/libc.so.6
+  - /lib/x86_64-linux-gnu/libc.so.6
+  - ldd test/wrap_main/main
   - ctest --verbose
+  - ldd test/wrap_main/main
 after_success:
   - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
