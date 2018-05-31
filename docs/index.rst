@@ -9,8 +9,8 @@ Version 0.1.0
 About
 =====
 
-Gotcha is an API that provides function wrapping, interposing a wrapper
-between a function and its callsites. Many tools rely function wrapping 
+Gotcha is an API that provides function wrapping, interposing a wrapper 
+function between a function and its callsites. Many tools rely on function wrapping 
 as a fundamental building block. For example, a performance analysis 
 tool which wants to measure time an application spends in IO might put
 wrappers around "read()" and "write()" which trigger stopwatches.
