@@ -9,13 +9,11 @@ Version 0.1.0
 About
 =====
 
-Gotcha is an API that provides function wrapping, which is the concept
-of injecting a new wrapper function between another function and its
-callsites. Many tools rely function wrapping as a fundamental building
-block. A performance analysis tool may, for example, put function
-wrappers around "read()" and "write()" that trigger a stopwatch around
-the original calls, which allows the tools to measure time an
-application spends in IO.
+Gotcha is an API that provides function wrapping, interposing a wrapper 
+function between a function and its callsites. Many tools rely on function wrapping 
+as a fundamental building block. For example, a performance analysis 
+tool which wants to measure time an application spends in IO might put
+wrappers around "read()" and "write()" which trigger stopwatches.
 
 Tools traditionally implemented function wrapping with the LD_PRELOAD
 environment variable on glibc-based systems. This environment variable
@@ -40,7 +38,7 @@ function, and give me a function pointer to the original read().”
 Gotcha’s API allows tool wrapping decisions to be made at runtime, and
 it handles cases of multiple tools wrapping the same function. It does
 not, however, provide any new mechanisms for injecting the tool library
-into an application—gotcha-based tools should be added to the
+into an application. Gotcha-based tools should be added to the
 application at link-time or injected with LD_PRELOAD.
 
 Gotcha works by rewriting the Global Offset Table (GOT) that links
@@ -58,7 +56,7 @@ Gotcha is hosted on Github at https://github.com/llnl/gotcha. It uses
 CMake to build, and details can be found in the README file in the
 Gotcha root directory.
 
-Gotcha builds to a shared library, libgotcha.so, and accompanying C
+Gotcha builds a shared library, libgotcha.so, and accompanying C
 header files. Tools may choose to use CMake to build a static .a archive
 for Gotcha, but there should not be multiple instances of the gotcha
 library in process (which could happen if multiple tools use the archive
@@ -163,10 +161,10 @@ fopen call to stderr.
    }
 
 The fundamental data structure in the Gotcha API is the gotcha_binding_t
-table, which is shown in lines 29-32. This table is stating that calls
-to open should be rerouted to instead call open_wrapper, and similarly
+table, which is shown in lines 29-32. This table states that calls
+to open should be rerouted to call open_wrapper, and similarly
 for fopen and fopen_wrapper. The original open and fopen functions will
-still be accessible via the open_handle and fopen_handle handles.
+still be accessible via the handles open_handle and fopen_handle.
 
 The binding table is passed to Gotcha on line 36, which specifies there
 are two entries in the table and that these are part of the “demotool”
