@@ -1,4 +1,4 @@
-GOTCHA v0.0.2 (alpha)
+GOTCHA v1.0.0
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/GOTCHA.svg?branch=master)](https://travis-ci.org/LLNL/GOTCHA)
@@ -9,19 +9,6 @@ Gotcha is a library that wraps functions.  Tools can use gotcha to install hooks
 It is similar to LD_PRELOAD, but operates via a programable API.
 This enables easy methods of accomplishing tasks like code instrumentation or wholesale replacement of mechanisms in programs
 without disrupting their source code.
-
-This release of Gotcha is alpha software.  It should not be used in production, and there are numerous known issues that
-still need to be fixed:
-
-  * "Stacking," or having several tools each use Gotcha to wrap the same function. We eventually want to allow this,
-    and to have an API in which the order in which wrappers execute is configurable, but we aren't there
-    yet.
-  * Gotcha can be made to sabotage itself if it destructively replaces any functions that it relies on.
-  * Gotcha is not yet performant on applications with many shared libraries.
-  * Gotcha does not yet support dlopen, either wrapping symbols looked up by dlsym or modifying dlopen'd libraries.
-  * Full user docs. Right now you have this README, my email (poliakoff1@llnl.gov) and Doxygen as options for understanding the software. This is meant to be productized software, in the future we hope to give you better documentation resources.
-  * Automated wrapper generation. We have a pre-alpha Clang compiler plugin for generating libraries which use Gotcha
-    to wrap all the functions in a header file. We hope in the future to automate some of the scut work in Gotcha use
 
 Quick Start
 -----------
