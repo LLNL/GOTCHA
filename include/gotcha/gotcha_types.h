@@ -28,24 +28,28 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 extern "C" {
 #endif
 
-/*!
- * The representation of a GOTCHA action
- * as it passes through the pipeline
- */
-struct gotcha_binding_t {
-  const char* name;                      //!< The name of the function being wrapped
-  void* wrapper_pointer;           //!< A pointer to the wrapper function
-  void* function_address_pointer;  //!< A pointer to the function being wrapped
-};
+typedef void* gotcha_wrappee_handle_t;
 
 /*!
- * The representation of an error (or success) of a GOTCHA action
+ * The representation of a Gotcha action
+ * as it passes through the pipeline
  */
-enum gotcha_error_t {
-  GOTCHA_SUCCESS = 0,        //!< The call succeeded
-  GOTCHA_FUNCTION_NOT_FOUND, //!< The call looked up a function which could not be found
-  GOTCHA_INTERNAL            //!< Internal gotcha error
-};
+typedef struct gotcha_binding_t {
+  const char* name;                                //!< The name of the function being wrapped
+  void* wrapper_pointer;                           //!< A pointer to the wrapper function
+  gotcha_wrappee_handle_t function_handle;         //!< A pointer to the function being wrapped
+  void* opaque_handle;                             //!< This handle is for Gotcha developer use only
+}gotcha_binding_t;
+
+/*!
+ * The representation of an error (or success) of a Gotcha action
+ */
+typedef enum gotcha_error_t {
+  GOTCHA_SUCCESS = 0,          //!< The call succeeded
+  GOTCHA_FUNCTION_NOT_FOUND,   //!< The call looked up a function which could not be found
+  GOTCHA_INTERNAL,             //!< Internal gotcha error
+  GOTCHA_INVALID_TOOL          //!< Invalid tool name
+}gotcha_error_t;
 
 #if defined(__cplusplus) 
 }

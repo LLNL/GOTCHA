@@ -5,7 +5,7 @@ include(CheckCXXCompilerFlag)
 include(cmake/gotcha.cmake)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 
-set(LIBTOOL_INTERFACE 0)
+set(LIBTOOL_INTERFACE 1)
 set(LIBTOOL_REVISION 0)
 set(LIBTOOL_AGE 1)
 

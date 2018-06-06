@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 
 static ElfW(Ehdr) *vdso_ehdr = NULL;
-static int auxv_pagesz = 0;
+static unsigned int auxv_pagesz = 0;
 
 
 int parse_auxv_contents()
@@ -116,7 +116,7 @@ struct link_map *get_vdso_from_auxv()
    return NULL;
 }
 
-int get_auxv_pagesize()
+unsigned int get_auxv_pagesize()
 {
    int result;
    result = parse_auxv_contents();

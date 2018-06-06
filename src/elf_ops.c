@@ -16,7 +16,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "elf_ops.h"
 #include "libc_wrappers.h"
 #include <elf.h>
-
 struct gnu_hash_header {
    uint32_t nbuckets;   //!< The number of buckets to hash symbols into
    uint32_t symndx;     //!< Index of the first symbol accessible via hashtable in the symbol table

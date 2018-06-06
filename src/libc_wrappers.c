@@ -177,7 +177,7 @@ int gotcha_strcmp(const char *in_one, const char *in_two)
   }
 }
 
-char *gotcha_strstr(char *searchIn, char *searchFor)
+char *gotcha_strstr(const char *searchIn, const char *searchFor)
 {
    int i, j;
    if (!searchFor[0])
@@ -188,7 +188,7 @@ char *gotcha_strstr(char *searchIn, char *searchFor)
          continue;
       for (j = 1; ; j++) {
          if (!searchFor[j])
-            return searchFor + i;
+            return (char*)(searchFor + i);
          if (!searchIn[i+j])
             return NULL;
          if (searchFor[j] != searchIn[i+j])
@@ -207,6 +207,13 @@ size_t gotcha_strlen(const char *s)
 {
    size_t i;
    for (i = 0; s[i]; i++);
+   return i;
+}
+
+size_t gotcha_strnlen(const char *s, size_t max_length)
+{
+   size_t i;
+   for (i = 0; s[i] && i<max_length; i++);
    return i;
 }
 
@@ -324,9 +331,9 @@ pid_t gotcha_gettid()
    return syscall(SYS_gettid);
 }
 
-int gotcha_getpagesize()
+unsigned int gotcha_getpagesize()
 {
-   static int pagesz = 0;
+   static unsigned int pagesz = 0;
    if (pagesz)
       return pagesz;
 
@@ -553,10 +560,19 @@ int gotcha_int_printf(int fd, const char *format, ...)
 
 void *gotcha_memset(void *s, int c, size_t n)
 {
-   int i;
+   size_t i;
    unsigned char byte = (unsigned char) c;
    for (i = 0; i < n; i++) {
       ((unsigned char *) s)[i] = byte;
    }
    return s;
+}
+
+char* gotcha_strncat(char* dest, const char* src, size_t n){
+  char* dest_begin = dest;
+  dest = dest + gotcha_strlen(dest);
+  size_t dest_stop = gotcha_strnlen(src, n);
+  dest[dest_stop] = '\0';
+  gotcha_memcpy(dest, (void *) src, n);
+  return dest_begin;
 }

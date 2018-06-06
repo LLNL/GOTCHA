@@ -71,9 +71,55 @@ extern "C" {
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
 
+
+/*!
+ ******************************************************************************
+ *
+ * \fn enum gotcha_error_t gotcha_set_priority(const char *tool_name,
+ *                                             int value);
+ *
+ * \brief Set the tool priority, which controls how multiple tools stack
+ *        wrappings over the same functions.
+ *
+ * \param tool_name   The tool name to set the priority of
+ * \param priority    The new priority value for the tool.  Lower values
+ *                    are called innermost.
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int priority);
+
+/*!
+ ******************************************************************************
+ *
+ * \fn enum gotcha_error_t gotcha_get_priority(const char *tool_name,
+ *                                             int *value);
+ *
+ * \brief Gets the tool priority, which controls how multiple tools stack
+ *        wrappings over the same functions.
+ *
+ * \param tool_name   The tool name to get the priority of
+ * \param num_actions Output parameters with the priority for the tool.
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int *priority);
+
+/*!
+ ******************************************************************************
+ *
+ * \fn enum void* gotcha_get_wrappee(gotcha_wrappee_handle_t)
+ *
+ * \brief Given a GOTCHA wrapper's handle, returns the wrapped function for it to call
+ *
+ * \param handle The wrappee handle to return the function pointer for
+ *
+ ******************************************************************************
+ */
+GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
+
 #if defined(__cplusplus) 
 }
 #endif
-
 
 #endif

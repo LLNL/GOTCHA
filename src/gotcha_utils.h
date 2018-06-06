@@ -27,21 +27,23 @@ Place, Suite 330, Boston, MA 02111-1307 USA
 #define GOTCHA_UTILS_H
 #include <sys/mman.h>
 #include "gotcha/gotcha_types.h"
+#include "hash.h"
 // TODO: remove these includes
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 // END TODO
 #include <elf.h>
 #include <link.h>
 #include <string.h>
 
+#define KNOWN_UNUSED __attribute__((unused))
 
 #define GOTCHA_DEBUG_ENV "GOTCHA_DEBUG"
 extern int debug_level;
-void debug_init();
-
+void gotcha_init();
+extern hash_table_t function_hash_table;
+extern hash_table_t notfound_binding_table;
 #define debug_bare_printf(lvl, format, ...)       \
    do {                                           \
      if (debug_level >= lvl) {                    \
@@ -95,9 +97,7 @@ do {                                                       \
  ******************************************************************************
  */
 #define BOUNDARY_BEFORE(ptr, pagesize) \
-  (void*)(((ElfW(Addr))ptr) & (-pagesize))
+  (ElfW(Addr))(((ElfW(Addr))ptr) &(-pagesize))
 
-
-int debug_print(struct link_map *libc, char *filter);
 
 #endif

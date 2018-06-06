@@ -34,6 +34,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define STR(X) STR2(X)
 #define STR2(X) #X
 #endif
+TCase* configured_case_create(const char* name){
+  TCase* ccase = tcase_create(name);
+  tcase_set_timeout(ccase, 100.0);
+  return ccase;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////GOTCHA Core Tests///////////////////////////////////////////////////////////////////////////////////
@@ -50,25 +55,17 @@ void teardown_infrastructure()
 {
 }
 
+int check_pointer(void* ptr){
+  return ((ElfW(Addr))ptr)!=0;
+}
+
 extern int gotcha_prepare_symbols(binding_t *bindings, int num_names);
 
-int dummy_main(int argc, char* argv[]){return 4;}
-START_TEST(symbol_prep_test)
-{
-  int(*my_main)(int argc, char* argv[]) = 0;
-  struct gotcha_binding_t bindings[] = {
-    { "main", &dummy_main, &my_main  }
-  };
-  struct binding_t* internal_bindings = add_binding_to_tool(new_tool, bindings, 1);
-  ck_assert_msg(get_bindings(),"get_bindings shows no bindings");
-  ck_assert_msg(get_tool_bindings(new_tool),"couldn't get bindings for created tool");
-  gotcha_prepare_symbols(internal_bindings,1);
-  ck_assert_msg((my_main!=0), "gotcha_prepare_symbols was not capable of finding function main");
-}
-END_TEST
+int dummy_main(int argc, char* argv[]){return argv[argc-1][0];} //this is junk, will not be executed
 
-int(*orig_func)();
+gotcha_wrappee_handle_t orig_func_handle;
 int wrap_sample_func(){
+  typeof(&wrap_sample_func) orig_func = gotcha_get_wrappee(orig_func_handle);
   return orig_func()+5;
 }
 
@@ -84,7 +81,7 @@ END_TEST
 
 START_TEST(symbol_wrap_test){
   struct gotcha_binding_t bindings[] = {
-    { "simpleFunc", &wrap_sample_func, &orig_func }
+    { "simpleFunc", &wrap_sample_func, &orig_func_handle }
   };
   gotcha_wrap(bindings,1,"internal_test_tool");
   int x = simpleFunc(); 
@@ -94,7 +91,7 @@ END_TEST
 
 START_TEST(bad_lookup_test){
   struct gotcha_binding_t bindings[] = {
-    { "this_is_the_story_of_a_function_we_shouldnt_find", &wrap_sample_func, &orig_func }
+    { "this_is_the_story_of_a_function_we_shouldnt_find", &wrap_sample_func, &orig_func_handle }
   };
   enum gotcha_error_t errcode = gotcha_wrap(bindings,1,"internal_test_tool");
   ck_assert_msg((errcode==GOTCHA_FUNCTION_NOT_FOUND),"Looked up a function that shouldn't be found and did not get correct error code");
@@ -102,9 +99,8 @@ START_TEST(bad_lookup_test){
 END_TEST
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
-  TCase* core_case = tcase_create("Wrapping");
+  TCase* core_case = configured_case_create("Wrapping");
   tcase_add_checked_fixture(core_case, setup_infrastructure, teardown_infrastructure);
-  tcase_add_test(core_case, symbol_prep_test);
   tcase_add_test(core_case, symbol_wrap_test);
   tcase_add_test(core_case, bad_lookup_test);
   tcase_add_test(core_case, auto_tool_creation);
@@ -115,13 +111,6 @@ Suite* gotcha_core_suite(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////Libc Wrapper Tests//////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// TODO: this test has no way to fail except segfaults. Need to ensure it does sane things
-START_TEST(debug_print_test){
-  struct link_map* print_me = _r_debug.r_map;
-  debug_print(print_me,"");
-}
-END_TEST
 
 START_TEST(gotcha_malloc_test){
   int* x = (int*)gotcha_malloc(sizeof(int)*10);
@@ -197,6 +186,7 @@ START_TEST(gotcha_realloc_test){
   x[4] = 5;
   x = (int*)gotcha_realloc(x,sizeof(int)*15);
   x[14] = 5;
+  gotcha_free(x);
 }
 END_TEST
 
@@ -212,6 +202,8 @@ START_TEST(gotcha_memcpy_test){
   for(i =0 ;i<10;i++){
     ck_assert_msg(y[i] == i, "Target for gotcha_memcpy doesn't have the correct data");
   }
+  gotcha_free(x);
+  gotcha_free(y);
 }
 END_TEST
 
@@ -257,7 +249,7 @@ static void test_printf_buffers(char *buffer, int buffer_size,
                                 int result_libc, int result_gotcha)
 {
    char pipe_buffer[4092];
-   int i = 0, result;
+   unsigned long i = 0, result;
    char zero = 0;
 
    buffer[buffer_size-1] = '\0';
@@ -334,8 +326,7 @@ END_TEST
 
 Suite* gotcha_libc_suite(){
   Suite* s = suite_create("Gotcha Libc");
-  TCase* libc_case = tcase_create("Basic tests");
-  tcase_add_test(libc_case, debug_print_test);
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, gotcha_malloc_test);
   tcase_add_test(libc_case, gotcha_free_test);
   tcase_add_test(libc_case, gotcha_realloc_test);
@@ -371,7 +362,7 @@ END_TEST
 
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
   tcase_add_test(libc_case, vdso_pagesize_test);
   suite_add_tcase(s, libc_case);
@@ -427,7 +418,7 @@ END_TEST
 
 Suite* gotcha_hash_suite(){
   Suite* s = suite_create("Gotcha Hashing");
-  TCase* libc_case = tcase_create("Basic tests");
+  TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, hash_grow_test);
   suite_add_tcase(s, libc_case);
   return s;

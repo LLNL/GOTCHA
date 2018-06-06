@@ -1,0 +1,8 @@
+set(CMAKE_C_FLAGS "-g -O -fPIC")
+add_library(multi_agent_sym SHARED dlsym.c)
+add_library(multi_agent_mon SHARED monitor.c)
+add_executable(multi_agent_main main.c)
+target_link_libraries(multi_agent_main dl)
+target_link_libraries(multi_agent_mon dl gotcha)
+gotcha_add_test(multi_agent_dlopen multi_agent_main)
+environment_add(multi_agent_dlopen TEST "LD_PRELOAD=${CMAKE_CURRENT_BINARY_DIR}/libmulti_agent_sym.so:${CMAKE_CURRENT_BINARY_DIR}/libmulti_agent_mon.so GOTCHA_DEBUG=3 LIBNUM_DIR=${CMAKE_CURRENT_BINARY_DIR}")
