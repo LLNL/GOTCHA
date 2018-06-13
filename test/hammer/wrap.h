@@ -20,15 +20,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <utility>
 #include <set>
 #include <map>
+#include <gotcha/gotcha_types.h>
 
 extern void initMath();
 class WrapperInfo {
 public:
    std::map<std::pair<int, int>, std::string> mathFunctionNames;
-   std::map<std::pair<int, int>, std::pair<void *, void *> > negFunctionPtrs;
+   std::map<std::pair<int, int>, std::pair<void *, gotcha_wrappee_handle_t*> > negFunctionPtrs;
    std::set<bool (*)(bool)> checkFunctions;
    void addName(int a, int b, void *func);   
-   void addNegPtr(int a, int b, void *negfunc, void *mathfptr);
+   void addNegPtr(int a, int b, void **negfunc, void **mathfptr);
    bool validate(bool is_neg);
    bool dowrap(std::string toolname);
 };
