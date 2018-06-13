@@ -41,8 +41,8 @@ static void** getInternalBindingAddressPointer(struct internal_binding_t** in){
   return (void**)&((*in)->wrappee_pointer);
 }
 
-static void setInternalBindingAddressPointer(struct internal_binding_t** in, void* value){
-  void** target = getInternalBindingAddressPointer(in);
+static void setInternalBindingAddressPointer(void** in, void* value){
+  void** target = getInternalBindingAddressPointer((struct internal_binding_t**)in);
   debug_printf(3, "Updating binding address pointer at %p to %p\n", target, value);
   writeAddress(target, value);
 }
