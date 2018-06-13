@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "sampleLib.h"
 
 //We need a place to store the pointer to the function we've wrapped
-int (*origRetX)(int) = NULL;
+gotcha_wrappee_handle_t origRetX_handle;
 
 /**
   * We need to express our desired wrapping behavior to
@@ -34,7 +34,7 @@ int (*origRetX)(int) = NULL;
   * Note that the place to store the original function is passed
   * by reference, this is required for us to be able to change it
   */
-struct gotcha_binding_t bindings[] = {{"retX", dogRetX, &origRetX}};
+struct gotcha_binding_t bindings[] = {{"retX", dogRetX, &origRetX_handle}};
 
 // This is like a tool library's initialization function
 int sample_init()
@@ -57,6 +57,7 @@ int retX(int x) { return x; }
   */
 int dogRetX(int x)
 {
+  typeof(&dogRetX) origRetX = gotcha_get_wrappee(origRetX_handle);
   printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n", x);
   return origRetX ? origRetX(x) + 1 : 0;
 }

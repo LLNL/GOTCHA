@@ -70,9 +70,9 @@ int wrap_sample_func(){
 }
 
 START_TEST(auto_tool_creation){
-  int(*my_main)(int argc, char* argv[]) = 0;
+  gotcha_wrappee_handle_t my_main_handle;
   struct gotcha_binding_t bindings[] = {
-    { "main", &dummy_main, &my_main  }
+    { "main", &dummy_main, &my_main_handle  }
   };
   gotcha_wrap(bindings,1,"sample_autocreate_tool");
   ck_assert_msg(1,"Should never fail unless segfault on tool creation");

@@ -56,11 +56,11 @@ public:
 template <int A, int B>
 class Neg {
 public:
-   static gotcha_wrappee_handle_t mathfn_add_handle;
-   static gotcha_wrappee_handle_t mathfn_mult_handle;
+   static gotcha_wrappee_handle_t* mathfn_add_handle;
+   static gotcha_wrappee_handle_t* mathfn_mult_handle;
    static void init() {
-      multinfo.addNegPtr(A, B, (void *) Neg<A, B>::mult_math_wrapper, (void *) &mathfn_mult_handle);
-      addinfo.addNegPtr(A, B, (void *) Neg<A, B>::add_math_wrapper, (void *) &mathfn_add_handle);
+      multinfo.addNegPtr(A, B, (void **) Neg<A, B>::mult_math_wrapper, (void **) &mathfn_mult_handle);
+      addinfo.addNegPtr(A, B, (void **) Neg<A, B>::add_math_wrapper, (void **) &mathfn_add_handle);
    }
 
    static result_t mult_math_wrapper() {
