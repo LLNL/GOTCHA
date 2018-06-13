@@ -100,8 +100,7 @@ int prepare_symbol(struct internal_binding_t *binding)
       debug_printf(2, "Symbol %s found in %s at 0x%lx\n", 
                    user_binding->name, LIB_NAME(lib),
                    symtab[result].st_value + lib->l_addr);
-      *(struct internal_binding_t**)user_binding->function_handle = user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
-      setInternalBindingAddressPointer((struct internal_binding_t**)&user_binding->opaque_handle,(void *)(symtab[result].st_value + lib->l_addr));
+      setInternalBindingAddressPointer(user_binding->function_handle,(void *)(symtab[result].st_value + lib->l_addr));
       return 0;
    }
    debug_printf(1, "Symbol %s was found in program\n", user_binding->name);
@@ -147,7 +146,6 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   struct internal_binding_t* head;
   int hash_result;
   hash_result = lookup_hashtable(&function_hash_table, (void*)name, (void**)&head);
-  *(struct internal_binding_t**)binding->user_binding->function_handle = binding->user_binding->opaque_handle; // TODO: does this mean we don't need opaque?
   if(hash_result != 0) {
     debug_printf(2, "Adding new entry for %s to hash table\n", name);
     addto_hashtable(&function_hash_table, (void *) name, (void *) binding);
