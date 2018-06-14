@@ -26,19 +26,20 @@ make install
 
 ```
   #include <gotcha/gotcha.h>
-  static int (*wrappee_puts)(const char*); //this lets you call the original
+  static gotcha_wrappee_t wrappee_puts_handle;
   static int puts_wrapper(const char* str); //this is the declaration of your wrapper
-  static int (*wrappee_fputs)(const char*, FILE*);
+  static gotcha_wrappee_t wrappee_fputs_handle;
   static int fputs_wrapper(const char* str, FILE* f);
   struct gotcha_binding_t wrap_actions [] = {
-    { "puts", puts_wrapper, &wrappee_puts },
-    { "fputs", fputs_wrapper, &wrappee_fputs },
+    { "puts", puts_wrapper, &wrappee_puts_handle },
+    { "fputs", fputs_wrapper, &wrappee_fputs_handle },
   };
   int init_mytool(){
     gotcha_wrap(wrap_actions, sizeof(wrap_actions)/sizeof(struct gotcha_binding_t), "my_tool_name");
   }
   static int fputs_wrapper(const char* str, FILE* f){
     // insert clever tool logic here
+    typeof(&fputs_wrapper) wrappee_fputs = gotcha_get_wrappee(wrappee_fputs_handle); // get my wrappee from Gotcha
     return wrappee_fputs(str, f); //wrappee_fputs was directed to the original fputs by gotcha_wrap
   }
 
