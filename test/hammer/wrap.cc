@@ -44,7 +44,7 @@ void WrapperInfo::addName(int a, int b, void *func)
    }
 }
 
-void WrapperInfo::addNegPtr(int a, int b, void *negfunc, void *multfptr)
+void WrapperInfo::addNegPtr(int a, int b, void **negfunc, void **multfptr)
 {
    negFunctionPtrs[make_pair(a, b)] = make_pair(negfunc, multfptr);
 }
