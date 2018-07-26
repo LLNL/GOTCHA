@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha_dl.h"
 #include "elf_ops.h"
 #include "tool.h"
+#include "thin.h"
 
 static void writeAddress(void* write, void* value){
   *(void**)write = value;
@@ -265,7 +266,7 @@ void update_all_library_gots(hash_table_t *bindings)
    }   
 }
 
-GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name)
+static enum gotcha_error_t internal_gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name, gotcha_sigfree_binding_t *sigfree)
 {
   int i, not_found = 0, new_bindings_count = 0;
   tool_t *tool;
@@ -300,7 +301,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   debug_printf(2, "Moved current_generation to %u in gotcha_wrap\n", current_generation);
 
   debug_printf(2, "Creating internal binding data structures and adding binding to tool\n");
-  binding_t *bindings = add_binding_to_tool(tool, user_bindings, num_actions);
+  binding_t *bindings = add_binding_to_tool(tool, user_bindings, sigfree, num_actions);
   if (!bindings) {
      error_printf("Failed to create bindings for tool %s\n", tool_name);
      return GOTCHA_INTERNAL;
@@ -344,6 +345,26 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   return GOTCHA_SUCCESS;
 }
 
+GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bindings, int num_actions, const char* tool_name)
+{
+   return internal_gotcha_wrap(user_bindings, num_actions, tool_name, NULL);
+}
+
+enum gotcha_error_t gotcha_sigfree_wrap(struct gotcha_sigfree_binding_t *bindings, int num_actions, const char *tool_name)
+{   
+   gotcha_binding_t *newbindings;
+   int i;
+
+   void *mem = allocate_trampoline_memory(num_actions);
+   newbindings = (gotcha_binding_t *) gotcha_malloc(sizeof(gotcha_binding_t) * num_actions);
+   for (i = 0; i < num_actions; i++) {
+      newbindings[i].name = bindings[i].name;
+      newbindings[i].wrapper_pointer = create_thin_wrapper(newbindings + i, mem, i);
+      newbindings[i].function_handle = bindings[i].function_handle;
+   }
+   return internal_gotcha_wrap(newbindings, num_actions, tool_name, bindings);   
+}
+
 static enum gotcha_error_t gotcha_configure_int(const char* tool_name, enum gotcha_config_key_t configuration_key , int value){
   tool_t * tool = get_tool(tool_name);
   if(tool==NULL){
@@ -382,4 +403,8 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int
 
 GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle){
   return ((struct internal_binding_t*)handle)->wrappee_pointer;
+}
+
+GOTCHA_EXPORT const char *gotcha_get_wrappee_name(gotcha_wrappee_handle_t handle) {
+   return ((struct internal_binding_t*)handle)->user_binding->name;
 }

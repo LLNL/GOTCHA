@@ -10,6 +10,8 @@ set(GOTCHA_SOURCES
   library_filters.c
   gotcha_dl.c
   translations.c
+  thin.c
+  thin_x86.s
 )
 
 add_library(gotcha SHARED ${GOTCHA_SOURCES})

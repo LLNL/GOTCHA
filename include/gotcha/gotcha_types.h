@@ -30,6 +30,9 @@ extern "C" {
 
 typedef void* gotcha_wrappee_handle_t;
 
+typedef void (*sigfree_pre_wrapper_t)(gotcha_wrappee_handle_t handle, void **opaque_val);
+typedef void (*sigfree_post_wrapper_t)(gotcha_wrappee_handle_t handle, void *opaque_val);
+   
 /*!
  * The representation of a Gotcha action
  * as it passes through the pipeline
@@ -37,9 +40,16 @@ typedef void* gotcha_wrappee_handle_t;
 typedef struct gotcha_binding_t {
   const char* name;                                //!< The name of the function being wrapped
   void* wrapper_pointer;                           //!< A pointer to the wrapper function
-  gotcha_wrappee_handle_t* function_handle;         //!< A pointer to the function being wrapped
+  gotcha_wrappee_handle_t* function_handle;         //!< A handle to the function being wrapped
 }gotcha_binding_t;
 
+typedef struct gotcha_sigfree_binding_t {
+   const char *name;                              //!< The name of the function being wrapped
+   sigfree_pre_wrapper_t pre_wrapper;             //!< A pointer to the pre-wrapper function
+   sigfree_post_wrapper_t post_wrapper;           //!< A pointer to the post-wrapper function
+   gotcha_wrappee_handle_t *function_handle;       //!< A handle for referring to this wrapping
+} gotcha_sigfree_binding_t;
+   
 /*!
  * The representation of an error (or success) of a Gotcha action
  */
