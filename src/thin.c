@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "thin.h"
 #include "libc_wrappers.h"
 #include "tool.h"
+#include "gotcha_utils.h"
 
 #define INITIAL_SAVESTATE_SIZE 128
 static __thread void *savestate = NULL;
@@ -35,6 +36,16 @@ typedef struct {
    void *unused2;
 } stacksave_info_t;
 
+
+/**
+ * grow_stackstate, push_stack_addr, and pop_stack_state manage a
+ * per-thread stack that tracks return addresses.  When we enter a 
+ * thin trampoline we override the original return address to point
+ * into the trampoline.  After the trampoline finishes, we need to get
+ * the original return back into place.  
+ * These stack routines manage the location where we save the return
+ * addresses.
+ **/
 static void grow_stackstate(unsigned long newsize)
 {
    stacksave_info_t *oldstack = (stacksave_info_t *) savestate;
@@ -96,6 +107,11 @@ static void* pop_stack_state(void **addr, void **opaque_handle)
    return entries[cur].retaddr;
 }
 
+/**
+ * pre and post are infrastructure for the thin wrappers.  Rather than
+ * have the assembly snippet call the user code directly it calls these
+ * routines.  They setup datastructures and call onwards to the user wrappers. 
+ **/
 static void* pre(gotcha_binding_t *binding, void **retaddr)
 {
    internal_binding_t *int_binding = *((internal_binding_t **) (binding->function_handle));
@@ -106,6 +122,8 @@ static void* pre(gotcha_binding_t *binding, void **retaddr)
    }  
    push_stack_addr(retaddr, opaque_handle);
    wrappee = gotcha_get_wrappee(*binding->function_handle);
+   debug_printf(3, "In pre thin wrapper for %s. Next wrappee at %p, "
+                "retaddr at %p\n", binding->name, retaddr);
    return wrappee;
 }
 
@@ -121,10 +139,13 @@ static void post(gotcha_binding_t *binding, void **retaddr)
       wrapper((gotcha_wrappee_handle_t *) int_binding, opaque_handle);
    }
    *retaddr = orig_retaddr;
+   debug_printf(3, "In post thin wrapper for %s. Set retaddr back to %p\n",
+                binding->name, orig_retaddr);
 }
 
 void *create_thin_wrapper(gotcha_binding_t *binding, void *tramp_memory, int binding_num)
 {
+   debug_printf(2, "Creating thin wrapper around %s\n", binding->name);
    return create_trampoline(pre, post, binding, tramp_memory, binding_num);
 }
 
@@ -152,6 +173,8 @@ void *create_trampoline(void *prewrapper, void *postwrapper, void *param, void *
    mem = ((unsigned char *) trampmem) + (num * size);
    memcpy(mem, &snippet_start, size);
 
+
+#if defined(__x86_64__)
    for (i = 0; i < size-8; i++) {
       if (*((unsigned long *) (mem + i)) == 0x1111111111111111)
          memcpy(mem + i, &prewrapper, 8);
@@ -160,6 +183,41 @@ void *create_trampoline(void *prewrapper, void *postwrapper, void *param, void *
       if (*((unsigned long *) (mem + i)) == 0x3333333333333333)
          memcpy(mem + i, &postwrapper, 8);
    }
+#elif defined(__PPC64__)
+   unsigned char *paramc = (unsigned char *) &param;
+   unsigned char *prec = (unsigned char *) &prewrapper;
+   unsigned char *postc = (unsigned char *) &postwrapper;
+   for (i = 0; i < size-2; i++) {
+      if (*((unsigned short *) (mem + i)) == 0x1111)
+         memcpy(mem + i, paramc + 6, 2);
+      if (*((unsigned short *) (mem + i)) == 0x2222)
+         memcpy(mem + i, paramc + 4, 2);
+      if (*((unsigned short *) (mem + i)) == 0x3333)
+         memcpy(mem + i, paramc + 2, 2);         
+      if (*((unsigned short *) (mem + i)) == 0x4444)
+         memcpy(mem + i, paramc, 2);
 
+      if (*((unsigned short *) (mem + i)) == 0x5555)
+         memcpy(mem + i, prec + 6, 2);
+      if (*((unsigned short *) (mem + i)) == 0x6666)
+         memcpy(mem + i, prec + 4, 2);
+      if (*((unsigned short *) (mem + i)) == 0x7777)
+         memcpy(mem + i, prec + 2, 2);         
+      if (*((unsigned short *) (mem + i)) == 0x8888)
+         memcpy(mem + i, prec, 2);
+      
+      if (*((unsigned short *) (mem + i)) == 0x9999)
+         memcpy(mem + i, postc + 6, 2);
+      if (*((unsigned short *) (mem + i)) == 0xaaaa)
+         memcpy(mem + i, postc + 4, 2);
+      if (*((unsigned short *) (mem + i)) == 0xbbbb)
+         memcpy(mem + i, postc + 2, 2);         
+      if (*((unsigned short *) (mem + i)) == 0xcccc)
+         memcpy(mem + i, postc, 2);      
+   }   
+#endif
+   
+   debug_printf(2, "Created thin trampoline at %p to +%lu with parameter at %p\n",
+                 mem, (unsigned long) size, param);
    return mem;
 }
