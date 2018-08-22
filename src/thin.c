@@ -123,7 +123,7 @@ static void* pre(gotcha_binding_t *binding, void **retaddr)
    push_stack_addr(retaddr, opaque_handle);
    wrappee = gotcha_get_wrappee(*binding->function_handle);
    debug_printf(3, "In pre thin wrapper for %s. Next wrappee at %p, "
-                "retaddr at %p\n", binding->name, retaddr);
+                "retaddr at %p\n", binding->name, wrappee, retaddr);
    return wrappee;
 }
 

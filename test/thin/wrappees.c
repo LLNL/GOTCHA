@@ -45,6 +45,7 @@ int bigparam(struct bigparam_t bp)
 }
 
 volatile int zero = 0;
+extern int call_recurse(int num);
 
 int recurse(int num, call_recurse_t cr)
 {
