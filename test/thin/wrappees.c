@@ -45,13 +45,12 @@ int bigparam(struct bigparam_t bp)
 }
 
 volatile int zero = 0;
-extern int call_recurse(int num);
 
 int recurse(int num, call_recurse_t cr)
 {
    if (num == 0)
       return 0;
-   int ret = call_recurse(num - 1);
+   int ret = cr(num - 1);
    if (zero != 0) {
       fprintf(stderr, "Error, zero was not zero.  What?");
       exit(-1);
