@@ -101,8 +101,8 @@ general concepts that are worth understanding:
    application’s start-up, perhaps at the top of main or in a library
    constructor.
 
-Example
--------
+Wrapping Example
+----------------
 
 This example shows how to use gotcha to wrap the open and fopen libc
 calls. This example is self-contained, though in typical gotcha
@@ -188,6 +188,91 @@ the process, which would have led to an error return. The calls to
 fprintf on lines 17 and 25 are stomping on the value of errno, which
 could be set in the open and fopen calls on lines 16 and 24.
 
+Signature-Free Wrapping Example
+-------------------------------
+This small example shows how to make signature-free wrappers with Gotcha.
+Unlike regular wrappers, signature-free wrappers to not need to match the
+signature of the function they are wrapping.  This means they cannot
+inspect or modify arguments or return values, but they can be placed around
+arbitrary functions.
+
+.. code-block:: c
+   :linenos:
+
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <fcntl.h>
+   #include <unistd.h>
+   #include <sys/time.h>
+   #include <sys/types.h>
+   #include <sys/stat.h>
+   #include "gotcha/gotcha.h"
+   
+   static gotcha_wrappee_handle_t open_handle;
+   static gotcha_wrappee_handle_t read_handle;
+   static gotcha_wrappee_handle_t close_handle;
+   
+   static void start_stopwatch(gotcha_wrappee_handle_t handle, void **opaque_value)
+   {
+      struct timeval *start = (struct timeval *) malloc(sizeof(struct timeval));
+      gettimeofday(start, NULL);
+      *opaque_value = (void *) start;
+   }
+   
+   static void end_stopwatch(gotcha_wrappee_handle_t handle, void *opaque_value)
+   {
+      struct timeval *start, end, diff;
+      start = (struct timeval *) opaque_value;
+      gettimeofday(&end, NULL);
+      timersub(&end, start, &diff);
+      
+      fprintf(stderr, "Function %s took %lu microseconds\n", gotcha_get_wrappee_name(handle),
+              diff.tv_sec * 1000000 + diff.tv_usec);
+      free(start);
+   }
+   
+   static gotcha_sigfree_binding_t bindings[] = {
+      { "open", start_stopwatch, end_stopwatch, &open_handle },
+      { "read", start_stopwatch, end_stopwatch, &read_handle },
+      { "close", start_stopwatch, end_stopwatch, &close_handle }   
+   };
+   
+   int main(int argc, char *argv[])
+   {
+      int fd;
+      unsigned char buffer[4096];
+      
+      gotcha_sigfree_wrap(bindings, 3, "demotool");
+   
+      fd = open("/dev/random", O_RDONLY);
+      read(fd, buffer, sizeof(buffer));
+      close(fd);
+   
+      return 0;
+   }
+
+Running this program will produce output similar to:
+
+.. code-block:: none
+  
+  Function open took 9 microseconds
+  Function read took 32 microseconds
+  Function close took 1 microseconds
+  
+This example inserts timing calls around the open, read, and close functions.
+The start_stopwatch routine starts a timer, and passes it to the end_stopwatch
+routine via the opaque_value parameter.
+
+Note that, unlike the first example, the same wrapper can be used on multiple
+functions.  The wrapper does not receive (or need to match) the arguments and
+return value of the wrappee.  The start_stopwatch wrapper is  not responsible
+for calling the wrappee, and instead simply returns.
+
+This example ignores error handling for brevity.  In practice, a user should
+check whether wrappees were found, and it should preserve the errno value
+across wrappers.  In addition, calling malloc/free from every wrapper
+invocation would likely lead to performance issues.
+
 API Reference
 -------------
 
@@ -228,9 +313,56 @@ to describe all the wrapping actions that a tool would like gotcha to
 perform.
 
 The name field is the name of a function to wrap. The wrapper_pointer is
-a function pointer (but cast to a void*) to the wrapper function. The
+a function pointer (but cast to a void\*) to the wrapper function. The
 function_handle is a handle that can be used to get a function pointer
 to the wrappee.
+
+This type is accessible by including gotcha.h.
+
+sigfree_pre_wrapper_t
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: c
+
+   typedef void (*sigfree_pre_wrapper_t)(gotcha_wrappee_handle_t handle, void **opaque_val);
+
+This type describes the function signature that can be used to create the
+pre-wrapper in singnature-free wrappers.  See the gotcha_sigfree_wrap
+function for more information.
+
+sigfree_post_wrapper_t
+^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: c
+
+   typedef void (*sigfree_post_wrapper_t)(gotcha_wrappee_handle_t handle, void *opaque_val);
+
+This type describes the function signature that can be used to create the
+post-wrapper in signature-free wrappers.  See the gotcha_sigfree_wrap
+function for more information.
+
+gotcha_sigfree_binding_t
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: c
+  
+  typedef struct gotcha_sigfree_binding_t {
+     const char *name;
+     sigfree_pre_wrapper_t pre_wrapper;
+     sigfree_post_wrapper_t post_wrapper;
+     gotcha_wrappee_handle_t *function_handle;
+  } gotcha_sigfree_binding_t;
+
+This type describes a signature-free function wrapping action that
+gotcha should perform. A table of multiple gotcha_binding_t objects
+is typically used to describe all the wrapping actions that a tool
+would like gotcha to perform.
+
+The name field is the name of a function to wrap.  The pre_wrapper
+and post_wrapper arguments are function pointers to the wrappers
+that should be called around the wrappee (see gotcha_sigfree_wrap).
+Either pre_wrapper or post_wrapper can have a NULL value if the
+wrapper should not be called.  The function_handle is a handle that
+can be used to get a function pointer to the wrappee.
 
 This type is accessible by including gotcha.h.
 
@@ -293,6 +425,44 @@ gotcha_wrap will return one of the following values:
 
 This function is accessible by including gotcha.h.
 
+gotcha_sigfree_wrap
+^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: c
+  
+  enum gotcha_error_t gotcha_sigfree_wrap(
+                         gotcha_sigfree_binding_t *bindings,
+                         int num_actions,
+                         const char *tool_name);
+
+The gotcha_sigfree_wrap function enables a set of signature-free wrappings
+(also known as interface-independent wrappings).  It behaves like
+gotcha_wrap, except there are two wrapper functions for each wrappee, a
+pre-wrapper and post-wrapper function.  The pre-wrapper and post-wrapper are
+respectively called before and after the wrappee executes.  The pre-wrapper
+executes and must return before the wrappee starts executing.  The post-wrapper
+executes immediately after the wrappee returns.
+
+Signature-free wrappers are less powerful than the wrappers installed by
+gotcha_wrap. They do not have access to the wrappees function arguments or
+return value.  However, signature-free wrappers are more versatile as they
+can be installed around arbitrary functions.
+
+The pre-wrapper and post-wrapper both take an opaque_val parameter.  For the
+pre_wrapper this is a void\* output parameter that can be set to an arbitrary
+value.  The input parameter will receive the same value as an input void\*.
+This can be used to communicate data through paired pre and post wrappers.
+
+The pre-wrapper and post-wrapper also take a gotcha_wrappee_handle_t.  This can
+be used to look up the name of the next wrappee, which is useful when the same
+signature-free wrapper is placed around multiple wrappees.  
+
+The gotcha_sigfree_wrap bindings, num_actions, and tool_name arguments behave
+like the similarly named arguments to the gotcha_wrap call.  gotcha_sigfree_wrap
+has the same error returns and error handling semantics as gotcha_wrap.
+
+This function is accessible by including gotcha.h.
+
 gotcha_get_wrappee
 ^^^^^^^^^^^^^^^^^^
 
@@ -308,6 +478,19 @@ If multiple tools are using Gotcha to wrap the same function, then it’s
 possible for gotcha_get_wrappee to return a function pointer to the next
 tool’s wrapper. In this case it is the responsibility of the next tool
 to eventually call the actual wrappee.
+
+This function is accessible by including gotcha.h.
+
+gotcha_get_wrappee_name
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: c
+  
+  const char *gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
+
+The function returns the name of the wrappee function associated with
+the given handle.  The memory behind the returned string should be
+considered owned by gotcha and not be freed by an application.
 
 This function is accessible by including gotcha.h.
 
