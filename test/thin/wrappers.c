@@ -90,7 +90,7 @@ struct gotcha_sigfree_binding_t bindings[] = {
 };
 
 
-int main(int argc, char *argv[])
+int main()
 {
    call_many_params();
    call_big_param();
