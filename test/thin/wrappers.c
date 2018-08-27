@@ -49,7 +49,7 @@ void call_many_params()
 
 void call_fp_func()
 {
-   double val = fp_func(1.0d, 2.0d, 3.0d, 4.0d, 5.0d, 6.0d, 7.0d, 8.0d, 9.0d, 10.0d);
+   double val = fp_func(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
    if (val <= 44.9 || val >= 55.1) {
       fprintf(stderr, "Incorrect return value %lf of fp_func, expected 55.0\n", val);
       exit(-1);
