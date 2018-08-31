@@ -12,7 +12,11 @@ set(GOTCHA_SOURCES
   translations.c
 )
 
+if(BUILD_STATIC_LIBS)
+add_library(gotcha STATIC ${GOTCHA_SOURCES})
+else()
 add_library(gotcha SHARED ${GOTCHA_SOURCES})
+endif()
 
 
 set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
