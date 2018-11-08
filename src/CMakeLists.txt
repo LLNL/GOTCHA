@@ -12,7 +12,7 @@ set(GOTCHA_SOURCES
   translations.c
 )
 
-add_library(gotcha SHARED ${GOTCHA_SOURCES})
+add_library(gotcha ${GOTCHA_SOURCES})
 
 
 set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
