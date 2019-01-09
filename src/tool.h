@@ -80,12 +80,14 @@ typedef struct tool_t {
    struct tool_t * parent_tool;
 } tool_t;
 
-struct internal_binding_t {
+typedef struct internal_binding_t {
   struct binding_t* associated_binding_table;
   struct gotcha_binding_t* user_binding;
   struct internal_binding_t* next_binding;
+  sigfree_pre_wrapper_t pre_wrapper;
+  sigfree_post_wrapper_t post_wrapper;
   void* wrappee_pointer;
-};
+} internal_binding_t;
 
 tool_t *create_tool(const char *tool_name);
 tool_t *get_tool(const char *tool_name);
@@ -94,7 +96,7 @@ void reorder_tool(tool_t* new_tool);
 void remove_tool_from_list(struct tool_t* target);
 void print_tools();
 
-binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size);
+binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, gotcha_sigfree_binding_t *sigfree_bindings, int user_binding_size);
 binding_t *get_bindings();
 binding_t *get_tool_bindings(tool_t *tool);
 

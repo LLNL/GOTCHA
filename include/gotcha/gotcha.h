@@ -72,6 +72,8 @@ extern "C" {
 GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* bindings, int num_actions, const char* tool_name);
 
 
+GOTCHA_EXPORT enum gotcha_error_t gotcha_sigfree_wrap(struct gotcha_sigfree_binding_t *bindings, int num_actions, const char *tool_name);
+
 /*!
  ******************************************************************************
  *
@@ -117,6 +119,19 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char* tool_name, int
  ******************************************************************************
  */
 GOTCHA_EXPORT void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
+
+/*!
+ ******************************************************************************
+ *
+ * \fn enum void* gotcha_get_wrappee_name(gotcha_wrappee_handle_t)
+ *
+ * \brief Given a GOTCHA wrapper's handle, returns the name of the wrappee function 
+ *
+ * \param handle The wrappee handle to return the name for
+ *
+ ******************************************************************************
+ */   
+GOTCHA_EXPORT const char* gotcha_get_wrappee_name(gotcha_wrappee_handle_t handle);
 
 #if defined(__cplusplus) 
 }

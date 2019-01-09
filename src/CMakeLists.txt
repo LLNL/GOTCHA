@@ -10,10 +10,20 @@ set(GOTCHA_SOURCES
   library_filters.c
   gotcha_dl.c
   translations.c
+  thin.c
 )
 
-add_library(gotcha SHARED ${GOTCHA_SOURCES})
+if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" )
+   list(APPEND GOTCHA_SOURCES thin_x86.s)
+elseif ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64le" )
+   list(APPEND GOTCHA_SOURCES thin_ppc.s)
+elseif ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64" )
+   list(APPEND GOTCHA_SOURCES thin_ppc.s)
+else()
+   message( FATAL_ERROR "Unknown architecture ${CMAKE_SYSTEM_PROCESSOR}" )
+endif()
 
+add_library(gotcha SHARED ${GOTCHA_SOURCES})
 
 set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
 set_target_properties(gotcha PROPERTIES VERSION "${LIBTOOL_INTERFACE}.${LIBTOOL_REVISION}.${LIBTOOL_AGE}")

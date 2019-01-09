@@ -1,6 +1,6 @@
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 option(GOTCHA_ENABLE_COVERAGE_TESTS "Enable coverage tests" Off)
-project(gotcha)
+project(gotcha C CXX ASM)
 include(CheckCXXCompilerFlag)
 include(cmake/gotcha.cmake)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
