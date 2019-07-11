@@ -61,8 +61,4 @@ The license is [LGPL](LGPL).
 
 Primary contact/Lead developer
 
-David Poliakoff (poliakoff1@llnl.gov)
-
-Other developers
-
 Matt Legendre  (legendre1@llnl.gov)
