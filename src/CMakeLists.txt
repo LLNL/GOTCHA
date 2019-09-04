@@ -51,7 +51,7 @@ endif()
 #   target_link_libraries(mylib PRIVATE gotcha gotcha-compile-options)
 #
 install(
-    TARGETS     gotcha gotcha-include gotcha-compile-options
+    TARGETS     gotcha
     EXPORT      gotcha-targets
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

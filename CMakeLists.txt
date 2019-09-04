@@ -2,7 +2,7 @@
 # using version 3.1.3 (instead of just 3.0) for:
 #   - CMAKE_CXX_KNOWN_FEATURES used in testing
 #
-cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 
 # for VERSION and LANGUAGES in project(...)
 cmake_policy(SET CMP0048 NEW)
@@ -59,6 +59,11 @@ set_target_properties(gotcha-compile-options PROPERTIES
 target_include_directories(gotcha-include INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>)
+
+# export in same directory
+install(TARGETS gotcha-include gotcha-compile-options
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        EXPORT gotcha-targets)
 
 # add the subdirectories
 add_subdirectory(include)
