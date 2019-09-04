@@ -22,6 +22,7 @@ add_definitions(--std=c++11)
 include_directories(${CMAKE_BINARY_DIR}/test/hammer)
 
 add_library(math SHARED gen.cc)
+target_link_libraries(math gotcha-include)
 
 add_library(wrap SHARED wrap.cc)
 target_link_libraries(wrap gotcha dl)

@@ -31,3 +31,6 @@ set_target_properties(unit_tests_elf PROPERTIES COMPILE_DEFINITIONS "FORCE_NO_LI
 gotcha_add_test(full_unit unit_tests)
 gotcha_add_test(full_unit_elf unit_tests_elf)
 environment_add(full_unit_elf TEST "GOTCHA_DEBUG=3")
+
+add_dependencies(unit_tests check_project)
+add_dependencies(unit_tests_elf check_project)
