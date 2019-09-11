@@ -58,7 +58,7 @@ set_target_properties(gotcha-compile-options PROPERTIES
 # set gotcha-include to provide one path when building but another after installation
 target_include_directories(gotcha-include INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>)
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # export in same directory
 install(TARGETS gotcha-include gotcha-compile-options
