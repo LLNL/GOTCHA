@@ -26,9 +26,9 @@ make install
 
 ```
   #include <gotcha/gotcha.h>
-  static gotcha_wrappee_t wrappee_puts_handle;
+  static gotcha_wrappee_handle_t wrappee_puts_handle;
   static int puts_wrapper(const char* str); //this is the declaration of your wrapper
-  static gotcha_wrappee_t wrappee_fputs_handle;
+  static gotcha_wrappee_handle_t wrappee_fputs_handle;
   static int fputs_wrapper(const char* str, FILE* f);
   struct gotcha_binding_t wrap_actions [] = {
     { "puts", puts_wrapper, &wrappee_puts_handle },
