@@ -94,17 +94,19 @@ tool_t *get_tool(const char *tool_name)
    return NULL;
 }
 
-binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size)
+binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, gotcha_sigfree_binding_t *sigfree, int user_binding_size)
 {
    binding_t *newbinding;
    int result, i;
    newbinding = (binding_t *) gotcha_malloc(sizeof(binding_t));
    newbinding->tool = tool;
-   struct internal_binding_t* internal_bindings = (struct internal_binding_t*)gotcha_malloc(sizeof(struct internal_binding_t)*user_binding_size);
+   struct internal_binding_t* internal_bindings = (struct internal_binding_t*)gotcha_malloc(sizeof(struct internal_binding_t) * user_binding_size);
    for(i=0;i<user_binding_size;i++){
       internal_bindings[i].user_binding = &user_binding[i];
       *(user_binding[i].function_handle) = &internal_bindings[i];
       internal_bindings[i].associated_binding_table = newbinding;
+      internal_bindings[i].pre_wrapper = sigfree ? sigfree[i].pre_wrapper : NULL;
+      internal_bindings[i].post_wrapper = sigfree ? sigfree[i].post_wrapper : NULL;
    }  
    newbinding->internal_bindings = internal_bindings;
    newbinding->internal_bindings_size = user_binding_size;
