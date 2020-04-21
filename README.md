@@ -6,7 +6,7 @@ GOTCHA v1.0.2
 
 
 Gotcha is a library that wraps functions.  Tools can use gotcha to install hooks into other libraries, for example putting a wrapper function around libc's malloc.  
-It is similar to LD_PRELOAD, but operates via a programable API.
+It is similar to LD_PRELOAD, but operates via a programmable API.
 This enables easy methods of accomplishing tasks like code instrumentation or wholesale replacement of mechanisms in programs
 without disrupting their source code.
 
@@ -18,7 +18,7 @@ Quick Start
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX = <where you want the sofware> ..
+cmake -DCMAKE_INSTALL_PREFIX=<where you want to install GOTCHA> ../
 make install
 ```
 *Usage* is fairly simple. For us to wrap a function, we need to know its name, what you want it wrapped with (the wrapper), and we need to give you some ability to call the function you wrapped (wrappee). Gotcha works on triplets containing this information. We have [small sample uses](src/example/autotee/autotee.c), but the standard workflow looks like
@@ -26,9 +26,9 @@ make install
 
 ```
   #include <gotcha/gotcha.h>
-  static gotcha_wrappee_t wrappee_puts_handle;
+  static gotcha_wrappee_handle_t wrappee_puts_handle;
   static int puts_wrapper(const char* str); //this is the declaration of your wrapper
-  static gotcha_wrappee_t wrappee_fputs_handle;
+  static gotcha_wrappee_handle_t wrappee_fputs_handle;
   static int fputs_wrapper(const char* str, FILE* f);
   struct gotcha_binding_t wrap_actions [] = {
     { "puts", puts_wrapper, &wrappee_puts_handle },
@@ -60,9 +60,5 @@ Contact/Legal
 The license is [LGPL](LGPL).
 
 Primary contact/Lead developer
-
-David Poliakoff (poliakoff1@llnl.gov)
-
-Other developers
 
 Matt Legendre  (legendre1@llnl.gov)
