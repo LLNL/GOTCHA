@@ -19,6 +19,9 @@ set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
 set_target_properties(gotcha PROPERTIES VERSION "${LIBTOOL_INTERFACE}.${LIBTOOL_REVISION}.${LIBTOOL_AGE}")
 set_target_properties(gotcha PROPERTIES COMPILE_FLAGS "-fvisibility=${DEFAULT_SYMBOL_VISIBILITY}")
 set_target_properties(gotcha PROPERTIES LINK_FLAGS "-fvisibility=${DEFAULT_SYMBOL_VISIBILITY}")
+target_include_directories(gotcha PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 if(GOTCHA_ENABLE_TESTS)
 add_library(gotcha_no_libc SHARED ${GOTCHA_SOURCES})
 set_target_properties(gotcha_no_libc PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
