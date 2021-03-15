@@ -8,6 +8,14 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef HAVE_GNU_LIBNAMES_H
+#include <gnu/lib-names.h>
+#endif
+
+#ifndef LIBM_SO
+#define LIBM_SO "libm.so"
+#endif
+
 #define MYNAME  "main"
 
 typedef double sin_fcn_t(double);
@@ -21,7 +29,7 @@ main(int argc, char **argv)
 
     fprintf(stderr, "%s:  val = %.6f\n", MYNAME, val);
 
-    void *handle = dlopen("libm.so", RTLD_NOW);
+    void *handle = dlopen(LIBM_SO, RTLD_NOW);
     if (handle == NULL) {
 	err(1, "dlopen failed");
     }

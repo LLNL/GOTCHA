@@ -1,7 +1,14 @@
+INCLUDE(CheckIncludeFile)
+
+check_include_file(gnu/lib-names.h HAVE_GNU_LIBNAMES_H)
+
 set(CMAKE_C_FLAGS "-g -O -fPIC")
 add_library(multi_agent_sym SHARED dlsym.c)
 add_library(multi_agent_mon SHARED monitor.c)
 add_executable(multi_agent_main main.c)
+if(HAVE_GNU_LIBNAMES_H)
+  target_compile_definitions(multi_agent_main PRIVATE -DHAVE_GNU_LIBNAMES_H)
+endif()
 target_link_libraries(multi_agent_main dl)
 target_link_libraries(multi_agent_mon dl gotcha)
 gotcha_add_test(multi_agent_dlopen multi_agent_main)
