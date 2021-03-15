@@ -16,17 +16,17 @@ static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUS
    struct internal_binding_t *binding = (struct internal_binding_t *) data;
 
    debug_printf(3, "Trying to re-bind %s from tool %s after dlopen\n",
-                binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+                binding->user_binding.name, binding->associated_binding_table->tool->tool_name);
    
    while (binding->next_binding) {
       binding = binding->next_binding;
       debug_printf(3, "Selecting new innermost version of binding %s from tool %s.\n",
-                   binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+                   binding->user_binding.name, binding->associated_binding_table->tool->tool_name);
    }
    
    result = prepare_symbol(binding);
    if (result == -1) {
-      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding->name);
+      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding.name);
       return 0;
    }
 
@@ -66,7 +66,7 @@ static void* dlsym_wrapper(void* handle, const char* symbol_name){
   if (result == -1)
      return orig_dlsym(handle, symbol_name);
   else
-     return binding->user_binding->wrapper_pointer;
+     return binding->user_binding.wrapper_pointer;
 }
 
 struct gotcha_binding_t dl_binds[] = {

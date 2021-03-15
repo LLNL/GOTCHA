@@ -82,7 +82,7 @@ typedef struct tool_t {
 
 struct internal_binding_t {
   struct binding_t* associated_binding_table;
-  struct gotcha_binding_t* user_binding;
+  struct gotcha_binding_t user_binding;
   struct internal_binding_t* next_binding;
   void* wrappee_pointer;
 };

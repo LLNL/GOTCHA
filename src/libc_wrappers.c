@@ -213,7 +213,7 @@ size_t gotcha_strlen(const char *s)
 size_t gotcha_strnlen(const char *s, size_t max_length)
 {
    size_t i;
-   for (i = 0; s[i] && i<max_length; i++);
+   for (i = 0; i<max_length && s[i]; i++);
    return i;
 }
 
@@ -580,4 +580,11 @@ char* gotcha_strncat(char* dest, const char* src, size_t n){
   dest[dest_stop] = '\0';
   gotcha_memcpy(dest, (void *) src, n);
   return dest_begin;
+}
+
+char* gotcha_strdup(const char* src){
+  size_t len = gotcha_strlen(src) + 1;
+  char* cpy = gotcha_malloc(len);
+  gotcha_memcpy(cpy, (void *) src, len);
+  return cpy;
 }
