@@ -52,6 +52,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define gotcha_strnlen            strnlen
 #define gotcha_strtok             strtok
 #define gotcha_strncat            strncat
+#define gotcha_strdup             strdup
 #define gotcha_dbg_printf(A, ...) fprintf(stderr, A, ##__VA_ARGS__)
 pid_t gotcha_gettid();            //No libc gettid, always use gotcha version
 
@@ -82,6 +83,7 @@ size_t gotcha_strlen(const char* str);
 size_t gotcha_strnlen(const char* str, size_t max_length);
 char* gotcha_strncat(char* dest, const char* src, size_t n);
 char* gotcha_strtok(char* dest, const char* src, size_t n);
+char* gotcha_strdup(const char* src);
 
 #define gotcha_dbg_printf(FORMAT, ...) gotcha_int_printf(2, FORMAT, ##__VA_ARGS__)
 

@@ -93,7 +93,7 @@ int prepare_symbol(struct internal_binding_t *binding)
 {
    int result;
    struct link_map *lib;
-   struct gotcha_binding_t *user_binding = binding->user_binding;
+   struct gotcha_binding_t *user_binding = &binding->user_binding;
 
    debug_printf(2, "Looking up exported symbols for %s\n", user_binding->name);
    for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
@@ -116,15 +116,15 @@ int prepare_symbol(struct internal_binding_t *binding)
 static void insert_at_head(struct internal_binding_t *binding, struct internal_binding_t *head)
 {
    binding->next_binding = head;
-   setInternalBindingAddressPointer(binding->user_binding->function_handle, head->user_binding->wrapper_pointer);
-   removefrom_hashtable(&function_hash_table, (void*) binding->user_binding->name);
-   addto_hashtable(&function_hash_table, (void*)binding->user_binding->name, (void*)binding);
+   setInternalBindingAddressPointer(binding->user_binding.function_handle, head->user_binding.wrapper_pointer);
+   removefrom_hashtable(&function_hash_table, (void*) binding->user_binding.name);
+   addto_hashtable(&function_hash_table, (void*)binding->user_binding.name, (void*)binding);
 }
 
 static void insert_after_pos(struct internal_binding_t *binding, struct internal_binding_t *pos)
 {
-   setInternalBindingAddressPointer(binding->user_binding->function_handle, pos->wrappee_pointer);
-   setInternalBindingAddressPointer(pos->user_binding->function_handle, binding->user_binding->wrapper_pointer);
+   setInternalBindingAddressPointer(binding->user_binding.function_handle, pos->wrappee_pointer);
+   setInternalBindingAddressPointer(pos->user_binding.function_handle, binding->user_binding.wrapper_pointer);
    binding->next_binding = pos->next_binding;
    pos->next_binding = binding;
 }
@@ -134,7 +134,7 @@ static void insert_after_pos(struct internal_binding_t *binding, struct internal
 #define RWO_NEED_BINDING (1 << 1)
 static int rewrite_wrapper_orders(struct internal_binding_t* binding)
 {
-  const char* name = binding->user_binding->name;
+  const char* name = binding->user_binding.name;
   int insert_priority = get_priority(binding->associated_binding_table->tool);
   
   if(gotcha_strcmp(name,"main")==0){
@@ -175,7 +175,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
      if (next_priority < insert_priority) {
         break;
      }
-     if (cur->user_binding->wrapper_pointer == binding->user_binding->wrapper_pointer) {
+     if (cur->user_binding.wrapper_pointer == binding->user_binding.wrapper_pointer) {
         debug_printf(3, "Tool is already inserted.  Skipping binding rewrite\n");
         return RWO_NOCHANGE;
      }
@@ -196,10 +196,10 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
   if (result != 0)
      return 0;
   got_address = (void**) (lmap->l_addr + offset);
-  writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
+  writeAddress(got_address, internal_binding->user_binding.wrapper_pointer);
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
              name, (lmap->l_addr + offset), LIB_NAME(lmap),
-             internal_binding->user_binding->wrapper_pointer);
+             internal_binding->user_binding.wrapper_pointer);
   return 0;
 }
 
@@ -316,26 +316,26 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   int lookup_rel = 0;
   for (i = 0; i < num_actions; i++) {
      struct internal_binding_t *binding = bindings->internal_bindings + i;
-     if (gotcha_strcmp(binding->user_binding->name,"main")==0 ||
-        gotcha_strcmp(binding->user_binding->name,"__libc_start_main")==0)
+     if (gotcha_strcmp(binding->user_binding.name,"main")==0 ||
+        gotcha_strcmp(binding->user_binding.name,"__libc_start_main")==0)
          lookup_rel = 1;
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
-        debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
+        debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding.name);
         int presult = prepare_symbol(binding);
         if (presult == -1) {
            debug_printf(2, "Stashing %s in notfound_binding table to re-lookup on dlopens\n",
-                        binding->user_binding->name);
-           addto_hashtable(&notfound_binding_table, (hash_key_t) binding->user_binding->name, (hash_data_t) binding);
+                        binding->user_binding.name);
+           addto_hashtable(&notfound_binding_table, (hash_key_t) binding->user_binding.name, (hash_data_t) binding);
            not_found++;
         }
      }
      if (result & RWO_NEED_BINDING) {
-        debug_printf(2, "Symbol %s needs binding from application\n", binding->user_binding->name);
+        debug_printf(2, "Symbol %s needs binding from application\n", binding->user_binding.name);
         if (!new_bindings_count) {
            create_hashtable(&new_bindings, num_actions*2, (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
         }
-        addto_hashtable(&new_bindings, (void *) binding->user_binding->name, (void *) binding);
+        addto_hashtable(&new_bindings, (void *) binding->user_binding.name, (void *) binding);
         new_bindings_count++;
      }
   }

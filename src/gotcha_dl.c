@@ -104,17 +104,17 @@ static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUS
    struct internal_binding_t *binding = (struct internal_binding_t *) data;
 
    debug_printf(3, "Trying to re-bind %s from tool %s after dlopen\n",
-                binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+                binding->user_binding.name, binding->associated_binding_table->tool->tool_name);
    
    while (binding->next_binding) {
       binding = binding->next_binding;
       debug_printf(3, "Selecting new innermost version of binding %s from tool %s.\n",
-                   binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+                   binding->user_binding.name, binding->associated_binding_table->tool->tool_name);
    }
    
    result = prepare_symbol(binding);
    if (result == -1) {
-      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding->name);
+      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding.name);
       return 0;
    }
 
@@ -142,7 +142,7 @@ static void* dlsym_wrapper(void* handle, const char* symbol_name){
   struct internal_binding_t *binding;
   debug_printf(1, "User called dlsym(%p, %s)\n", handle, symbol_name);
   int result = lookup_hashtable(&function_hash_table, (hash_key_t) symbol_name, (hash_data_t *) &binding);
-  if (result != -1) return binding->user_binding->wrapper_pointer;
+  if (result != -1) return binding->user_binding.wrapper_pointer;
   if(handle == RTLD_NEXT){
     struct link_map* lib = gotchas_dlsym_rtld_next_lookup(symbol_name ,__builtin_return_address(0));
     if (lib) {

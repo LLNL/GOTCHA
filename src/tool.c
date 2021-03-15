@@ -94,6 +94,18 @@ tool_t *get_tool(const char *tool_name)
    return NULL;
 }
 
+void free_binding(binding_t* binding)
+{
+   if (!binding)
+      return;
+
+   int i;
+   for(i=0;i<binding->internal_bindings_size;i++){
+      gotcha_free((char*)binding->internal_bindings[i].user_binding.name);
+   }
+   gotcha_free(binding);
+}
+
 binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_binding, int user_binding_size)
 {
    binding_t *newbinding;
@@ -104,7 +116,8 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
    struct internal_binding_t* internal_bindings = newbinding->internal_bindings;
    for(i=0;i<user_binding_size;i++){
       internal_bindings[i].next_binding = NULL;
-      internal_bindings[i].user_binding = &user_binding[i];
+      internal_bindings[i].user_binding = user_binding[i];
+      internal_bindings[i].user_binding.name = gotcha_strdup(user_binding[i].name);
       *(user_binding[i].function_handle) = &internal_bindings[i];
       internal_bindings[i].associated_binding_table = newbinding;
    }  
@@ -135,8 +148,7 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
    return newbinding;
 
   error:
-   if (newbinding)
-      gotcha_free(newbinding);
+   free_binding(newbinding);
    return NULL;
 }
 

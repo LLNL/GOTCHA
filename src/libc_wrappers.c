@@ -581,3 +581,10 @@ char* gotcha_strncat(char* dest, const char* src, size_t n){
   gotcha_memcpy(dest, (void *) src, n);
   return dest_begin;
 }
+
+char* gotcha_strdup(const char* src){
+  size_t len = gotcha_strlen(src) + 1;
+  char* cpy = gotcha_malloc(len);
+  gotcha_memcpy(cpy, (void *) src, len);
+  return cpy;
+}
