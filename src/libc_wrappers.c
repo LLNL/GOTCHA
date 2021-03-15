@@ -213,7 +213,7 @@ size_t gotcha_strlen(const char *s)
 size_t gotcha_strnlen(const char *s, size_t max_length)
 {
    size_t i;
-   for (i = 0; s[i] && i<max_length; i++);
+   for (i = 0; i<max_length && s[i]; i++);
    return i;
 }
 
