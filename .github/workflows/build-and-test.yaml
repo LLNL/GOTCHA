@@ -1,0 +1,54 @@
+name: GOTCHA Build and Test
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04 ]
+
+    name: ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CC: gcc
+      CXX: g++
+
+    steps:
+      - name: Push checkout
+        if: github.event_name == 'push'
+        uses: actions/checkout@v3
+
+      - name: PR checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install additional packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake
+
+      - name: Configure and Build
+        run: |
+          mkdir build
+          pushd build
+          cmake -DGOTCHA_ENABLE_TESTS=ON ..
+          make V=1
+          popd
+      - name: Unit Tests
+        run: |
+          cd build && ctest -VV
+
+      - name: After failure
+        if: ${{ failure() }}
+        run: |
+          cat $GITHUB_WORKSPACE/config.log
+          cat $GITHUB_WORKSPACE/t/test-suite.log
