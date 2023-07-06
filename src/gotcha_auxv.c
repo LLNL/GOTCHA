@@ -227,7 +227,7 @@ struct link_map *get_vdso_from_maps()
    struct link_map *m;
    maps = gotcha_open("/proc/self/maps", O_RDONLY);
    for (;;) {
-      hit_eof = read_line(line, 4097, maps);
+      hit_eof = read_line(line, 4096, maps);
       if (hit_eof) {
          gotcha_close(maps);
          return NULL;
@@ -258,7 +258,7 @@ struct link_map *get_vdso_from_maps()
    return NULL;
 }
 
-int is_vdso(struct link_map *map)
+int is_vdso(const struct link_map *map)
 {
    static int vdso_checked = 0;
    static struct link_map *vdso = NULL;
