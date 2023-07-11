@@ -34,21 +34,24 @@ jobs:
       - name: Install additional packages
         run: |
           sudo apt-get update
-          sudo apt-get install cmake
+          sudo apt-get install cmake gcovr
 
       - name: Configure and Build
         run: |
-          mkdir build
-          pushd build
-          cmake -DGOTCHA_ENABLE_TESTS=ON ..
-          make V=1
-          popd
+          cmake . -B build -DGOTCHA_ENABLE_TESTS=ON -DCMAKE_BUILD_TYPE=PROFILE
+          cmake --build build
       - name: Unit Tests
         run: |
-          cd build && ctest -VV
-
-      - name: After failure
-        if: ${{ failure() }}
-        run: |
-          cat $GITHUB_WORKSPACE/config.log
-          cat $GITHUB_WORKSPACE/t/test-suite.log
+          ctest --test-dir build -VV
+      - name: Create Coverage
+        if: matrix.os == 'ubuntu-22.04'
+        run : |
+          mkdir coverage
+          FILE=$PWD/coverage/coverage.json
+          cd build
+          COVERALLS_REPO_TOKEN=${{ secrets.GITHUB_TOKEN }} gcovr -r ../ . --coveralls $FILE
+          if [ -e '$FILE' ]; then
+          sed -i'' -e 's/"service_name": "github-actions-ci"/"service_name": "github"/' '$FILE'
+          fi
+          cat $FILE
+          curl -v -F json_file=@$FILE https://coveralls.io/api/v1/jobs

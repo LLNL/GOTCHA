@@ -1,6 +1,7 @@
 GOTCHA v1.0.2
 ============
 [![GOTCHA Build and Test](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/LLNL/GOTCHA/badge.svg?branch=develop)](https://coveralls.io/github/LLNL/GOTCHA?branch=develop)
 
 
 Gotcha is a library that wraps functions.  Tools can use gotcha to install hooks into other libraries, for example putting a wrapper function around libc's malloc.  
