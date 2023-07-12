@@ -52,6 +52,13 @@ struct library_t *add_library(struct link_map *map);
 void remove_library(struct link_map *map);
 extern unsigned int current_generation;
    
+struct internal_binding_t {
+  struct binding_t* associated_binding_table;
+  struct gotcha_binding_t* user_binding;
+  struct internal_binding_t* next_binding;
+  void* wrappee_pointer;
+};
+
 /**
  * The internal structure that matches the external gotcha_binding_t.
  * In addition to the data specified in the gotcha_binding_t, we add:
@@ -60,11 +67,11 @@ extern unsigned int current_generation;
  **/
 typedef struct binding_t {
    struct tool_t *tool;
-   struct internal_binding_t *internal_bindings;
-   int internal_bindings_size;
    hash_table_t binding_hash;
    struct binding_t *next_tool_binding;
    struct binding_t *next_binding;
+   int internal_bindings_size;
+   struct internal_binding_t internal_bindings[];
 } binding_t;
 
 /**
@@ -79,13 +86,6 @@ typedef struct tool_t {
    hash_table_t child_tools;
    struct tool_t * parent_tool;
 } tool_t;
-
-struct internal_binding_t {
-  struct binding_t* associated_binding_table;
-  struct gotcha_binding_t* user_binding;
-  struct internal_binding_t* next_binding;
-  void* wrappee_pointer;
-};
 
 tool_t *create_tool(const char *tool_name);
 tool_t *get_tool(const char *tool_name);
