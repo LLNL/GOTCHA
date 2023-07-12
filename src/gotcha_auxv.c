@@ -38,7 +38,8 @@ int parse_auxv_contents()
    char name[] = "/proc/self/auxv";
    int fd, done = 0;
    char buffer[BUFFER_LEN];
-   ssize_t buffer_size = BUFFER_LEN, offset = 0, result;
+   const ssize_t buffer_size = BUFFER_LEN;
+   ssize_t offset = 0, result;
    ElfW(auxv_t) *auxv, *a;
    static int parsed_auxv = 0;
 
