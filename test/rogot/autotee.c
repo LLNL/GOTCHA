@@ -93,6 +93,10 @@ int close_autotee()
    if (tee_FILE) {
       fclose(tee_FILE);
       tee_fd = -1;
+      /* in newer glibc these need to de-initialized
+       * else tee_FILE points to invalid pointer.
+       **/
+      tee_FILE = NULL;
    }
    return 0;
 }
