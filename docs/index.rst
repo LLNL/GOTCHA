@@ -1,7 +1,7 @@
 ========================
 Gotcha Developer's Guide
 ========================
-Version 1.0.2
+Version 1.0.4
 
 .. toctree::
    :maxdepth: 3
