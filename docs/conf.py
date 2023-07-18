@@ -24,9 +24,9 @@ copyright = u'2018, Lawrence Livermore National Security, LLC'
 author = u'David Poliakoff, Matt Legendre'
 
 # The short X.Y version
-version = u'1.0'
+version = u'2.1'
 # The full version, including alpha/beta/rc tags
-release = u'1.0.4'
+release = u'2.1.0'
 
 
 # -- General configuration ---------------------------------------------------
