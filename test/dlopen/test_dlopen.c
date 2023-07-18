@@ -13,6 +13,7 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
 #include "gotcha/gotcha.h"
@@ -23,8 +24,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #ifndef LIB_NAME_RAW
 #define LIB_NAME_RAW libnum.so
 #endif
+#ifndef LIB2_NAME_RAW
+#define LIB2_NAME_RAW libnum2.so
+#endif
 
 #define LIB_NAME QUOTE(LIB_NAME_RAW)
+#define LIB2_NAME QUOTE(LIB2_NAME_RAW)
 int correct_return_four()
 {
    return 4;
@@ -68,6 +73,11 @@ int main()
       fprintf(stderr, "ERROR: Test failed to dlopen libnum.so\n");
       return -1;
    }
+    libnum = dlopen(LIB2_NAME, RTLD_NOW);
+    if (!libnum) {
+        fprintf(stderr, "ERROR: Test failed to dlopen libnum2.so\n");
+        return -1;
+    }
 
    /* Test 1: Check if a dlsym generated indirect call gets re-routed by gotcha */
    retfour = (int (*)(void)) dlsym(libnum, "return_four");
@@ -82,6 +92,22 @@ int main()
       fprintf(stderr, "ERROR: call to return_five in libnum.so was not wrapped by correct_return_five\n");
       had_error = -1;
    }
-
+    /* Test 3: Does the dlsym implementation find the second occurrence of the symbol */
+    test_retfive = (int (*)(void)) dlsym(RTLD_NEXT, "test_return_five");
+    if (test_retfive == NULL || test_retfive() != 5) {
+        fprintf(stderr, "ERROR: call to return_four should not be found in RTLD_NEXT from libnum2.so and return 4\n");
+        had_error = -1;
+    }
+    /* Test 4: Does the dlsym implementation find the first occurrence of the symbol */
+    retfour = (int (*)(void)) dlsym(RTLD_DEFAULT, "return_four");
+    if (retfour == NULL || retfour() != 4) {
+        fprintf(stderr, "ERROR: call to return_four should be found in RTLD_DEFAULT from libnum.so and return 4\n");
+        had_error = -1;
+    }
+    test_retfive = (int (*)(void)) dlsym(RTLD_DEFAULT, "test_return_five");
+    if (test_retfive != NULL) {
+        fprintf(stderr, "ERROR: call to return_five in libnum.so was not wrapped by correct_return_five\n");
+        had_error = -1;
+    }
    return had_error;
 }
