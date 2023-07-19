@@ -35,6 +35,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * \fn signed long lookup_gnu_hash_symbol(const char *name, 
                                           ElfW(Sym) *syms,
+                                          ElfW(Half) *versym,
                                           char *symnames, 
                                           void *header);
  *
@@ -42,18 +43,20 @@ Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * \param name     The name of the function to be looked up
  * \param syms     The pointer to the symbol table
+ * \param versym   The pointer to the symbol versioning table
  * \param symnames A pointer into the string table
  * \param header   The parameters the underlying GNU Hash function will use
  *
  ******************************************************************************
  */
-signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, char *symnames, void *sheader);
+signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half) *versym, char *symnames, void *sheader);
 
 /*!
  ******************************************************************************
  *
  * \fn signed long lookup_elf_hash_symbol(const char *name, 
                                           ElfW(Sym) *syms,
+                                          ElfW(Half) *versym,
                                           char *symnames, 
                                           ElfW(Word) *header);
  *
@@ -61,12 +64,13 @@ signed long lookup_gnu_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
  *
  * \param name     The name of the function to be looked up
  * \param syms     The pointer to the symbol table
+ * \param versym   The pointer to the symbol versioning table
  * \param symnames A pointer into the string table
  * \param header   The parameters the underlying ELF Hash function will use
  *
  ******************************************************************************
  */
-signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symnames, ElfW(Word) *header);
+signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half) *versym, char *symnames, ElfW(Word) *header);
 
 /*!
  ******************************************************************************
@@ -85,6 +89,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
  * \param[out] gnu_hash
  * \param[out] got
  * \param[out] strtab
+ * \param[out] versym
  *
  ******************************************************************************
  */
@@ -96,6 +101,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
    ElfW(Sym) *symtab = NULL;                                    \
    ElfW(Addr) gnu_hash = 0x0, elf_hash = 0x0;                   \
    ElfW(Addr) got = 0x0;                                        \
+   ElfW(Half) *versym = NULL;                                   \
    char *strtab = NULL;                                         \
    unsigned int rel_size = 0, rel_count = 0, is_rela = 0, i;    \
    dynsec = lmap->l_ld;                                         \
@@ -135,6 +141,10 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
             gnu_hash = dentry->d_un.d_val;                      \
             break;                                              \
          }                                                      \
+         case DT_VERSYM: {                                      \
+            versym = (ElfW(Half) *) dentry->d_un.d_ptr;         \
+            break;                                              \
+         }                                                      \
       }                                                         \
    }                                                            \
    rel_count = rel_size / (is_rela ? sizeof(ElfW(Rela)) : sizeof(ElfW(Rel))); \
@@ -149,6 +159,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
    (void) rel_size;                                             \
    (void) rel_count;                                            \
    (void) is_rela;                                              \
+   (void) versym;                                               \
    (void) i;
 
 /*!
