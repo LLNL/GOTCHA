@@ -64,12 +64,12 @@ long lookup_exported_symbol(const char* name, const struct link_map *lib, void**
     result = -1;
     if (gnu_hash) {
         debug_printf(3, "Checking GNU hash for %s in %s\n", name, LIB_NAME(lib));
-        result = lookup_gnu_hash_symbol(name, symtab, strtab,
+        result = lookup_gnu_hash_symbol(name, symtab, versym, strtab,
                                         (struct gnu_hash_header *) gnu_hash);
     }
     if (elf_hash && result == -1) {
         debug_printf(3, "Checking ELF hash for %s in %s\n", name, LIB_NAME(lib));
-        result = lookup_elf_hash_symbol(name, symtab, strtab,
+        result = lookup_elf_hash_symbol(name, symtab, versym, strtab,
                                         (ElfW(Word) *)elf_hash);
     }
     if (result == -1) {
