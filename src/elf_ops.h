@@ -103,6 +103,14 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
       return -1;                                                \
    for (dentry = dynsec; dentry->d_tag != DT_NULL; dentry++) {  \
       switch (dentry->d_tag) {                                  \
+         case DT_REL: {                                         \
+            rel = dentry->d_un.d_ptr;                           \
+            break;                                              \
+         }                                                      \
+         case DT_RELA: {                                         \
+            rela = dentry->d_un.d_ptr;                           \
+            break;                                              \
+         }                                                      \
          case DT_PLTRELSZ: {                                    \
             rel_size = (unsigned int) dentry->d_un.d_val;       \
             break;                                              \
@@ -188,17 +196,23 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, char *symn
  *
  ******************************************************************************
  */
-#define FOR_EACH_PLTREL(lmap, op, ...) {                            \
+#define FOR_EACH_PLTREL(lookup_rel, lmap, op, ...) {                            \
       INIT_DYNAMIC(lmap)                                       \
       ElfW(Addr) offset = lmap->l_addr;                        \
       (void) offset;                                           \
       if (is_rela) {                                           \
-         rela = (ElfW(Rela) *) jmprel;                         \
-         FOR_EACH_PLTREL_INT(rela, op, ## __VA_ARGS__);                        \
+         ElfW(Rela) * jmp_rela = (ElfW(Rela) *) jmprel;                         \
+         FOR_EACH_PLTREL_INT(jmp_rela, op, ## __VA_ARGS__);         \
+         if (lookup_rel && rela) {                                                 \
+            FOR_EACH_PLTREL_INT(rela, op, ## __VA_ARGS__);             \
+         }                                                             \
       }                                                        \
       else {                                                   \
-         rel = (ElfW(Rel) *) jmprel;                           \
-         FOR_EACH_PLTREL_INT(rel, op, ## __VA_ARGS__);                         \
+         ElfW(Rel) * jmp_rel = (ElfW(Rel) *) jmprel;                           \
+         FOR_EACH_PLTREL_INT(jmp_rel, op, ## __VA_ARGS__);          \
+         if (lookup_rel && rel) {                                                 \
+             FOR_EACH_PLTREL_INT(rel, op, ## __VA_ARGS__);                                                       \
+         }                                                    \
       }                                                        \
    }
 
