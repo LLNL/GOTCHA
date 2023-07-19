@@ -9,7 +9,6 @@ add_subdirectory(hammer)
 endif()
 add_subdirectory(rogot)
 add_subdirectory(filter)
-
-# FIXME: These tests fail currently in CI.
+add_subdirectory(wrap_main)
 #add_subdirectory(multi_agent_dlopen)
-#add_subdirectory(wrap_main)
+add_subdirectory(symver)

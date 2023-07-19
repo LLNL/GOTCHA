@@ -60,4 +60,4 @@ The license is [LGPL](LGPL).
 
 Primary contact/Lead developer
 
-Matt Legendre  (legendre1@llnl.gov)
+Hariharan Devarajan  (hariharandev1@llnl.gov)
