@@ -110,11 +110,11 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
    for (dentry = dynsec; dentry->d_tag != DT_NULL; dentry++) {  \
       switch (dentry->d_tag) {                                  \
          case DT_REL: {                                         \
-            rel = dentry->d_un.d_ptr;                           \
+            rel = (ElfW(Rel) *)dentry->d_un.d_ptr;                           \
             break;                                              \
          }                                                      \
          case DT_RELA: {                                         \
-            rela = dentry->d_un.d_ptr;                           \
+            rela = (ElfW(Rela) *) dentry->d_un.d_ptr;                           \
             break;                                              \
          }                                                      \
          case DT_PLTRELSZ: {                                    \
