@@ -106,6 +106,7 @@ int prepare_symbol(struct internal_binding_t *binding)
       result = lookup_exported_symbol(user_binding->name, lib, &symbol);
       if (result != -1) {
           setInternalBindingAddressPointer(user_binding->function_handle, symbol);
+          binding->fn_lib = lib;
           return 0;
       }
    }
@@ -185,7 +186,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   return RWO_NOCHANGE;
 }
 
-static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
+static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset, int skip_same_lib,
                                struct link_map *lmap, hash_table_t *lookuptable)
 {
   int result;
@@ -195,6 +196,8 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
   result = lookup_hashtable(lookuptable, name, (void **) &internal_binding);
   if (result != 0)
      return -1;
+  if (skip_same_lib && lmap == internal_binding->fn_lib)
+      return -1;
   got_address = (void**) (lmap->l_addr + offset);
   writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
