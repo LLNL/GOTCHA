@@ -194,7 +194,7 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
 
   result = lookup_hashtable(lookuptable, name, (void **) &internal_binding);
   if (result != 0)
-     return 0;
+     return -1;
   got_address = (void**) (lmap->l_addr + offset);
   writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
@@ -233,7 +233,7 @@ static int mark_got_writable(struct link_map *lib)
    return 0;
 }
 
-static int update_library_got(struct link_map *map, hash_table_t *bindingtable, int lookup_rel)
+static int update_library_got(struct link_map *map, hash_table_t *bindingtable)
 {
    struct library_t *lib = get_library(map);
    if (!lib) {
@@ -256,18 +256,18 @@ static int update_library_got(struct link_map *map, hash_table_t *bindingtable, 
       lib->flags |= LIB_GOT_MARKED_WRITEABLE;
    }
 
-   FOR_EACH_PLTREL(lookup_rel, map, update_lib_bindings, map, bindingtable);
+   FOR_EACH_PLTREL(map, update_lib_bindings, map, bindingtable);
 
    lib->generation = current_generation;
    return 0;
 }
 
-void update_all_library_gots(hash_table_t *bindings, int lookup_rel)
+void update_all_library_gots(hash_table_t *bindings)
 {
    struct link_map *lib_iter;
    debug_printf(2, "Searching all callsites for %lu bindings\n", (unsigned long) bindings->entry_count);
    for (lib_iter = _r_debug.r_map; lib_iter != 0; lib_iter = lib_iter->l_next) {
-      update_library_got(lib_iter, bindings, lookup_rel);
+      update_library_got(lib_iter, bindings);
    }   
 }
 
@@ -313,12 +313,8 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
 
   debug_printf(2, "Processing %d bindings\n", num_actions);
-  int lookup_rel = 0;
   for (i = 0; i < num_actions; i++) {
      struct internal_binding_t *binding = bindings->internal_bindings + i;
-     if (gotcha_strcmp(binding->user_binding->name,"main")==0 ||
-        gotcha_strcmp(binding->user_binding->name,"__libc_start_main")==0)
-         lookup_rel = 1;
      int result = rewrite_wrapper_orders(binding);
      if (result & RWO_NEED_LOOKUP) {
         debug_printf(2, "Symbol %s needs lookup operation\n", binding->user_binding->name);
@@ -341,7 +337,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   }
 
   if (new_bindings_count) {
-     update_all_library_gots(&new_bindings, lookup_rel);
+     update_all_library_gots(&new_bindings);
      destroy_hashtable(&new_bindings);
   }
 
