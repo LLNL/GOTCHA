@@ -30,7 +30,6 @@ add_custom_target(externals.h
         COMMAND ${CMAKE_SOURCE_DIR}/test/hammer/gen_externals_h.sh ${YSIZE} ${XSIZE})
 
 add_executable(hammer hammer.cc)
-gotcha_add_test(hammer_time_test hammer)
 target_link_libraries(hammer math wrap)
 
 foreach(y RANGE ${YSIZE})
@@ -42,3 +41,13 @@ foreach(y RANGE ${YSIZE})
     target_link_libraries(hammer ref${y}_${x})
  endforeach(x)
 endforeach(y)
+
+gotcha_add_test(hammer_time_test hammer)
+environment_add(hammer_time_test TEST "GOTCHA_DEBUG=3")
+set(preload_libs "")
+foreach(y RANGE ${YSIZE})
+  foreach(x RANGE ${XSIZE})
+    string(CONCAT preload_libs ${preload_libs} ":${CMAKE_CURRENT_BINARY_DIR}/libref${y}_${x}.so")
+  endforeach(x)
+endforeach(y)
+environment_add(hammer_time_test TEST "LD_PRELOAD=${preload_libs}")
