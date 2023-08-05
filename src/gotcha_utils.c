@@ -29,7 +29,7 @@ static void debug_init()
 
    char *debug_str;
    if (debug_initialized) {
-      return;
+      return; // GCOVR_EXCL_LINE
    }
    debug_initialized = 1;
    
@@ -40,7 +40,7 @@ static void debug_init()
 
    debug_level = gotcha_atoi(debug_str);
    if (debug_level <= 0)
-      debug_level = 1;
+      debug_level = 1; // GCOVR_EXCL_LINE
 
    debug_printf(0, "Gotcha debug initialized at level %d\n", debug_level);
 }

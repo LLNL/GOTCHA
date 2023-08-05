@@ -49,27 +49,27 @@ int parse_auxv_contents()
 
    fd = gotcha_open(name, O_RDONLY);
    if (fd == -1) {
-      parsed_auxv = -1;
-      return -1;
+      parsed_auxv = -1; // GCOVR_EXCL_LINE
+      return -1; // GCOVR_EXCL_LINE
    }
 
    do {
       for (;;) {
          result = gotcha_read(fd, buffer+offset, buffer_size-offset);
          if (result == -1) {
-            if (errno == EINTR)
+            if (errno == EINTR) // GCOVR_EXCL_START
                continue;
             gotcha_close(fd);
             parsed_auxv = -1;
             return -1;
-         }
+         } // GCOVR_EXCL_STOP
          if (result == 0) {
             gotcha_close(fd);
             done = 1;
             break;
          }
          if (offset == buffer_size) {
-            break;
+            break; // GCOVR_EXCL_LINE
          }
          offset += result;
       }
@@ -113,7 +113,7 @@ struct link_map *get_vdso_from_auxv()
            }
        }
    }
-   return NULL;
+   return NULL; // GCOVR_EXCL_LINE
 }
 
 unsigned int get_auxv_pagesize()
@@ -148,10 +148,10 @@ static int read_line(char *line, int size, int fd)
    for (i = 0; i < size - 1; i++) {
       int result = gotcha_read(fd, line + i, 1);
       if (result == -1 && errno == EINTR)
-         continue;
+         continue; // GCOVR_EXCL_LINE
       if (result == -1 || result == 0) {
-         line[i] = '\0';
-         return -1;
+         line[i] = '\0'; // GCOVR_EXCL_LINE
+         return -1; // GCOVR_EXCL_LINE
       }
       if (line[i] == '\n') {
          line[i + 1] = '\0';
