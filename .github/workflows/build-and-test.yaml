@@ -38,7 +38,7 @@ jobs:
 
       - name: Configure and Build
         run: |
-          cmake . -B build -DGOTCHA_ENABLE_TESTS=ON -DCMAKE_BUILD_TYPE=PROFILE
+          cmake . -B build -DGOTCHA_ENABLE_TESTS=ON -DCMAKE_BUILD_TYPE=PROFILE -DGOTCHA_ENABLE_WARNING_ERROR=ON
           cmake --build build
       - name: Unit Tests
         run: |

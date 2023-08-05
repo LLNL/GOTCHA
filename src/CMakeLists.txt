@@ -18,6 +18,9 @@ add_library(gotcha SHARED ${GOTCHA_SOURCES})
 set_target_properties(gotcha PROPERTIES SOVERSION ${LIBTOOL_INTERFACE})
 set_target_properties(gotcha PROPERTIES VERSION "${LIBTOOL_INTERFACE}.${LIBTOOL_REVISION}.${LIBTOOL_AGE}")
 set_target_properties(gotcha PROPERTIES COMPILE_FLAGS "-fvisibility=${DEFAULT_SYMBOL_VISIBILITY}")
+if(GOTCHA_ENABLE_WARNING_ERROR)
+    set_target_properties(gotcha PROPERTIES COMPILE_FLAGS "-Wall -Werror")
+endif()
 set_target_properties(gotcha PROPERTIES LINK_FLAGS "-fvisibility=${DEFAULT_SYMBOL_VISIBILITY}")
 target_include_directories(gotcha PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

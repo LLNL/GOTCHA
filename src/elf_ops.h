@@ -177,6 +177,8 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
    if (rel) rel_count = rel_size / rel_esz;           \
    if (rela) rela_count = rela_size / rela_esz; \
    (void) rela;                                                 \
+   (void) jmprel_count;                                         \
+   (void) rela_count;                                         \
    (void) rel;                                                  \
    (void) jmprel;                                               \
    (void) symtab;                                               \
