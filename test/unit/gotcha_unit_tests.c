@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "hash.h"
 #include "gotcha_utils.h"
 #include "gotcha_auxv.h"
+#include "gotcha_auxv.c"
+#include "tool.c"
 
 #if !defined(STR)
 #define STR(X) STR2(X)
@@ -80,12 +82,40 @@ START_TEST(auto_tool_creation){
 END_TEST
 
 START_TEST(symbol_wrap_test){
+  tool_t *tools = get_tool_list();
+  ck_assert_msg((tools!=NULL),"tools should exists");
+  remove_tool_from_list(tools);
+  tools = get_tool_list();
+  ck_assert_msg((tools==NULL),"tools should not exists");
   struct gotcha_binding_t bindings[] = {
     { "simpleFunc", &wrap_sample_func, &orig_func_handle }
   };
   gotcha_wrap(bindings,1,"internal_test_tool");
   int x = simpleFunc(); 
   ck_assert_msg((x!=TESTING_LIB_RET_VAL),"gotcha_wrap did not redirect a call to the wrapper function");
+  int priority;
+  enum gotcha_error_t result = get_default_configuration_value(GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"get_default_configuration_value should be successful");
+  ck_assert_msg((priority==UNSET_PRIORITY),"priotity should not be set");
+  result = get_configuration_value("dummy", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_INVALID_TOOL),"summy tool passed result should be GOTCHA_INVALID_TOOL");
+  result = get_configuration_value("internal_test_tool", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"internal_test_tool tool passed result should be GOTCHA_SUCCESS");
+  ck_assert_msg((priority==UNSET_PRIORITY),"priotity should not be set");
+  result = gotcha_set_priority("internal_test_tool", 10);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"gotcha_set_priority should be GOTCHA_SUCCESS");
+  priority = -1;
+  result = get_configuration_value("internal_test_tool", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"internal_test_tool tool passed result should be GOTCHA_SUCCESS");
+  ck_assert_msg((priority==10),"priotity should not be set");
+  result = get_configuration_value("internal_test_tool", 2, &priority);
+  ck_assert_msg((result==GOTCHA_INTERNAL),"invalid property passed");
+  struct binding_t *binds = get_bindings();
+  ck_assert_msg((bindings!=NULL),"should return all bindings");
+  tools = get_tool_list();
+  ck_assert_msg((tools!=NULL),"tools should exists");
+  binds = get_tool_bindings(tools);
+  ck_assert_msg((bindings!=NULL),"should return tool's bindings");
 }
 END_TEST
 
@@ -97,6 +127,7 @@ START_TEST(bad_lookup_test){
   ck_assert_msg((errcode==GOTCHA_FUNCTION_NOT_FOUND),"Looked up a function that shouldn't be found and did not get correct error code");
 }
 END_TEST
+
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
   TCase* core_case = configured_case_create("Wrapping");
@@ -360,11 +391,21 @@ START_TEST(vdso_pagesize_test){
 }
 END_TEST
 
+START_TEST(auxv){
+    char* str = "A";
+    unsigned long val;
+    int result = read_hex(str, &val);
+    ck_assert_msg(result == 1, "Incorrect length for hex");
+    ck_assert_msg(val == 10, "Val should be 10");
+}
+END_TEST
+
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
   TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
   tcase_add_test(libc_case, vdso_pagesize_test);
+  tcase_add_test(libc_case, auxv);
   suite_add_tcase(s, libc_case);
   return s;
 }

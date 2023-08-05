@@ -97,22 +97,21 @@ struct link_map *get_vdso_from_auxv()
    ElfW(Addr) vdso_dynamic;
 
    parse_auxv_contents();
-   if (!vdso_ehdr)
-      return NULL;
-   
-   vdso_phdrs = (ElfW(Phdr) *) (vdso_ehdr->e_phoff + ((unsigned char *) vdso_ehdr));
-   vdso_phdr_num = vdso_ehdr->e_phnum;
+   if (vdso_ehdr) {
+       vdso_phdrs = (ElfW(Phdr) *) (vdso_ehdr->e_phoff + ((unsigned char *) vdso_ehdr));
+       vdso_phdr_num = vdso_ehdr->e_phnum;
 
-   for (p = 0; p < vdso_phdr_num; p++) {
-      if (vdso_phdrs[p].p_type == PT_DYNAMIC) {
-         vdso_dynamic = (ElfW(Addr)) vdso_phdrs[p].p_vaddr;
-      }
-   }
+       for (p = 0; p < vdso_phdr_num; p++) {
+           if (vdso_phdrs[p].p_type == PT_DYNAMIC) {
+               vdso_dynamic = (ElfW(Addr)) vdso_phdrs[p].p_vaddr;
+           }
+       }
 
-   for (m = _r_debug.r_map; m; m = m->l_next) {
-      if (m->l_addr + vdso_dynamic == (ElfW(Addr)) m->l_ld) {
-         return m;
-      }
+       for (m = _r_debug.r_map; m; m = m->l_next) {
+           if (m->l_addr + vdso_dynamic == (ElfW(Addr)) m->l_ld) {
+               return m;
+           }
+       }
    }
    return NULL;
 }
@@ -121,9 +120,7 @@ unsigned int get_auxv_pagesize()
 {
    int result;
    result = parse_auxv_contents();
-   if (result == -1)
-      return 0;
-   return auxv_pagesz;
+   return result == -1 ? 0 : auxv_pagesz;
 }
 
 static char* vdso_aliases[] = { "linux-vdso.so",

@@ -80,5 +80,6 @@ int main()
         fprintf(stderr, "ERROR: library function should return 6 no wrapping for exec\n");
         had_error = -1;
     }
+    gotcha_restore_library_filter_func();
     return had_error;
 }
