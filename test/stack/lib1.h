@@ -16,4 +16,3 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define GOTCHA_LIB1_H
 int retX(int x);
 #endif
-

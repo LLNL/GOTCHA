@@ -5,4 +5,4 @@
 #ifndef GOTCHA_NUM_H
 #define GOTCHA_NUM_H
 int return_four();
-#endif //GOTCHA_NUM_H
+#endif  // GOTCHA_NUM_H

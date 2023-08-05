@@ -1,6 +1,7 @@
 #include <stdio.h>
+
 #include "lib.h"
-int main(){
+int main() {
   printf("In main main\n");
   return getX();
 }

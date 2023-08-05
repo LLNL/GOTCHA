@@ -18,11 +18,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #ifndef GOTCHA_LIBRARY_FILTERS_H
 #define GOTCHA_LIBRARY_FILTERS_H
 #include <link.h>
+
 #include "gotcha_utils.h"
 
-int alwaysTrue(struct link_map* candidate KNOWN_UNUSED);
-extern int (*libraryFilterFunc)(struct link_map*);
+int alwaysTrue(struct link_map *candidate KNOWN_UNUSED);
+extern int (*libraryFilterFunc)(struct link_map *);
 
-int trueIfNameMatches(struct link_map* target);
-int trueIfLast(struct link_map* target);
+int trueIfNameMatches(struct link_map *target);
+int trueIfLast(struct link_map *target);
 #endif

@@ -14,35 +14,32 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #include <assert.h>
-#include <stdio.h>
-
 #include <gotcha/gotcha.h>
+#include <stdio.h>
 
 #include "retX.h"
 
-//We need a place to store the pointer to the function we've wrapped
+// We need a place to store the pointer to the function we've wrapped
 static gotcha_wrappee_handle_t origRetX_handle;
 
 static int dogRetX(int x);
 
-static struct gotcha_binding_t bindings[] = {{"retX", dogRetX, &origRetX_handle}};
+static struct gotcha_binding_t bindings[] = {
+    {"retX", dogRetX, &origRetX_handle}};
 
 // This is like a tool library's initialization function
-static int wrap_init(void)
-{
+static int wrap_init(void) {
   gotcha_wrap(bindings, 1, "symbol_version_test");
   return 0;
 }
 
-int dogRetX(int x)
-{
+int dogRetX(int x) {
   typeof(&dogRetX) origRetX = gotcha_get_wrappee(origRetX_handle);
   printf("SO I FOR ONE THINK DOGS SHOULD RETURN %i\n", x);
   return origRetX ? origRetX(x) + 1 : 0;
 }
 
-int main(int ac, char* av[])
-{
+int main(int ac, char *av[]) {
   wrap_init();
   int check_val = retX(9);
   assert(check_val == 10);
