@@ -17,4 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 int simpleFunc(){
   return TESTING_LIB_RET_VAL;
 }
+int hiddenFunc(){
+  return TESTING_LIB_RET_VAL;
+}
 

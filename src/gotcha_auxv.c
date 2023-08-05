@@ -135,7 +135,7 @@ struct link_map *get_vdso_from_aliases()
    for (m = _r_debug.r_map; m; m = m->l_next) {
       for (aliases = vdso_aliases; *aliases; aliases++) {
          if (m->l_name && gotcha_strcmp(m->l_name, *aliases) == 0) {
-            return m;
+            return m; // GCOVR_EXCL_LINE
          }
       }
    }
@@ -158,8 +158,8 @@ static int read_line(char *line, int size, int fd)
          return 0;
       }
    }
-   line[size-1] = '\0';
-   return 0;
+   line[size-1] = '\0'; // GCOVR_EXCL_LINE
+   return 0; // GCOVR_EXCL_LINE
 }
 
 static int read_hex(char *str, unsigned long *val)
@@ -200,10 +200,10 @@ static int read_word(char *str, char *word, int word_size)
    }
    while (*str != ' ' && *str != '\t' && *str != '\n' && *str != '\0') {
       if (word && word_cur >= word_size) {
-         if (word_size > 0 && word)
+         if (word_size > 0 && word) // GCOVR_EXCL_START
             word[word_size-1] = '\0';
          return word_cur;
-      }
+      }// GCOVR_EXCL_STOP
       if (word)
          word[word_cur] = *str;
       word_cur++;
@@ -227,13 +227,13 @@ struct link_map *get_vdso_from_maps()
    for (;;) {
       hit_eof = read_line(line, BUFFER_LEN, maps);
       if (hit_eof) {
-         gotcha_close(maps);
-         return NULL;
+         gotcha_close(maps); // GCOVR_EXCL_LINE
+         return NULL; // GCOVR_EXCL_LINE
       }
       line_pos = line;
       line_pos += read_hex(line_pos, &addr_begin);
       if (*line_pos != '-')
-         continue;
+         continue; // GCOVR_EXCL_LINE
       line_pos++;
       line_pos += read_hex(line_pos, &addr_end);
       line_pos += read_word(line_pos, NULL, 0);
@@ -253,7 +253,7 @@ struct link_map *get_vdso_from_maps()
          return m;
    }
    
-   return NULL;
+   return NULL; // GCOVR_EXCL_LINE
 }
 
 int is_vdso(const struct link_map *map)
@@ -271,8 +271,8 @@ int is_vdso(const struct link_map *map)
 
    result = get_vdso_from_aliases();
    if (result) {
-      vdso = result;
-      return (map == vdso);
+      vdso = result; // GCOVR_EXCL_LINE
+      return (map == vdso); // GCOVR_EXCL_LINE
    }
 
    result = get_vdso_from_auxv();
@@ -281,11 +281,11 @@ int is_vdso(const struct link_map *map)
       return (map == vdso);
    }
 
-   result = get_vdso_from_maps();
+   result = get_vdso_from_maps(); // GCOVR_EXCL_START
    if (result) {
       vdso = result;
       return (map == vdso);
    }
 
    return 0;
-}
+} // GCOVR_EXCL_STOP

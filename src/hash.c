@@ -43,7 +43,7 @@ int create_hashtable(hash_table_t *table, size_t initial_size, hash_func_t hashf
 
    newtable = (hash_entry_t *) gotcha_malloc(initial_size * sizeof(hash_entry_t));
    if (!newtable)
-      return -1;
+      return -1; // GCOVR_EXCL_LINE
    gotcha_memset(newtable, 0, initial_size * sizeof(hash_entry_t));
 
    table->table_size = initial_size;
@@ -77,7 +77,7 @@ static hash_entry_t *insert(hash_table_t *table, hash_key_t key, hash_data_t dat
    } while (index != startindex);
 
    if (!entry)
-      return NULL;
+      return NULL; // GCOVR_EXCL_LINE this is unreachable code.
 
    entry->next = table->head;
    entry->prev = NULL;
@@ -109,7 +109,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size)
       result = insert(&newtable, table->table[i].key, table->table[i].data,
                       table->table[i].hash_value);
       if (!result) {
-         return -1;
+         return -1; // GCOVR_EXCL_LINE this is unreachable code
       }
    }
 
@@ -152,9 +152,9 @@ static int lookup(hash_table_t *table, hash_key_t key, hash_entry_t **entry)
          return -1;
       index++;
       if (index == table->table_size)
-         index = 0;
+         index = 0; // GCOVR_EXCL_LINE
       if (index == startindex)
-         return -1;
+         return -1; // GCOVR_EXCL_LINE
    }
 }
 
@@ -183,13 +183,13 @@ int addto_hashtable(hash_table_t *table, hash_key_t key, hash_data_t data)
    if (newsize != table->table_size) {
       result = grow_hashtable(table, newsize);
       if (result == -1)
-         return -1;
+         return -1; // GCOVR_EXCL_LINE unreachable code
    }
 
    val = table->hashfunc(key);
    entry = insert(table, key, data, val);
    if (!entry)
-      return -1;
+      return -1; // GCOVR_EXCL_LINE unreachable code
 
    return 0;
 }
@@ -227,7 +227,7 @@ int foreach_hash_entry(hash_table_t *table, void *opaque, int (*cb)(hash_key_t k
    for (i = table->head; i != NULL; i = i->next) {
       result = cb(i->key, i->data, opaque);
       if (result != 0)
-         return result;
+         return result; // GCOVR_EXCL_LINE
    }
    return 0;
 }

@@ -81,5 +81,6 @@ int main()
         had_error = -1;
     }
     gotcha_restore_library_filter_func();
+    gotcha_wrap(func_six, 1, NULL);
     return had_error;
 }

@@ -34,7 +34,7 @@ jobs:
       - name: Install additional packages
         run: |
           sudo apt-get update
-          sudo apt-get install cmake gcovr
+          sudo apt-get install cmake gcovr check
 
       - name: Configure and Build
         run: |

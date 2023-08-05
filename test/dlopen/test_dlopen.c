@@ -58,7 +58,8 @@ int main()
 {
    void *libnum;
    int (*retfour)(void);
-   int (*test_retfive)(void);
+    int (*test_retfive)(void);
+    int (*retdummy)(void);
    int had_error = 0;
    int result;
 
@@ -107,6 +108,16 @@ int main()
     test_retfive = (int (*)(void)) dlsym(RTLD_DEFAULT, "test_return_five");
     if (test_retfive != NULL) {
         fprintf(stderr, "ERROR: call to return_five in libnum.so was not wrapped by correct_return_five\n");
+        had_error = -1;
+    }
+    retdummy = (int (*)(void)) dlsym(RTLD_DEFAULT, "return_dummy");
+    if (retdummy != NULL) {
+        fprintf(stderr, "ERROR: call to return_dummy should not be found in RTLD_DEFAULT\n");
+        had_error = -1;
+    }
+    retdummy = (int (*)(void)) dlsym(RTLD_NEXT, "return_dummy");
+    if (retdummy != NULL) {
+        fprintf(stderr, "ERROR: call to return_dummy should not be found in RTLD_NEXT\n");
         had_error = -1;
     }
    return had_error;

@@ -18,4 +18,5 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <stdio.h>
 #define TESTING_LIB_RET_VAL 0x23cf3
 int simpleFunc();
+int __attribute__ ((visibility("hidden"))) hiddenFunc();
 #endif 
