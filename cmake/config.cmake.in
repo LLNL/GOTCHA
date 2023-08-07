@@ -8,6 +8,6 @@ if (NOT TARGET gotcha)
 endif()
 
 set(gotcha_INCLUDE_DIRS ${gotcha_INCLUDE_DIR})
-set(gotcha_LIBRARIES "-L{gotcha_LIBRARIES_DIR} -lgotcha")
+set(gotcha_LIBRARIES "-L${gotcha_LIBRARIES_DIR} -lgotcha")
 
 check_required_components(gotcha)
