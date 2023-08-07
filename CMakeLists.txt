@@ -37,6 +37,7 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion)
 
 set(gotcha_INSTALL_INCLUDE_DIR include/)
+set(gotcha_INSTALL_LIB_DIR lib/)
 
 # Configure gotcha-config.cmake
 configure_package_config_file(
