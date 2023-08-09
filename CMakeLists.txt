@@ -37,15 +37,14 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion)
 
 set(gotcha_INSTALL_INCLUDE_DIR include/)
-set(gotcha_INSTALL_LIB_DIR lib/)
-set(gotcha_INSTALL_LIB64_DIR lib64/)
+set(gotcha_INSTALL_LIBRARY_DIR ${CMAKE_INSTALL_LIBDIR})
 
 # Configure gotcha-config.cmake
 configure_package_config_file(
   "cmake/config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/gotcha"
-  PATH_VARS gotcha_INSTALL_INCLUDE_DIR PATH_VARS gotcha_INSTALL_LIB_DIR PATH_VARS gotcha_INSTALL_LIB64_DIR)
+  PATH_VARS gotcha_INSTALL_INCLUDE_DIR PATH_VARS gotcha_INSTALL_LIBRARY_DIR)
 
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config-version.cmake"
