@@ -12,7 +12,8 @@ for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
-
+#define _GNU_SOURCE
+#include <link.h>
 #include "translations.h"
 #include "libc_wrappers.h"
 #include "gotcha/gotcha.h"
@@ -22,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "gotcha_dl.h"
 #include "elf_ops.h"
 #include "tool.h"
+
 
 static void writeAddress(void* write, void* value){
   *(void**)write = value;
@@ -106,7 +108,6 @@ int prepare_symbol(struct internal_binding_t *binding)
       result = lookup_exported_symbol(user_binding->name, lib, &symbol);
       if (result != -1) {
           setInternalBindingAddressPointer(user_binding->function_handle, symbol);
-          binding->fn_lib = lib;
           return 0;
       }
    }
@@ -186,7 +187,7 @@ static int rewrite_wrapper_orders(struct internal_binding_t* binding)
   return RWO_NOCHANGE;
 }
 
-static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset, int skip_same_lib,
+static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW(Addr) offset,
                                struct link_map *lmap, hash_table_t *lookuptable)
 {
   int result;
@@ -196,8 +197,6 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
   result = lookup_hashtable(lookuptable, name, (void **) &internal_binding);
   if (result != 0)
      return -1;
-  if (skip_same_lib && lmap == internal_binding->fn_lib)
-      return -1;
   got_address = (void**) (lmap->l_addr + offset);
   writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
@@ -209,10 +208,43 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name, ElfW
 #ifndef MAX
 #define MAX(a,b) (a>b?a:b)
 #endif
+/**
+ * structure used to pass lookup addr and return library address.
+ */
+struct Boundary {
+  const char* l_name; // input
+  ElfW(Addr) load_addr; // input
+  ElfW(Addr) start_addr; //output
+  ElfW(Addr) end_addr; // output
+  int found;
+};
+int find_relro_boundary(struct dl_phdr_info * info, size_t size, void * data) {
+  struct Boundary* boundary = data;
+  int found = 0;
+  for (int i = 0; i < info->dlpi_phnum; ++i) {
+      if (info->dlpi_phdr[i].p_type == PT_LOAD) {
+        if (strcmp(boundary->l_name, info->dlpi_name) == 0 && boundary->load_addr == info->dlpi_addr) {
+          found = 1;
+          break;
+        }
+      }
+  }
+  if (found) {
+      for (int i = 0; i < info->dlpi_phnum; ++i) {
+        if (info->dlpi_phdr[i].p_type == PT_GNU_RELRO) {
+          boundary->start_addr = info->dlpi_phdr[i].p_vaddr;
+          boundary->end_addr = info->dlpi_phdr[i].p_vaddr + info->dlpi_phdr[i].p_memsz;
+          boundary->found = 1;
+          return 1;
+        }
+      }
+  }
+  return 0;
+}
 
 static int mark_got_writable(struct link_map *lib)
 {
-   static unsigned int page_size = 0;
+   static ElfW(Addr) page_size = 0;
    INIT_DYNAMIC(lib);
    if (!got)
       return 0;
@@ -220,19 +252,64 @@ static int mark_got_writable(struct link_map *lib)
    if (!page_size)
       page_size = gotcha_getpagesize();
 
-   size_t protect_size = MAX(rel_size, page_size);
-   if(protect_size % page_size){
-      protect_size += page_size -  ((protect_size) %page_size);
+   ElfW(Addr) plt_got_size = MAX(rel_size, page_size);
+   if(plt_got_size % page_size){
+      plt_got_size += page_size -  ((plt_got_size) %page_size);
    }
-   ElfW(Addr) prot_address = BOUNDARY_BEFORE(got,(ElfW(Addr))page_size);
-   debug_printf(3, "Setting library %s GOT table from %p to +%lu to writeable\n",
-                LIB_NAME(lib), (void *) prot_address, protect_size);
-   int res = gotcha_mprotect((void*)prot_address,protect_size,PROT_READ | PROT_WRITE | PROT_EXEC );
-   if(res == -1){ // mprotect returns -1 on an error
-      error_printf("GOTCHA attempted to mark the GOT table as writable and was unable to do so, "
-                   "calls to wrapped functions may likely fail.\n");
+   ElfW(Addr) plt_got_addr = BOUNDARY_BEFORE(got,(ElfW(Addr))page_size);
+   struct Boundary boundary;
+   boundary.l_name = lib->l_name;
+   boundary.load_addr = lib->l_addr;
+   boundary.found = 0;
+   dl_iterate_phdr(find_relro_boundary, &boundary);
+   int plt_got_written = 0;
+   if (boundary.found) {
+      ElfW(Addr) got_size = MAX(boundary.end_addr, page_size);
+      if(got_size % page_size){
+        got_size += page_size -  ((got_size) %page_size);
+      }
+      ElfW(Addr) got_addr = BOUNDARY_BEFORE(got,(ElfW(Addr))page_size);
+      if (got_addr == plt_got_addr + plt_got_size) {
+        debug_printf(3, "Setting library %s GOT and PLT table from %p to +%lu to writeable\n",
+                     LIB_NAME(lib), (void *) plt_got_addr, plt_got_size + got_size);
+        int res = gotcha_mprotect((void*)plt_got_addr,
+                                  plt_got_size + got_size, PROT_READ | PROT_WRITE | PROT_EXEC );
+        if(res == -1){ // mprotect returns -1 on an error
+          error_printf("GOTCHA attempted to mark both GOT and PLT GOT tables as writable and was unable to do so, "
+                       "calls to wrapped functions may likely fail.\n");
+        }
+        plt_got_written = 1;
+      } else if (plt_got_addr == got_addr + got_size) {
+        debug_printf(3, "Setting library %s GOT and PLT table from %p to +%lu to writeable\n",
+                     LIB_NAME(lib), (void *) got_addr, plt_got_size + got_size);
+        int res = gotcha_mprotect((void*)got_addr,
+                                  plt_got_size + got_size, PROT_READ | PROT_WRITE | PROT_EXEC );
+        if(res == -1){ // mprotect returns -1 on an error
+          error_printf("GOTCHA attempted to mark both GOT and PLT GOT tables as writable and was unable to do so, "
+                       "calls to wrapped functions may likely fail.\n");
+        }
+        plt_got_written = 1;
+      }else {
+        debug_printf(3, "Setting library %s only GOT table from %p to +%lu to writeable\n",
+                     LIB_NAME(lib), (void *) got_addr, got_size);
+        int res = gotcha_mprotect((void*)got_addr,
+                                  got_size, PROT_READ | PROT_WRITE | PROT_EXEC );
+        if(res == -1){ // mprotect returns -1 on an error
+          error_printf("GOTCHA attempted to mark the only GOT table as writable and was unable to do so, "
+                       "calls to wrapped functions may likely fail.\n");
+        }
+      }
    }
-
+   if (!plt_got_written) {
+      debug_printf(3, "Setting library %s only PLT GOT table from %p to +%lu to writeable\n",
+                   LIB_NAME(lib), (void *) plt_got_addr, plt_got_size);
+      int res = gotcha_mprotect((void*)plt_got_addr,
+                                plt_got_size, PROT_READ | PROT_WRITE | PROT_EXEC );
+      if(res == -1){ // mprotect returns -1 on an error
+        error_printf("GOTCHA attempted to mark the only PLT GOT table as writable and was unable to do so, "
+                     "calls to wrapped functions may likely fail.\n");
+      }
+   }
    return 0;
 }
 
