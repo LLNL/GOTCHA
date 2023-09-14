@@ -12,9 +12,5 @@ for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
-
-int retX_old(int x) { return -x; }
-__asm__(
-    "\t.globl  __retX_old\n"
-    "\t.equiv  __retX_old,retX_old\n"
-    "\t.symver __retX_old,retX@GOTCHA_1");
+#include "num.h"
+int return_four() { return 3; }

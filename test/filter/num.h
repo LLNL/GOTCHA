@@ -7,4 +7,4 @@
 extern int return_four();
 extern int return_five();
 extern int return_six();
-#endif //GOTCHA_NUM_H
+#endif  // GOTCHA_NUM_H

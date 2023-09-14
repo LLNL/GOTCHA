@@ -16,15 +16,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 extern void mark_had_error();
 extern int return_five();
 
-int return_four()
-{
-   /* Intentional bug, gotcha wrapping will correct this to return 4 */
-   return 3;
+int return_four() {
+  /* Intentional bug, gotcha wrapping will correct this to return 4 */
+  return 3;
 }
 
-int test_return_five()
-{
-   return return_five();
-}
-
-
+int test_return_five() { return return_five(); }

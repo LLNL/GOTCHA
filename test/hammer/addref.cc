@@ -22,48 +22,43 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 template <int A, int B>
 class AddChecker {
-public:
-   static bool doCheck(bool is_neg) {
-      (void) AddChecker<A/2, B>::doCheck;
-      (void) AddChecker<A, B/2>::doCheck;
+ public:
+  static bool doCheck(bool is_neg) {
+    (void)AddChecker<A / 2, B>::doCheck;
+    (void)AddChecker<A, B / 2>::doCheck;
 
-      if (!AddChecker<A, B-1>::doCheck(is_neg))
-         return false;
-      
-      result_t add = Add<A, B>::math();
-      result_t target = (A + B) * (is_neg ? -1 : 1);
-      return (add == target);
-   }
+    if (!AddChecker<A, B - 1>::doCheck(is_neg)) return false;
+
+    result_t add = Add<A, B>::math();
+    result_t target = (A + B) * (is_neg ? -1 : 1);
+    return (add == target);
+  }
 };
 
 template <int A>
 class AddChecker<A, 0> {
-public:
-   static bool doCheck(bool is_neg) {
-      if (!AddChecker<A-1, X>::doCheck(is_neg))
-         return false;
-      
-      result_t add = Add<A, 0>::math();
-      result_t target = A * (is_neg ? -1 : 1);
-      return (add == target);
-   }
+ public:
+  static bool doCheck(bool is_neg) {
+    if (!AddChecker<A - 1, X>::doCheck(is_neg)) return false;
+
+    result_t add = Add<A, 0>::math();
+    result_t target = A * (is_neg ? -1 : 1);
+    return (add == target);
+  }
 };
 
 template <>
 class AddChecker<0, 0> {
-public:
-   static bool doCheck(bool) {
-      result_t add = Add<0, 0>::math();
-      return (add == 0);
-   }
+ public:
+  static bool doCheck(bool) {
+    result_t add = Add<0, 0>::math();
+    return (add == 0);
+  }
 };
 
-static bool check(bool is_neg)
-{
-   return AddChecker<YSIZE, XSIZE>::doCheck(is_neg);
+static bool check(bool is_neg) {
+  return AddChecker<YSIZE, XSIZE>::doCheck(is_neg);
 }
 
 static void onLoad() __attribute__((constructor));
-static void onLoad() {
-   addinfo.checkFunctions.insert(check);
-}
+static void onLoad() { addinfo.checkFunctions.insert(check); }

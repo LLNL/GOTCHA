@@ -13,40 +13,38 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#include "gotcha/gotcha_types.h"
-#include "gotcha/gotcha.h"
 #include "tool2.h"
-#include <unistd.h>
+
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
+#include <unistd.h>
 
-__attribute__((unused)) static char* retX_wrapper(char* x);
+#include "gotcha/gotcha.h"
+#include "gotcha/gotcha_types.h"
+
+__attribute__((unused)) static char *retX_wrapper(char *x);
 
 static gotcha_wrappee_handle_t origRetX_handle = 0x0;
 
 #define NUM_IOFUNCS 1
-struct gotcha_binding_t iofuncs2[] = {
-   { "retX",retX_wrapper,&origRetX_handle}
-};
+struct gotcha_binding_t iofuncs2[] = {{"retX", retX_wrapper, &origRetX_handle}};
 
-char* retX_wrapper(char* x){
+char *retX_wrapper(char *x) {
   typeof(&retX_wrapper) origRetX = gotcha_get_wrappee(origRetX_handle);
-  strcat(x,"t2=>");
- 
-  return origRetX ? (origRetX(x) ) : 0;
+  strcat(x, "t2=>");
+
+  return origRetX ? (origRetX(x)) : 0;
 }
 
-int init_tool2()
-{
-   enum gotcha_error_t result;
+int init_tool2() {
+  enum gotcha_error_t result;
 
-   result = gotcha_wrap(iofuncs2, NUM_IOFUNCS, "tool2");
-   if (result != GOTCHA_SUCCESS) {
-      fprintf(stderr, "gotcha_wrap returned %d\n", (int) result);
-      return -1;
-   }
+  result = gotcha_wrap(iofuncs2, NUM_IOFUNCS, "tool2");
+  if (result != GOTCHA_SUCCESS) {
+    fprintf(stderr, "gotcha_wrap returned %d\n", (int)result);
+    return -1;
+  }
 
-   return 0;
+  return 0;
 }
-

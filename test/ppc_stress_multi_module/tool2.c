@@ -13,14 +13,14 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#include "gotcha/gotcha_types.h"
-#include "gotcha/gotcha.h"
 #include "tool2.h"
-#include <unistd.h>
+
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
+#include <unistd.h>
 
-int retX(int x){
-  return x;
-}
+#include "gotcha/gotcha.h"
+#include "gotcha/gotcha_types.h"
+
+int retX(int x) { return x; }
