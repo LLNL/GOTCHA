@@ -270,10 +270,9 @@ static int mark_got_writable(struct link_map *lib) {
   if (!page_size) page_size = gotcha_getpagesize();
 
   ElfW(Addr) plt_got_size = MAX(rel_size, page_size);
-  if (plt_got_size % page_size) {
-    plt_got_size +=
-        page_size - ((plt_got_size) % page_size);  // GCOVR_EXCL_LINE
-  }
+  if (plt_got_size % page_size) {  // GCOVR_EXCL_START
+    plt_got_size += page_size - ((plt_got_size) % page_size);
+  }  // GCOVR_EXCL_STOP
   ElfW(Addr) plt_got_addr = BOUNDARY_BEFORE(got, (ElfW(Addr))page_size);
   struct Boundary boundary;
   boundary.l_name = lib->l_name;
@@ -287,7 +286,12 @@ static int mark_got_writable(struct link_map *lib) {
       got_size += page_size - ((got_size) % page_size);  // GCOVR_EXCL_LINE
     }
     ElfW(Addr) got_addr = BOUNDARY_BEFORE(got, (ElfW(Addr))page_size);
-    if (got_addr == plt_got_addr + plt_got_size) {
+    /**
+     * The next two cases are to optimize mprotect calls to do both pages
+     * together if they align. We do not have such usecase yet and hence
+     * ignoring from coverage.
+     */
+    if (got_addr == plt_got_addr + plt_got_size) {  // GCOVR_EXCL_START
       debug_printf(3,
                    "Setting library %s GOT and PLT table "
                    "from %p to +%lu to writeable\n",
@@ -296,12 +300,12 @@ static int mark_got_writable(struct link_map *lib) {
       int res = gotcha_mprotect((void *)plt_got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
       // mprotect returns -1 on an error
-      if (res == -1) {  // GCOVR_EXCL_START
+      if (res == -1) {
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }  // GCOVR_EXCL_STOP
+      }
       plt_got_written = 1;
     } else if (plt_got_addr == got_addr + got_size) {
       debug_printf(3,
@@ -311,14 +315,14 @@ static int mark_got_writable(struct link_map *lib) {
       int res = gotcha_mprotect((void *)got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
       // mprotect returns -1 on an error
-      if (res == -1) {  // GCOVR_EXCL_START
+      if (res == -1) {
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }  // GCOVR_EXCL_STOP
+      }
       plt_got_written = 1;
-    } else {
+    } else {  // GCOVR_EXCL_STOP
       debug_printf(
           3, "Setting library %s only GOT table from %p to +%lu to writeable\n",
           LIB_NAME(lib), (void *)got_addr, got_size);
@@ -339,12 +343,13 @@ static int mark_got_writable(struct link_map *lib) {
         LIB_NAME(lib), (void *)plt_got_addr, plt_got_size);
     int res = gotcha_mprotect((void *)plt_got_addr, plt_got_size,
                               PROT_READ | PROT_WRITE | PROT_EXEC);
-    if (res == -1) {  // mprotect returns -1 on an error
+    // mprotect returns -1 on an error
+    if (res == -1) {  // GCOVR_EXCL_START
       error_printf(
           "GOTCHA attempted to mark the only PLT GOT table as writable and was "
           "unable to do so, "
           "calls to wrapped functions may likely fail.\n");
-    }
+    }  // GCOVR_EXCL_STOP
   }
   return 0;
 }
@@ -430,11 +435,10 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(
       2,
       "Creating internal binding data structures and adding binding to tool\n");
   binding_t *bindings = add_binding_to_tool(tool, user_bindings, num_actions);
-  if (!bindings) {
-    error_printf("Failed to create bindings for tool %s\n",
-                 tool_name);  // GCOVR_EXCL_LINE
-    return GOTCHA_INTERNAL;   // GCOVR_EXCL_LINE
-  }
+  if (!bindings) {  // GCOVR_EXCL_START
+    error_printf("Failed to create bindings for tool %s\n", tool_name);
+    return GOTCHA_INTERNAL;
+  }  // GCOVR_EXCL_STOP
 
   debug_printf(2, "Processing %d bindings\n", num_actions);
   for (i = 0; i < num_actions; i++) {
