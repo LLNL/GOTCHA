@@ -63,11 +63,11 @@ long lookup_exported_symbol(const char *name, const struct link_map *lib,
   debug_printf(2, "Searching for exported symbols in %s\n", LIB_NAME(lib));
   INIT_DYNAMIC(lib);
 
-  if (!gnu_hash && !elf_hash) {
+  if (!gnu_hash && !elf_hash) {  // GCOVR_EXCL_START
     debug_printf(3, "Library %s does not export or import symbols\n",
-                 LIB_NAME(lib));  // GCOVR_EXCL_START
-    return -1;                    // GCOVR_EXCL_START
-  }
+                 LIB_NAME(lib));
+    return -1;
+  }  // GCOVR_EXCL_STOP
   result = -1;
   if (gnu_hash) {
     debug_printf(3, "Checking GNU hash for %s in %s\n", name, LIB_NAME(lib));

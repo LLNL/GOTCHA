@@ -79,11 +79,10 @@ static struct link_map *gotchas_dlsym_rtld_next_lookup(const char *name,
   addrs.found = 0;
   void *symbol;
   dl_iterate_phdr(lib_header_callback, &addrs);
-  if (!addrs.found) {
-    error_printf(
-        "RTLD_NEXT used in code not dynamically loaded");  // GCOVR_EXCL_LINE
-    exit(127);                                             // GCOVR_EXCL_LINE
-  }
+  if (!addrs.found) {  // GCOVR_EXCL_START
+    error_printf("RTLD_NEXT used in code not dynamically loaded");
+    exit(127);
+  }  // GCOVR_EXCL_STOP
   struct link_map *handle = addrs.lmap->l_next;
   while (handle) {
     /* lookup symbol on the next-to-next lib which has symbol
