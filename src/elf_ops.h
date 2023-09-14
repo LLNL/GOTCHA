@@ -104,6 +104,8 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
    ElfW(Half) *versym = NULL;                                   \
    char *strtab = NULL;                                         \
    unsigned int rel_size = 0, rel_count = 0, is_rela = 0, i;    \
+   unsigned int rela_size = 0, rela_count = 0, rela_esz = 1; \
+   unsigned int jmprel_size = 0, jmprel_count = 0, rel_esz = 1;                               \
    dynsec = lmap->l_ld;                                         \
    if (!dynsec)                                                 \
       return -1;                                                \
@@ -113,12 +115,28 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
             rel = (ElfW(Rel) *)dentry->d_un.d_ptr;                           \
             break;                                              \
          }                                                      \
+         case DT_RELSZ: {                                         \
+            rel_size = (unsigned int) dentry->d_un.d_val;       \
+            break;                                              \
+         }                                                      \
+         case DT_RELENT: {                                         \
+            rel_esz = (unsigned int) dentry->d_un.d_val;       \
+            break;                                              \
+         }                                                      \
          case DT_RELA: {                                         \
             rela = (ElfW(Rela) *) dentry->d_un.d_ptr;                           \
             break;                                              \
          }                                                      \
+         case DT_RELASZ: {                                         \
+            rela_size = (unsigned int) dentry->d_un.d_val;       \
+            break;                                              \
+         }                                                      \
+         case DT_RELAENT: {                                         \
+            rela_esz = (unsigned int) dentry->d_un.d_val;       \
+            break;                                              \
+         }                                                      \
          case DT_PLTRELSZ: {                                    \
-            rel_size = (unsigned int) dentry->d_un.d_val;       \
+            jmprel_size = (unsigned int) dentry->d_un.d_val;    \
             break;                                              \
          }                                                      \
          case DT_PLTGOT: {                                      \
@@ -142,7 +160,7 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
             break;                                              \
          }                                                      \
          case DT_JMPREL: {                                      \
-            jmprel = dentry->d_un.d_val;                        \
+            jmprel = dentry->d_un.d_ptr;                        \
             break;                                              \
          }                                                      \
          case DT_GNU_HASH: {                                    \
@@ -155,8 +173,12 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
          }                                                      \
       }                                                         \
    }                                                            \
-   rel_count = rel_size / (is_rela ? sizeof(ElfW(Rela)) : sizeof(ElfW(Rel))); \
+   jmprel_count = jmprel_size / (is_rela ? sizeof(ElfW(Rela)) : sizeof(ElfW(Rel)));           \
+   if (rel) rel_count = rel_size / rel_esz;           \
+   if (rela) rela_count = rela_size / rela_esz; \
    (void) rela;                                                 \
+   (void) jmprel_count;                                         \
+   (void) rela_count;                                         \
    (void) rel;                                                  \
    (void) jmprel;                                               \
    (void) symtab;                                               \
@@ -184,13 +206,13 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
  *
  ******************************************************************************
  */
-#define FOR_EACH_PLTREL_INT(relptr, op, ...)                        \
-   for (i = 0; i < rel_count; i++) {                           \
-      ElfW(Addr) offset = relptr[i].r_offset;                  \
-      unsigned long symidx = R_SYM(relptr[i].r_info);          \
-      ElfW(Sym) *sym = symtab + symidx;                        \
-      char *symname = strtab + sym->st_name;                   \
-      op(sym, symname, offset, ## __VA_ARGS__);                                \
+#define FOR_EACH_PLTREL_INT(relptr, rel_count, op, ...) \
+   for (i = 0; i < rel_count; i++) {                    \
+      ElfW(Addr) offset = relptr[i].r_offset;           \
+      unsigned long symidx = R_SYM(relptr[i].r_info);   \
+      ElfW(Sym) *sym = symtab + symidx;                 \
+      char *symname = strtab + sym->st_name;            \
+      op(sym, symname, offset, ## __VA_ARGS__);         \
    }
 
 /*!
@@ -207,24 +229,23 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
  *
  ******************************************************************************
  */
-#define FOR_EACH_PLTREL(lookup_rel, lmap, op, ...) {                            \
-      INIT_DYNAMIC(lmap)                                       \
-      ElfW(Addr) offset = lmap->l_addr;                        \
-      (void) offset;                                           \
-      if (is_rela) {                                           \
-         ElfW(Rela) * jmp_rela = (ElfW(Rela) *) jmprel;                         \
-         FOR_EACH_PLTREL_INT(jmp_rela, op, ## __VA_ARGS__);         \
-         if (lookup_rel && rela) {                                                 \
-            FOR_EACH_PLTREL_INT(rela, op, ## __VA_ARGS__);             \
-         }                                                             \
-      }                                                        \
-      else {                                                   \
-         ElfW(Rel) * jmp_rel = (ElfW(Rel) *) jmprel;                           \
-         FOR_EACH_PLTREL_INT(jmp_rel, op, ## __VA_ARGS__);          \
-         if (lookup_rel && rel) {                                                 \
-             FOR_EACH_PLTREL_INT(rel, op, ## __VA_ARGS__);                                                       \
-         }                                                    \
-      }                                                        \
+#define FOR_EACH_PLTREL(lmap, op, ...) {                                     \
+      INIT_DYNAMIC(lmap)                                                     \
+      ElfW(Addr) offset = lmap->l_addr;                                      \
+      (void) offset;                                                         \
+      if (is_rela) {                                                         \
+         ElfW(Rela) * jmp_rela = (ElfW(Rela) *) jmprel;                      \
+         FOR_EACH_PLTREL_INT(jmp_rela, jmprel_count, op, ## __VA_ARGS__);    \
+         if (rela) {                                                         \
+            FOR_EACH_PLTREL_INT(rela, rela_count, op, ## __VA_ARGS__);       \
+         }                                                                   \
+      } else {                                                               \
+         ElfW(Rel) * jmp_rel = (ElfW(Rel) *) jmprel;                         \
+         FOR_EACH_PLTREL_INT(jmp_rel, jmprel_count, op, ## __VA_ARGS__);     \
+         if (rel) {                                                          \
+            FOR_EACH_PLTREL_INT(rel, rel_count, op, ## __VA_ARGS__);         \
+         }                                                                   \
+      }                                                                      \
    }
 
 
