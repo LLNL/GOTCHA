@@ -14,6 +14,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 int retX_old(int x) { return -x; }
-__asm__("\t.globl  __retX_old\n"
-        "\t.equiv  __retX_old,retX_old\n"
-        "\t.symver __retX_old,retX@GOTCHA_1");
+__asm__(
+    "\t.globl  __retX_old\n"
+    "\t.equiv  __retX_old,retX_old\n"
+    "\t.symver __retX_old,retX@GOTCHA_1");

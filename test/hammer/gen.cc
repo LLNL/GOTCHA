@@ -23,50 +23,46 @@ using namespace std;
 
 template <int A, int B>
 class Generate {
-public:
-   static void init() {
-      Mult<A, B>::init();
-      Add<A, B>::init();
-      Neg<A, B>::init();
+ public:
+  static void init() {
+    Mult<A, B>::init();
+    Add<A, B>::init();
+    Neg<A, B>::init();
 
-      //Extra gens here prevents recursive template overflow
-      (void) Generate<A, B/2>::init;  
-      (void) Generate<A/2, B>::init;  
+    // Extra gens here prevents recursive template overflow
+    (void)Generate<A, B / 2>::init;
+    (void)Generate<A / 2, B>::init;
 
-      Generate<A, B-1>::init();
-   }
+    Generate<A, B - 1>::init();
+  }
 };
 
 template <int A>
 class Generate<A, 0> {
-public:
-   static void init() {
-      Mult<A, 0>::init();
-      Add<A, 0>::init();
-      Neg<A, 0>::init();
+ public:
+  static void init() {
+    Mult<A, 0>::init();
+    Add<A, 0>::init();
+    Neg<A, 0>::init();
 
-      Generate<A-1, X>::init();
-   }
+    Generate<A - 1, X>::init();
+  }
 };
 
 template <>
 class Generate<0, 0> {
-public:
-   static void init() {
-      Mult<0, 0>::init();
-      Add<0, 0>::init();
-      Neg<0, 0>::init();
-   }
+ public:
+  static void init() {
+    Mult<0, 0>::init();
+    Add<0, 0>::init();
+    Neg<0, 0>::init();
+  }
 };
 
-template<int A, int B>
-gotcha_wrappee_handle_t* Neg<A, B>::mathfn_mult_handle= NULL;
+template <int A, int B>
+gotcha_wrappee_handle_t *Neg<A, B>::mathfn_mult_handle = NULL;
 
-template<int A, int B>
-gotcha_wrappee_handle_t* Neg<A, B>::mathfn_add_handle= NULL;
+template <int A, int B>
+gotcha_wrappee_handle_t *Neg<A, B>::mathfn_add_handle = NULL;
 
-void initMath()
-{
-   Generate<Y, X>::init();
-}
-
+void initMath() { Generate<Y, X>::init(); }

@@ -30,31 +30,27 @@ using namespace std;
 
 template <int A, int B>
 class MultChecker {
-public:
-   static bool doCheck(bool is_neg) {
-      if (!MultChecker<A, B-1>::doCheck(is_neg))
-         return false;
-      
-      result_t mult = Mult<A, B>::math();
-      result_t target = A * B * (is_neg ? -1 : 1);
-      return (mult == target);
-   }
+ public:
+  static bool doCheck(bool is_neg) {
+    if (!MultChecker<A, B - 1>::doCheck(is_neg)) return false;
+
+    result_t mult = Mult<A, B>::math();
+    result_t target = A * B * (is_neg ? -1 : 1);
+    return (mult == target);
+  }
 };
 
 template <int A>
 class MultChecker<A, 0> {
-public:
-   static int doCheck(bool is_neg __attribute__((unused))) {
-      return Mult<A, 0>::math() == 0;
-   }
+ public:
+  static int doCheck(bool is_neg __attribute__((unused))) {
+    return Mult<A, 0>::math() == 0;
+  }
 };
 
-static bool check(bool is_neg)
-{
-   return MultChecker<STARTY, STARTX>::doCheck(is_neg);
+static bool check(bool is_neg) {
+  return MultChecker<STARTY, STARTX>::doCheck(is_neg);
 }
 
 static void onLoad() __attribute__((constructor));
-static void onLoad() {
-   multinfo.checkFunctions.insert(check);
-}
+static void onLoad() { multinfo.checkFunctions.insert(check); }

@@ -23,8 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "sampleLib.h"
 
 void dbg() {}
-int main()
-{
+int main() {
   sample_init();
   int check_val = retX(9);
   assert(check_val == 10);
