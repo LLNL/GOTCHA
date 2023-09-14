@@ -63,11 +63,11 @@ long lookup_exported_symbol(const char *name, const struct link_map *lib,
   debug_printf(2, "Searching for exported symbols in %s\n", LIB_NAME(lib));
   INIT_DYNAMIC(lib);
 
-  if (!gnu_hash && !elf_hash) {
+  if (!gnu_hash && !elf_hash) {  // GCOVR_EXCL_START
     debug_printf(3, "Library %s does not export or import symbols\n",
-                 LIB_NAME(lib));  // GCOVR_EXCL_START
-    return -1;                    // GCOVR_EXCL_START
-  }
+                 LIB_NAME(lib));
+    return -1;
+  }  // GCOVR_EXCL_STOP
   result = -1;
   if (gnu_hash) {
     debug_printf(3, "Checking GNU hash for %s in %s\n", name, LIB_NAME(lib));
@@ -83,11 +83,9 @@ long lookup_exported_symbol(const char *name, const struct link_map *lib,
     debug_printf(3, "%s not found in %s\n", name, LIB_NAME(lib));
     return -1;
   }
-  if (!GOTCHA_CHECK_VISIBILITY(symtab[result])) {
-    debug_printf(
-        3,
-        "Symbol %s found but not exported in %s\n",  // GCOVR_EXCL_START
-        name, LIB_NAME(lib));
+  if (!GOTCHA_CHECK_VISIBILITY(symtab[result])) {  // GCOVR_EXCL_START
+    debug_printf(3, "Symbol %s found but not exported in %s\n", name,
+                 LIB_NAME(lib));
     return -1;
   }  // GCOVR_EXCL_STOP
 
@@ -273,7 +271,8 @@ static int mark_got_writable(struct link_map *lib) {
 
   ElfW(Addr) plt_got_size = MAX(rel_size, page_size);
   if (plt_got_size % page_size) {
-    plt_got_size += page_size - ((plt_got_size) % page_size);
+    plt_got_size +=
+        page_size - ((plt_got_size) % page_size);  // GCOVR_EXCL_LINE
   }
   ElfW(Addr) plt_got_addr = BOUNDARY_BEFORE(got, (ElfW(Addr))page_size);
   struct Boundary boundary;
@@ -285,36 +284,39 @@ static int mark_got_writable(struct link_map *lib) {
   if (boundary.found) {
     ElfW(Addr) got_size = MAX(boundary.end_addr, page_size);
     if (got_size % page_size) {
-      got_size += page_size - ((got_size) % page_size);
+      got_size += page_size - ((got_size) % page_size);  // GCOVR_EXCL_LINE
     }
     ElfW(Addr) got_addr = BOUNDARY_BEFORE(got, (ElfW(Addr))page_size);
     if (got_addr == plt_got_addr + plt_got_size) {
-      debug_printf(
-          3,
-          "Setting library %s GOT and PLT table from %p to +%lu to writeable\n",
-          LIB_NAME(lib), (void *)plt_got_addr, plt_got_size + got_size);
+      debug_printf(3,
+                   "Setting library %s GOT and PLT table "
+                   "from %p to +%lu to writeable\n",
+                   LIB_NAME(lib), (void *)plt_got_addr,
+                   plt_got_size + got_size);
       int res = gotcha_mprotect((void *)plt_got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
-      if (res == -1) {  // mprotect returns -1 on an error
+      // mprotect returns -1 on an error
+      if (res == -1) {  // GCOVR_EXCL_START
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }
+      }  // GCOVR_EXCL_STOP
       plt_got_written = 1;
     } else if (plt_got_addr == got_addr + got_size) {
-      debug_printf(
-          3,
-          "Setting library %s GOT and PLT table from %p to +%lu to writeable\n",
-          LIB_NAME(lib), (void *)got_addr, plt_got_size + got_size);
+      debug_printf(3,
+                   "Setting library %s GOT and PLT table "
+                   "from %p to +%lu to writeable\n",
+                   LIB_NAME(lib), (void *)got_addr, plt_got_size + got_size);
       int res = gotcha_mprotect((void *)got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
-      if (res == -1) {  // mprotect returns -1 on an error
+      // mprotect returns -1 on an error
+      if (res == -1) {  // GCOVR_EXCL_START
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }
+      }  // GCOVR_EXCL_STOP
       plt_got_written = 1;
     } else {
       debug_printf(

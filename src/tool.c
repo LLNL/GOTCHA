@@ -112,21 +112,18 @@ binding_t *add_binding_to_tool(tool_t *tool,
   newbinding->internal_bindings_size = user_binding_size;
   result = create_hashtable(&newbinding->binding_hash, user_binding_size * 2,
                             (hash_func_t)strhash, (hash_cmp_t)gotcha_strcmp);
-  if (result != 0) {
-    error_printf("Could not create hash table for %s\n",
-                 tool->tool_name);  // GCOVR_EXCL_LINE
+  if (result != 0) {  // GCOVR_EXCL_START
+    error_printf("Could not create hash table for %s\n", tool->tool_name);
     goto error;  // error is a label which frees allocated resources and returns
-                 // NULL GCOVR_EXCL_LINE
-  }
+  }              // GCOVR_EXCL_STOP
 
   for (i = 0; i < user_binding_size; i++) {
     result =
         addto_hashtable(&newbinding->binding_hash, (void *)user_binding[i].name,
                         (void *)(internal_bindings + i));
-    if (result != 0) {
-      error_printf(
-          "Could not add hash entry for %s to table for tool %s\n",  // GCOVR_EXCL_START
-          user_binding[i].name, tool->tool_name);
+    if (result != 0) {  // GCOVR_EXCL_START
+      error_printf("Could not add hash entry for %s to table for tool %s\n",
+                   user_binding[i].name, tool->tool_name);
       goto error;  // error is a label which frees allocated resources and
                    // returns NULL
     }              // GCOVR_EXCL_STOP
