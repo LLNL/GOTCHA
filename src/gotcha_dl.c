@@ -47,10 +47,10 @@ int lib_header_callback(struct dl_phdr_info * info, size_t size, void * data) {
                 addrs->found = 1;
                 return 1;
             }
-            current = current->l_next;
+            current = current->l_next; // GCOVR_EXCL_LINE
         }
     }
-    return 0;
+    return 0; // GCOVR_EXCL_LINE
 }
 
 /**
@@ -75,8 +75,8 @@ static struct link_map* gotchas_dlsym_rtld_next_lookup(const char *name, void *w
     void* symbol;
     dl_iterate_phdr(lib_header_callback, &addrs);
     if (!addrs.found) {
-        error_printf("RTLD_NEXT used in code not dynamically loaded");
-        exit (127);
+        error_printf("RTLD_NEXT used in code not dynamically loaded"); // GCOVR_EXCL_LINE
+        exit (127); // GCOVR_EXCL_LINE
     }
     struct link_map *handle = addrs.lmap->l_next;
     while(handle) {
@@ -107,15 +107,15 @@ static int per_binding(hash_key_t key, hash_data_t data, void *opaque KNOWN_UNUS
                 binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
    
    while (binding->next_binding) {
-      binding = binding->next_binding;
-      debug_printf(3, "Selecting new innermost version of binding %s from tool %s.\n",
-                   binding->user_binding->name, binding->associated_binding_table->tool->tool_name);
+      binding = binding->next_binding; // GCOVR_EXCL_LINE
+      debug_printf(3, "Selecting new innermost version of binding %s from tool %s.\n", // GCOVR_EXCL_LINE
+                   binding->user_binding->name, binding->associated_binding_table->tool->tool_name); // GCOVR_EXCL_LINE
    }
    
    result = prepare_symbol(binding);
    if (result == -1) {
-      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding->name);
-      return 0;
+      debug_printf(3, "Still could not prepare binding %s after dlopen\n", binding->user_binding->name); // GCOVR_EXCL_LINE
+      return 0; // GCOVR_EXCL_LINE
    }
 
    removefrom_hashtable(&notfound_binding_table, key);

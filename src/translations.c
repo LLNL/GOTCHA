@@ -19,11 +19,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 int main_wrapped;
 gotcha_wrappee_handle_t gotcha_internal_libc_main_wrappee_handle;
 gotcha_wrappee_handle_t gotcha_internal_main_wrappee_handle;
-
+/**
+ * This function is excluded from coverage as this is only required for our wrapper to call main.
+ */
+// GCOV_EXCL_START
 int gotcha_internal_main(int argc, char** argv, char** envp){
-  main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle); 
+  main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle);
   return underlying_main(argc, argv, envp);
 }
+// GCOV_EXCL_STOP
 int gotcha_internal_libc_start_main(int (*main_arg)(int, char**, char**) KNOWN_UNUSED, int argc, char** argv, void (*init)(), void (*fini)(), void (*rtld_fini)(), void* stack_end){
    libc_start_main_t underlying_libc_main = gotcha_get_wrappee(gotcha_internal_libc_main_wrappee_handle);
    main_t underlying_main = gotcha_get_wrappee(gotcha_internal_main_wrappee_handle);

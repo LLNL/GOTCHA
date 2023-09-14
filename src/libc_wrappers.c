@@ -106,7 +106,7 @@ void *gotcha_malloc(size_t size)
 
    result = gotcha_mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
    if (result == MAP_FAILED)
-       return NULL;
+       return NULL; // GCOVR_EXCL_LINE
    newalloc = (malloc_link_t *) result;
    newalloc->header.size = block_size - sizeof(malloc_header_t);
    split_allocation(newalloc, size);
@@ -125,7 +125,7 @@ void *gotcha_realloc(void* buffer, size_t size)
 
    newbuffer = gotcha_malloc(size);
    if (!newbuffer)
-      return NULL;
+      return NULL; // GCOVR_EXCL_LINE
    gotcha_memcpy(newbuffer, buffer, alloc->header.size);
 
    gotcha_free(buffer);
@@ -181,7 +181,7 @@ char *gotcha_strstr(const char *searchIn, const char *searchFor)
 {
    int i, j;
    if (!searchFor[0])
-      return NULL;
+      return NULL; // GCOVR_EXCL_LINE
 
    for (i = 0; searchIn[i]; i++) {
       if (searchIn[i] != searchFor[0])
@@ -225,7 +225,7 @@ static int ulong_to_hexstr(unsigned long num, char *str, int strlen, int upperca
    
    if (num == 0) {
       if (strlen < 2)
-         return -1;
+         return -1; // GCOVR_EXCL_LINE
       str[0] = '0';
       str[1] = '\0';
       return 1;
@@ -233,7 +233,7 @@ static int ulong_to_hexstr(unsigned long num, char *str, int strlen, int upperca
 
    for (len = 0, val = num; val; val = val / 16, len++);
    if (len + 1 >= strlen)
-      return -1;
+      return -1; // GCOVR_EXCL_LINE
 
    str[len] = '\0';
    val = num;
@@ -252,7 +252,7 @@ static int ulong_to_str(unsigned long num, char *str, int strlen)
    
    if (num == 0) {
       if (strlen < 2)
-         return -1;
+         return -1; // GCOVR_EXCL_LINE
       str[0] = '0';
       str[1] = '\0';
       return 1;
@@ -260,7 +260,7 @@ static int ulong_to_str(unsigned long num, char *str, int strlen)
 
    for (len = 0, val = num; val; val = val / 10, len++);
    if (len + 1 >= strlen)
-      return -1;
+      return -1; // GCOVR_EXCL_LINE
 
    str[len] = '\0';
    val = num;
@@ -279,11 +279,11 @@ static int slong_to_str(signed long num, char *str, int strlen)
 
    result = ulong_to_str((unsigned long) (num * -1), str+1, strlen-1);
    if (result == -1)
-      return -1;
+      return -1; // GCOVR_EXCL_LINE
    str[0] = '-';
    return result + 1;   
 }
-
+// GCOVR_EXCL_START
 void gotcha_assert_fail(const char *s, const char *file, unsigned int line, const char *function)
 {
    char linestr[64];
@@ -303,6 +303,7 @@ void gotcha_assert_fail(const char *s, const char *file, unsigned int line, cons
    gotcha_write(2, "' failed.\n", 10);
    syscall(SYS_kill, gotcha_getpid(), SIGABRT);
 }
+// GCOVR_EXCL_STOP
 
 extern char **__environ;
 char *gotcha_getenv(const char *name) 
@@ -315,10 +316,10 @@ char *gotcha_getenv(const char *name)
       if (gotcha_strncmp(name, *s, name_len) != 0)
          continue;
       if ((*s)[name_len] != '=')
-         continue;
+         continue; // GCOVR_EXCL_LINE
       return (*s) + name_len + 1;
    }
-   return NULL;
+   return NULL; // GCOVR_EXCL_LINE
 }
 
 pid_t gotcha_getpid()
@@ -339,7 +340,7 @@ unsigned int gotcha_getpagesize()
 
    pagesz = get_auxv_pagesize();
    if (!pagesz)
-      pagesz = 4096;
+      pagesz = 4096; // GCOVR_EXCL_LINE
    return pagesz;
 }
 
@@ -351,7 +352,7 @@ int gotcha_open(const char *pathname, int flags, ...)
 
    va_start(args, flags);
    if (flags & O_CREAT) {
-      mode = va_arg(args, mode_t);
+      mode = va_arg(args, mode_t); // GCOVR_EXCL_LINE
    }
    else {
       mode = 0;
@@ -367,7 +368,7 @@ int gotcha_open(const char *pathname, int flags, ...)
    if (result >= 0)
       return (int) result;
    
-   return -1;
+   return -1; // GCOVR_EXCL_LINE
 }
 
 void *gotcha_mmap(void *addr, size_t length, int prot, int flags,
@@ -418,11 +419,11 @@ static const char *add_to_buffer(const char *str, int fd, int *pos, char *buffer
                                  int buffer_size, int *num_printed, int print_percent)
 {
    for (; *str && (print_percent || *str != '%'); str++) {
-      if (*pos >= buffer_size) {
+      if (*pos >= buffer_size) { // GCOVR_EXCL_START
          gotcha_write(fd, buffer, buffer_size);
          *num_printed += buffer_size;
          *pos = 0;
-      }
+      }// GCOVR_EXCL_STOP
       else {
          buffer[*pos] = *str;
       }
@@ -556,7 +557,7 @@ int gotcha_int_printf(int fd, const char *format, ...)
       inc(str);
    }
 
-  done:
+  done: // GCOVR_EXCL_LINE
    gotcha_write(fd, buffer, buffer_pos);
    num_printed += buffer_pos;
    va_end(args);

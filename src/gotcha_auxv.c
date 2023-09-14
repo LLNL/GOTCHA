@@ -49,27 +49,27 @@ int parse_auxv_contents()
 
    fd = gotcha_open(name, O_RDONLY);
    if (fd == -1) {
-      parsed_auxv = -1;
-      return -1;
+      parsed_auxv = -1; // GCOVR_EXCL_LINE
+      return -1; // GCOVR_EXCL_LINE
    }
 
    do {
       for (;;) {
          result = gotcha_read(fd, buffer+offset, buffer_size-offset);
          if (result == -1) {
-            if (errno == EINTR)
+            if (errno == EINTR) // GCOVR_EXCL_START
                continue;
             gotcha_close(fd);
             parsed_auxv = -1;
             return -1;
-         }
+         } // GCOVR_EXCL_STOP
          if (result == 0) {
             gotcha_close(fd);
             done = 1;
             break;
          }
          if (offset == buffer_size) {
-            break;
+            break; // GCOVR_EXCL_LINE
          }
          offset += result;
       }
@@ -97,33 +97,30 @@ struct link_map *get_vdso_from_auxv()
    ElfW(Addr) vdso_dynamic;
 
    parse_auxv_contents();
-   if (!vdso_ehdr)
-      return NULL;
-   
-   vdso_phdrs = (ElfW(Phdr) *) (vdso_ehdr->e_phoff + ((unsigned char *) vdso_ehdr));
-   vdso_phdr_num = vdso_ehdr->e_phnum;
+   if (vdso_ehdr) {
+       vdso_phdrs = (ElfW(Phdr) *) (vdso_ehdr->e_phoff + ((unsigned char *) vdso_ehdr));
+       vdso_phdr_num = vdso_ehdr->e_phnum;
 
-   for (p = 0; p < vdso_phdr_num; p++) {
-      if (vdso_phdrs[p].p_type == PT_DYNAMIC) {
-         vdso_dynamic = (ElfW(Addr)) vdso_phdrs[p].p_vaddr;
-      }
-   }
+       for (p = 0; p < vdso_phdr_num; p++) {
+           if (vdso_phdrs[p].p_type == PT_DYNAMIC) {
+               vdso_dynamic = (ElfW(Addr)) vdso_phdrs[p].p_vaddr;
+           }
+       }
 
-   for (m = _r_debug.r_map; m; m = m->l_next) {
-      if (m->l_addr + vdso_dynamic == (ElfW(Addr)) m->l_ld) {
-         return m;
-      }
+       for (m = _r_debug.r_map; m; m = m->l_next) {
+           if (m->l_addr + vdso_dynamic == (ElfW(Addr)) m->l_ld) {
+               return m;
+           }
+       }
    }
-   return NULL;
+   return NULL; // GCOVR_EXCL_LINE
 }
 
 unsigned int get_auxv_pagesize()
 {
    int result;
    result = parse_auxv_contents();
-   if (result == -1)
-      return 0;
-   return auxv_pagesz;
+   return result == -1 ? 0 : auxv_pagesz;
 }
 
 static char* vdso_aliases[] = { "linux-vdso.so",
@@ -138,7 +135,7 @@ struct link_map *get_vdso_from_aliases()
    for (m = _r_debug.r_map; m; m = m->l_next) {
       for (aliases = vdso_aliases; *aliases; aliases++) {
          if (m->l_name && gotcha_strcmp(m->l_name, *aliases) == 0) {
-            return m;
+            return m; // GCOVR_EXCL_LINE
          }
       }
    }
@@ -151,18 +148,18 @@ static int read_line(char *line, int size, int fd)
    for (i = 0; i < size - 1; i++) {
       int result = gotcha_read(fd, line + i, 1);
       if (result == -1 && errno == EINTR)
-         continue;
+         continue; // GCOVR_EXCL_LINE
       if (result == -1 || result == 0) {
-         line[i] = '\0';
-         return -1;
+         line[i] = '\0'; // GCOVR_EXCL_LINE
+         return -1; // GCOVR_EXCL_LINE
       }
       if (line[i] == '\n') {
          line[i + 1] = '\0';
          return 0;
       }
    }
-   line[size-1] = '\0';
-   return 0;
+   line[size-1] = '\0'; // GCOVR_EXCL_LINE
+   return 0; // GCOVR_EXCL_LINE
 }
 
 static int read_hex(char *str, unsigned long *val)
@@ -203,10 +200,10 @@ static int read_word(char *str, char *word, int word_size)
    }
    while (*str != ' ' && *str != '\t' && *str != '\n' && *str != '\0') {
       if (word && word_cur >= word_size) {
-         if (word_size > 0 && word)
+         if (word_size > 0 && word) // GCOVR_EXCL_START
             word[word_size-1] = '\0';
          return word_cur;
-      }
+      }// GCOVR_EXCL_STOP
       if (word)
          word[word_cur] = *str;
       word_cur++;
@@ -230,13 +227,13 @@ struct link_map *get_vdso_from_maps()
    for (;;) {
       hit_eof = read_line(line, BUFFER_LEN, maps);
       if (hit_eof) {
-         gotcha_close(maps);
-         return NULL;
+         gotcha_close(maps); // GCOVR_EXCL_LINE
+         return NULL; // GCOVR_EXCL_LINE
       }
       line_pos = line;
       line_pos += read_hex(line_pos, &addr_begin);
       if (*line_pos != '-')
-         continue;
+         continue; // GCOVR_EXCL_LINE
       line_pos++;
       line_pos += read_hex(line_pos, &addr_end);
       line_pos += read_word(line_pos, NULL, 0);
@@ -256,7 +253,7 @@ struct link_map *get_vdso_from_maps()
          return m;
    }
    
-   return NULL;
+   return NULL; // GCOVR_EXCL_LINE
 }
 
 int is_vdso(const struct link_map *map)
@@ -274,8 +271,8 @@ int is_vdso(const struct link_map *map)
 
    result = get_vdso_from_aliases();
    if (result) {
-      vdso = result;
-      return (map == vdso);
+      vdso = result; // GCOVR_EXCL_LINE
+      return (map == vdso); // GCOVR_EXCL_LINE
    }
 
    result = get_vdso_from_auxv();
@@ -284,11 +281,11 @@ int is_vdso(const struct link_map *map)
       return (map == vdso);
    }
 
-   result = get_vdso_from_maps();
+   result = get_vdso_from_maps(); // GCOVR_EXCL_START
    if (result) {
       vdso = result;
       return (map == vdso);
    }
 
    return 0;
-}
+} // GCOVR_EXCL_STOP

@@ -29,6 +29,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "hash.h"
 #include "gotcha_utils.h"
 #include "gotcha_auxv.h"
+#include "gotcha_auxv.c"
+#include "tool.c"
+#include "gotcha_dl.h"
+#include "gotcha.c"
 
 #if !defined(STR)
 #define STR(X) STR2(X)
@@ -76,16 +80,73 @@ START_TEST(auto_tool_creation){
   };
   gotcha_wrap(bindings,1,"sample_autocreate_tool");
   ck_assert_msg(1,"Should never fail unless segfault on tool creation");
+  gotcha_wrap(bindings,1,"internal_test_tool");
+  ck_assert_msg(1,"Should never fail unless segfault on tool creation");
+  gotcha_wrap(bindings,1,"");
+  remove_library(_r_debug.r_map->l_next);
+  struct link_map *lib;
+  for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
+      remove_library(lib);
+  }
+
 }
 END_TEST
 
 START_TEST(symbol_wrap_test){
+  tool_t *tools = get_tool_list();
+  ck_assert_msg((tools!=NULL),"tools should exists");
+  remove_tool_from_list(tools);
+  tools = get_tool_list();
+  ck_assert_msg((tools==NULL),"tools should not exists");
   struct gotcha_binding_t bindings[] = {
     { "simpleFunc", &wrap_sample_func, &orig_func_handle }
   };
   gotcha_wrap(bindings,1,"internal_test_tool");
   int x = simpleFunc(); 
   ck_assert_msg((x!=TESTING_LIB_RET_VAL),"gotcha_wrap did not redirect a call to the wrapper function");
+  int priority;
+  enum gotcha_error_t result = get_default_configuration_value(GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"get_default_configuration_value should be successful");
+  ck_assert_msg((priority==UNSET_PRIORITY),"priotity should not be set");
+  result = get_configuration_value("dummy", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_INVALID_TOOL),"summy tool passed result should be GOTCHA_INVALID_TOOL");
+  result = gotcha_configure_int("internal_test_tool", 2, priority);
+  ck_assert_msg((result==GOTCHA_INTERNAL),"gotcha_configure_int passed should be GOTCHA_INTERNAL");
+  result = get_configuration_value("internal_test_tool", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"internal_test_tool tool passed result should be GOTCHA_SUCCESS");
+  ck_assert_msg((priority==UNSET_PRIORITY),"priotity should not be set");
+  result = gotcha_set_priority("internal_test_tool", 10);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"gotcha_set_priority should be GOTCHA_SUCCESS");
+  result = gotcha_get_priority("internal_test_tool", &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"gotcha_set_priority should be GOTCHA_SUCCESS");
+  ck_assert_msg((priority==10),"priority should be 10");
+  priority = -1;
+  result = get_configuration_value("internal_test_tool", GOTCHA_PRIORITY, &priority);
+  ck_assert_msg((result==GOTCHA_SUCCESS),"internal_test_tool tool passed result should be GOTCHA_SUCCESS");
+  ck_assert_msg((priority==10),"priotity should be set");
+  result = get_configuration_value("internal_test_tool", 2, &priority);
+  ck_assert_msg((result==GOTCHA_INTERNAL),"invalid property passed");
+  struct binding_t *binds = get_bindings();
+  ck_assert_msg((bindings!=NULL),"should return all bindings");
+  tools = get_tool_list();
+  ck_assert_msg((tools!=NULL),"tools should exists");
+  binds = get_tool_bindings(tools);
+  ck_assert_msg((bindings!=NULL),"should return tool's bindings");
+  gotcha_wrap(bindings,1,"internal_test_tool2");
+  ck_assert_msg((1),"should always pass");
+  gotcha_wrap(bindings,1,"internal_test_tool3");
+  ck_assert_msg((1),"should always pass");
+  tools = get_tool_list();
+  ck_assert_msg((tools!=NULL),"tools should exists");
+  remove_tool_from_list(tools->next_tool->next_tool);
+  tool_t *cur =  get_tool_list(), *prev;
+  while (cur) {
+      prev = cur;
+      cur = cur->next_tool;
+      remove_tool_from_list(prev);
+  }
+  tools = get_tool_list();
+  ck_assert_msg((tools==NULL),"tools should not exists");
 }
 END_TEST
 
@@ -95,8 +156,22 @@ START_TEST(bad_lookup_test){
   };
   enum gotcha_error_t errcode = gotcha_wrap(bindings,1,"internal_test_tool");
   ck_assert_msg((errcode==GOTCHA_FUNCTION_NOT_FOUND),"Looked up a function that shouldn't be found and did not get correct error code");
+    struct link_map *lib;
+    for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
+        if (gotcha_strstr(lib->l_name, "libinternal_unit_sample") != NULL) {
+            break;
+        }
+    }
+    ck_assert_msg((lib!=NULL),"libinternal_unit_sample should be found");
+    void* symbol;
+    long result = lookup_exported_symbol("dummy", lib, &symbol);
+    ck_assert_msg((result==-1),"Dummy symbol should not be found");
+
+    result = lookup_exported_symbol("hiddenFunc",lib, &symbol);
+    ck_assert_msg((result==-1),"hiddenFunc symbol should not be found as it is hidden");
 }
 END_TEST
+
 Suite* gotcha_core_suite(){
   Suite* s = suite_create("Gotcha Core");
   TCase* core_case = configured_case_create("Wrapping");
@@ -216,8 +291,12 @@ START_TEST(gotcha_strcmp_test){
   ck_assert_msg(gotcha_strcmp("pups","dogs")>0, "gotcha_strcmp fails on reversed nonmatching strings");
   ck_assert_msg(gotcha_strcmp("dogs","dogs")==0, "gotcha_strcmp fails on matching strings");
   ck_assert_msg(gotcha_strstr("dogs","og")!=0, "gotcha_strstr fails on matching strings");
+  ck_assert_msg(gotcha_strstr("dogs","gsa")==NULL, "gotcha_strstr fails on matching strings");
   ck_assert_msg(gotcha_strstr("dogs","cats")==0, "gotcha_strstr fails on nonmatching strings");
   ck_assert_msg(gotcha_strstr("dogs","doges")==0, "gotcha_strstr fails on nonmatching strings");
+  ck_assert_msg(gotcha_strnlen("dogs",10)==4, "gotcha_strnlen works on strings");
+  char v1[10] ="dogs";
+  ck_assert_msg(gotcha_strncat(v1,"cats", 5)!=NULL, "gotcha_strncat works on strings");
 }
 END_TEST
 
@@ -347,6 +426,19 @@ START_TEST(vdso_map_test){
   struct link_map *maps_vdso = get_vdso_from_maps();
   struct link_map *auxv_vdso = get_vdso_from_auxv();
   struct link_map *alias_vdso = get_vdso_from_aliases();
+  int result = is_vdso(NULL);
+  ck_assert_msg(result == 0, "VDSO should not be found");
+  struct link_map *lib;
+  for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
+    if (gotcha_strstr(lib->l_name, "vdso") != NULL) {
+      break;
+    }
+  }
+  ck_assert_msg((lib!=NULL),"vdso should be found");
+  result = is_vdso(lib);
+  ck_assert_msg(result == 1, "VDSO should be found");
+  result = is_vdso(lib);
+  ck_assert_msg(result == 1, "VDSO should be found");
   ck_assert_msg(maps_vdso || auxv_vdso || alias_vdso, "VDSO not found in any solution");
   ck_assert_msg(!maps_vdso || !auxv_vdso || maps_vdso == auxv_vdso, "VDSO Mismatch of maps and auxv");
   ck_assert_msg(!maps_vdso || !alias_vdso || maps_vdso == alias_vdso, "VDSO Mismatch of maps and alias");
@@ -360,11 +452,21 @@ START_TEST(vdso_pagesize_test){
 }
 END_TEST
 
+START_TEST(auxv){
+    char* str = "A";
+    unsigned long val;
+    int result = read_hex(str, &val);
+    ck_assert_msg(result == 1, "Incorrect length for hex");
+    ck_assert_msg(val == 10, "Val should be 10");
+}
+END_TEST
+
 Suite* gotcha_auxv_suite(){
   Suite* s = suite_create("Gotcha Auxv");
   TCase* libc_case = configured_case_create("Basic tests");
   tcase_add_test(libc_case, vdso_map_test);
   tcase_add_test(libc_case, vdso_pagesize_test);
+  tcase_add_test(libc_case, auxv);
   suite_add_tcase(s, libc_case);
   return s;
 }
@@ -408,6 +510,8 @@ START_TEST(hash_grow_test){
      remove_return_code |= removefrom_hashtable(&table,pointer_list[loop]);
    }
    ck_assert_msg(!remove_return_code, "Internal error removing from hashtable");
+   int result = removefrom_hashtable(&table,pointer_list[0]);
+   ck_assert_msg(result == -1, "all entries are removed should return -1");
    for(loop=0;loop<NUM_INSERTS;loop++){
      gotcha_free(pointer_list[loop]);
    }

@@ -30,7 +30,7 @@ int tool_equal(tool_t* t1, tool_t* t2){
 
 void remove_tool_from_list(struct tool_t* target){
      if(!tools){
-        return;
+        return; // GCOVR_EXCL_LINE
      }
      if(!tool_equal(tools,target)){
         tools = tools->next_tool;
@@ -67,8 +67,8 @@ tool_t *create_tool(const char *tool_name)
    // TODO: ensure free
    tool_t *newtool = (tool_t *) gotcha_malloc(sizeof(tool_t));
    if (!newtool) {
-      error_printf("Failed to malloc tool %s\n", tool_name);
-      return NULL;
+      error_printf("Failed to malloc tool %s\n", tool_name); // GCOVR_EXCL_LINE
+      return NULL; // GCOVR_EXCL_LINE
    }
    newtool->tool_name = tool_name;
    newtool->binding = NULL;
@@ -112,18 +112,18 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
    result = create_hashtable(&newbinding->binding_hash, user_binding_size * 2, 
                              (hash_func_t) strhash, (hash_cmp_t) gotcha_strcmp);
    if (result != 0) {
-      error_printf("Could not create hash table for %s\n", tool->tool_name);
-      goto error; // error is a label which frees allocated resources and returns NULL
+      error_printf("Could not create hash table for %s\n", tool->tool_name); // GCOVR_EXCL_LINE
+      goto error; // error is a label which frees allocated resources and returns NULL GCOVR_EXCL_LINE
    }
 
    for (i = 0; i < user_binding_size; i++) {
       result = addto_hashtable(&newbinding->binding_hash, (void *) user_binding[i].name,
                                (void *) (internal_bindings + i));
       if (result != 0) {
-         error_printf("Could not add hash entry for %s to table for tool %s\n", 
+         error_printf("Could not add hash entry for %s to table for tool %s\n",  // GCOVR_EXCL_START
                       user_binding[i].name, tool->tool_name);
          goto error; // error is a label which frees allocated resources and returns NULL
-      }
+      }// GCOVR_EXCL_STOP
    }
 
    newbinding->next_tool_binding = tool->binding;
@@ -135,11 +135,11 @@ binding_t *add_binding_to_tool(tool_t *tool, struct gotcha_binding_t *user_bindi
    debug_printf(2, "Created new binding table of size %d for tool %s\n", user_binding_size, tool->tool_name);
    return newbinding;
 
-  error:
+  error: // GCOVR_EXCL_START
    if (newbinding)
       gotcha_free(newbinding);
    return NULL;
-}
+}// GCOVR_EXCL_STOP
 
 binding_t *get_bindings()
 {

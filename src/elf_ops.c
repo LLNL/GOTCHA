@@ -112,7 +112,8 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) * syms,
   while (y != STN_UNDEF) {
     if (gotcha_strcmp(name, symnames + syms[y].st_name) == 0) {
       if (!versym) {
-        return y;
+        // in general all libs would have version but it is a guard condition.
+        return y; // GCOVR_EXCL_LINE
       }
 
       if ((versym[y] & 0x7fff) > latest_sym_ver) {

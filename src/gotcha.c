@@ -60,8 +60,8 @@ long lookup_exported_symbol(const char* name, const struct link_map *lib, void**
     INIT_DYNAMIC(lib);
 
     if (!gnu_hash && !elf_hash) {
-        debug_printf(3, "Library %s does not export or import symbols\n", LIB_NAME(lib));
-        return -1;
+        debug_printf(3, "Library %s does not export or import symbols\n", LIB_NAME(lib)); // GCOVR_EXCL_START
+        return -1; // GCOVR_EXCL_START
     }
     result = -1;
     if (gnu_hash) {
@@ -79,10 +79,10 @@ long lookup_exported_symbol(const char* name, const struct link_map *lib, void**
         return -1;
     }
     if (! GOTCHA_CHECK_VISIBILITY(symtab[result])) {
-        debug_printf(3, "Symbol %s found but not exported in %s\n",
+        debug_printf(3, "Symbol %s found but not exported in %s\n", // GCOVR_EXCL_START
                      name, LIB_NAME(lib));
         return -1;
-    }
+    } // GCOVR_EXCL_STOP
 
     debug_printf(2, "Symbol %s found in %s at 0x%lx\n",
                  name, LIB_NAME(lib),
@@ -378,8 +378,8 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   if (!tool)
      tool = create_tool(tool_name);
   if (!tool) {
-     error_printf("Failed to create tool %s\n", tool_name);
-     return GOTCHA_INTERNAL;
+     error_printf("Failed to create tool %s\n", tool_name); // GCOVR_EXCL_LINE
+     return GOTCHA_INTERNAL; // GCOVR_EXCL_LINE
   }
 
   current_generation++;
@@ -388,8 +388,8 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(struct gotcha_binding_t* user_bind
   debug_printf(2, "Creating internal binding data structures and adding binding to tool\n");
   binding_t *bindings = add_binding_to_tool(tool, user_bindings, num_actions);
   if (!bindings) {
-     error_printf("Failed to create bindings for tool %s\n", tool_name);
-     return GOTCHA_INTERNAL;
+     error_printf("Failed to create bindings for tool %s\n", tool_name); // GCOVR_EXCL_LINE
+     return GOTCHA_INTERNAL; // GCOVR_EXCL_LINE
   }
 
   debug_printf(2, "Processing %d bindings\n", num_actions);
@@ -449,11 +449,11 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_set_priority(const char* tool_name, int
   debug_printf(1, "User called gotcha_set_priority(%s, %d)\n", tool_name, value);
   enum gotcha_error_t error_on_set = gotcha_configure_int(tool_name, GOTCHA_PRIORITY, value);
   if(error_on_set != GOTCHA_SUCCESS) {
-    return error_on_set;
+    return error_on_set; // GCOVR_EXCL_LINE
   }
   tool_t* tool_to_place = get_tool(tool_name);
-  if(!tool_to_place){
-     tool_to_place = create_tool(tool_name);
+  if(!tool_to_place){ // will not happen as gotcha_configure_init creats tool if not exists
+     tool_to_place = create_tool(tool_name); // GCOVR_EXCL_LINE
   }
   remove_tool_from_list(tool_to_place);
   reorder_tool(tool_to_place);
