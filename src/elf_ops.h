@@ -206,13 +206,13 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
  *
  ******************************************************************************
  */
-#define FOR_EACH_PLTREL_INT(relptr, rel_count, op, skip_same_lib, ...) \
-   for (i = 0; i < rel_count; i++) {                                   \
-      ElfW(Addr) offset = relptr[i].r_offset;                          \
-      unsigned long symidx = R_SYM(relptr[i].r_info);                  \
-      ElfW(Sym) *sym = symtab + symidx;                                \
-      char *symname = strtab + sym->st_name;                           \
-      op(sym, symname, offset, skip_same_lib, ## __VA_ARGS__);         \
+#define FOR_EACH_PLTREL_INT(relptr, rel_count, op, ...) \
+   for (i = 0; i < rel_count; i++) {                    \
+      ElfW(Addr) offset = relptr[i].r_offset;           \
+      unsigned long symidx = R_SYM(relptr[i].r_info);   \
+      ElfW(Sym) *sym = symtab + symidx;                 \
+      char *symname = strtab + sym->st_name;            \
+      op(sym, symname, offset, ## __VA_ARGS__);         \
    }
 
 /*!
@@ -229,26 +229,23 @@ signed long lookup_elf_hash_symbol(const char *name, ElfW(Sym) *syms, ElfW(Half)
  *
  ******************************************************************************
  */
-#define FOR_EACH_PLTREL(lmap, op, ...) {                                                    \
-      INIT_DYNAMIC(lmap)                                                                    \
-      ElfW(Addr) offset = lmap->l_addr;                                                     \
-      (void) offset;                                                                        \
-      int skip_same_lib = 0;                                                                \
-      if (is_rela) {                                                                        \
-         ElfW(Rela) * jmp_rela = (ElfW(Rela) *) jmprel;                                     \
-         FOR_EACH_PLTREL_INT(jmp_rela, jmprel_count, op, skip_same_lib, ## __VA_ARGS__);    \
-         if (rela) {                                                                        \
-            skip_same_lib = 1;                                                              \
-            FOR_EACH_PLTREL_INT(rela, rela_count, op, skip_same_lib, ## __VA_ARGS__);       \
-         }                                                                                  \
-      } else {                                                                              \
-         ElfW(Rel) * jmp_rel = (ElfW(Rel) *) jmprel;                                        \
-         FOR_EACH_PLTREL_INT(jmp_rel, jmprel_count, op, skip_same_lib, ## __VA_ARGS__);     \
-         if (rel) {                                                                         \
-            skip_same_lib = 1;                                                              \
-            FOR_EACH_PLTREL_INT(rel, rel_count, op, skip_same_lib, ## __VA_ARGS__);         \
-         }                                                                                  \
-      }                                                                                     \
+#define FOR_EACH_PLTREL(lmap, op, ...) {                                     \
+      INIT_DYNAMIC(lmap)                                                     \
+      ElfW(Addr) offset = lmap->l_addr;                                      \
+      (void) offset;                                                         \
+      if (is_rela) {                                                         \
+         ElfW(Rela) * jmp_rela = (ElfW(Rela) *) jmprel;                      \
+         FOR_EACH_PLTREL_INT(jmp_rela, jmprel_count, op, ## __VA_ARGS__);    \
+         if (rela) {                                                         \
+            FOR_EACH_PLTREL_INT(rela, rela_count, op, ## __VA_ARGS__);       \
+         }                                                                   \
+      } else {                                                               \
+         ElfW(Rel) * jmp_rel = (ElfW(Rel) *) jmprel;                         \
+         FOR_EACH_PLTREL_INT(jmp_rel, jmprel_count, op, ## __VA_ARGS__);     \
+         if (rel) {                                                          \
+            FOR_EACH_PLTREL_INT(rel, rel_count, op, ## __VA_ARGS__);         \
+         }                                                                   \
+      }                                                                      \
    }
 
 

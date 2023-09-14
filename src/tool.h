@@ -85,7 +85,6 @@ struct internal_binding_t {
   struct gotcha_binding_t* user_binding;
   struct internal_binding_t* next_binding;
   void* wrappee_pointer;
-  struct link_map * fn_lib;
 };
 
 tool_t *create_tool(const char *tool_name);
