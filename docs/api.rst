@@ -14,7 +14,7 @@ In C or C++ applications, include ``gotcha.h``. See wrap_puts.c_ for a full
 example.
 .. code-block:: c
 
-    #include <unifyfs.h>
+    #include <gotcha.h>
 
 --------------------------
 Define your Gotcha wrappee

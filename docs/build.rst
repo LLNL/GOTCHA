@@ -59,7 +59,7 @@ desired, then do ``spack install gotcha@develop``.
 ----------
 
 -------------------------
-Build UnifyFS with CMake
+Build GOTCHA with CMake
 -------------------------
 
 Download the latest GOTCHA release from the Releases_ page or clone the develop
