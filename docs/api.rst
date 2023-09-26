@@ -10,8 +10,8 @@ This section describes how to use the GOTCHA API in an application.
 Include the GOTCHA Header
 --------------------------
 
-In C or C++ applications, include ``gotcha.h``. See wrap_puts.c_ for a full
-example.
+In C or C++ applications, include ``gotcha.h``.
+
 .. code-block:: c
 
     #include <gotcha.h>
@@ -21,6 +21,7 @@ Define your Gotcha wrappee
 --------------------------
 
 Gotcha wrappee enables the application to call the function it wrapped using GOTCHA.
+
 .. code-block:: c
 
     static gotcha_wrappee_handle_t wrappee_fputs_handle;
@@ -30,6 +31,7 @@ Define your function wrapper
 ----------------------------
 
 The function wrapper for wrapping functions from shared libraries.
+
 .. code-block:: c
 
     static int fputs_wrapper(const char *str, FILE *f) {
@@ -44,6 +46,7 @@ Define GOTCHA bindings
 
 GOTCHA works on binding a `function name`, `wrapper function`, and `wrappee handle`. 
 Gotcha works on triplets containing this information.
+
 .. code-block:: c
 
     struct gotcha_binding_t wrap_actions [] = {
@@ -58,6 +61,7 @@ To initiate gotcha with the bindings defined in last step, tools can call the `g
 This function should be called before any interception is expected by the tool.
 Some popular places for calling this are `gnu constructor`_ or the start of `main` function.
 The function will always be successful and would never throw error.
+
 .. code-block:: c
 
     gotcha_error_t gotcha_wrap(wrap_actions, 
@@ -83,6 +87,7 @@ The lowest layer is the system call followed by GOTCHA layer and finally other t
 The API would never fail. If it return GOTCHA_INTERNAL as error then there was issue with memory allocation of tool.
 If multiple tools have same priority then they are wrapper in FIFO order with the first tool being the inner-most wrapper.
 Without calling this API the default priority given to each tool is -1.
+
 .. code-block:: c
 
     gotcha_error_t gotcha_set_priority(const char* tool_name, 
@@ -95,6 +100,7 @@ Get priority of tool binding
 ----------------------------
 
 This API gets the priority of the tool. This could be default or as assigned by the tool.
+
 .. code-block:: c
 
     gotcha_error_t gotcha_get_priority(const char* tool_name, 
@@ -108,6 +114,7 @@ Get the wrapped function from GOTCHA stack
 This API return the wrapped function to call based on the tool's handle.
 The tools handle is used to locate the next element of the wrapper stack and return the function.
 Returns the ptr of the wrapped function.
+
 .. code-block:: c
 
     void* gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
@@ -127,6 +134,7 @@ Filter by Name
 
 This API allows GOTCHA to include only libraries given specified by the user.
 This could be a partial match of string contains as defined by `strstr` function in C.
+
 .. code-block:: c
 
     void gotcha_filter_libraries_by_name(const char* nameFilter);
@@ -135,6 +143,7 @@ Filter if Last
 **************
 
 This API allows GOTCHA to include only the last library defined in the linker of the tool.
+
 .. code-block:: c
 
     void gotcha_only_filter_last();
@@ -146,6 +155,7 @@ Filter by user defined function
 This API allows users to define a function that selected the libraries that user wants to intercept.
 The function should take `struct link_map*` as input and return true if it should be wrapped by GOTCHA.
 TIP: the library name can be accessed by `map->l_name`.
+
 .. code-block:: c
 
     void gotcha_set_library_filter_func(int(*new_func)(struct link_map*));
@@ -155,8 +165,12 @@ Restore default filter of GOTCHA
 ********************************
 
 The default filter of gotcha selects all libraries loaded. This function set the default filter back for GOTCHA.
+
 .. code-block:: c
 
     void gotcha_restore_library_filter_func();
 
+.. explicit external hyperlink targets
 
+.. _`gnu constructor`: https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Function-Attributes.html
+.. _symbol: https://refspecs.linuxfoundation.org/LSB_3.0.0/LSB-PDA/LSB-PDA.junk/symversion.html

@@ -38,6 +38,7 @@ Gotcha works by rewriting the Global Offset Table (GOT) that links
 inter-library callsites and variable references to their targets.
 Because of this Gotcha cannot wrap intra-library calls (such as a call
 to a static function in C) or calls in statically-linked binaries.
-Binary rewriting technology such as DyninstAPI
-(https://github.com/dyninst/dyninst) is more appropriate for these use
+Binary rewriting technology such as DyninstAPI_ is more appropriate for these use
 cases.
+
+.. _DyninstAPI: https://github.com/dyninst/dyninst

@@ -9,7 +9,7 @@ greatly appreciated.
 Unit Tests
 ----------
 
-Testing new core features within GOTCHA should be implemented in the ``test/unit/gotcha_unit_tests.c`` using the check framework as defined in https://libcheck.github.io/check.
+Testing new core features within GOTCHA should be implemented in the ``test/unit/gotcha_unit_tests.c`` using the check framework as defined in `<https://libcheck.github.io/check>`_.
 
 
 Create a new test
