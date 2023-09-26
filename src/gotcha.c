@@ -251,9 +251,8 @@ int find_relro_boundary(struct dl_phdr_info *info, size_t size, void *data) {
   if (found) {
     for (int i = 0; i < info->dlpi_phnum; ++i) {
       if (info->dlpi_phdr[i].p_type == PT_GNU_RELRO) {
-        boundary->start_addr = info->dlpi_phdr[i].p_vaddr;
-        boundary->end_addr =
-            info->dlpi_phdr[i].p_vaddr + info->dlpi_phdr[i].p_memsz;
+        boundary->start_addr = boundary->load_addr + info->dlpi_phdr[i].p_vaddr;
+        boundary->end_addr = boundary->start_addr + info->dlpi_phdr[i].p_memsz;
         boundary->found = 1;
         return 1;
       }
@@ -281,17 +280,19 @@ static int mark_got_writable(struct link_map *lib) {
   dl_iterate_phdr(find_relro_boundary, &boundary);
   int plt_got_written = 0;
   if (boundary.found) {
-    ElfW(Addr) got_size = MAX(boundary.end_addr, page_size);
-    if (got_size % page_size) {
-      got_size += page_size - ((got_size) % page_size);  // GCOVR_EXCL_LINE
+    ElfW(Addr) got_end = MAX(boundary.end_addr, page_size);
+    if (got_end % page_size) {
+      got_end += page_size - ((got_end) % page_size);  // GCOVR_EXCL_LINE
     }
-    ElfW(Addr) got_addr = BOUNDARY_BEFORE(got, (ElfW(Addr))page_size);
+    ElfW(Addr) got_addr =
+        BOUNDARY_BEFORE(boundary.start_addr, (ElfW(Addr))page_size);
+    ElfW(Addr) got_size = got_end - got_addr + 1;
     /**
      * The next two cases are to optimize mprotect calls to do both pages
      * together if they align. We do not have such usecase yet and hence
      * ignoring from coverage.
      */
-    if (got_addr == plt_got_addr + plt_got_size) {  // GCOVR_EXCL_START
+    if (got_addr == plt_got_addr + plt_got_size) {
       debug_printf(3,
                    "Setting library %s GOT and PLT table "
                    "from %p to +%lu to writeable\n",
@@ -300,12 +301,12 @@ static int mark_got_writable(struct link_map *lib) {
       int res = gotcha_mprotect((void *)plt_got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
       // mprotect returns -1 on an error
-      if (res == -1) {
+      if (res == -1) {  // GCOVR_EXCL_START
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }
+      }  // GCOVR_EXCL_STOP
       plt_got_written = 1;
     } else if (plt_got_addr == got_addr + got_size) {
       debug_printf(3,
@@ -315,25 +316,25 @@ static int mark_got_writable(struct link_map *lib) {
       int res = gotcha_mprotect((void *)got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
       // mprotect returns -1 on an error
-      if (res == -1) {
+      if (res == -1) {  // GCOVR_EXCL_START
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }
+      }  // GCOVR_EXCL_STOP
       plt_got_written = 1;
-    } else {  // GCOVR_EXCL_STOP
+    } else {
       debug_printf(
           3, "Setting library %s only GOT table from %p to +%lu to writeable\n",
           LIB_NAME(lib), (void *)got_addr, got_size);
       int res = gotcha_mprotect((void *)got_addr, got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
-      if (res == -1) {  // mprotect returns -1 on an error
+      if (res == -1) {  // GCOVR_EXCL_START
         error_printf(
             "GOTCHA attempted to mark the only GOT table as writable and was "
             "unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }
+      }  // GCOVR_EXCL_STOP
     }
   }
   if (!plt_got_written) {
@@ -381,7 +382,6 @@ static int update_library_got(struct link_map *map,
   }
 
   FOR_EACH_PLTREL(map, update_lib_bindings, map, bindingtable);
-
   lib->generation = current_generation;
   return 0;
 }
