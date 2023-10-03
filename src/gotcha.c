@@ -309,7 +309,8 @@ static int mark_got_writable(struct link_map *lib) {
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
       }
-      plt_got_written = 1;  // GCOVR_EXCL_STOP
+      plt_got_written = 1;
+      // GCOVR_EXCL_STOP
     } else if (plt_got_addr == got_addr + got_size) {
       // This is a more common case.
       debug_printf(3,
