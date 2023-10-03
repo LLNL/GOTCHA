@@ -286,13 +286,15 @@ static int mark_got_writable(struct link_map *lib) {
     }
     ElfW(Addr) got_addr =
         BOUNDARY_BEFORE(boundary.start_addr, (ElfW(Addr))page_size);
-    ElfW(Addr) got_size = got_end - got_addr + 1;
+    ElfW(Addr) got_size = got_end - got_addr;
     /**
      * The next two cases are to optimize mprotect calls to do both pages
      * together if they align. We do not have such usecase yet and hence
      * ignoring from coverage.
      */
     if (got_addr == plt_got_addr + plt_got_size) {
+      // Haven't seen a library till now where got_addr > plt_got_addr
+      // GCOVR_EXCL_START
       debug_printf(3,
                    "Setting library %s GOT and PLT table "
                    "from %p to +%lu to writeable\n",
@@ -301,14 +303,15 @@ static int mark_got_writable(struct link_map *lib) {
       int res = gotcha_mprotect((void *)plt_got_addr, plt_got_size + got_size,
                                 PROT_READ | PROT_WRITE | PROT_EXEC);
       // mprotect returns -1 on an error
-      if (res == -1) {  // GCOVR_EXCL_START
+      if (res == -1) {
         error_printf(
             "GOTCHA attempted to mark both GOT and PLT GOT tables as writable "
             "and was unable to do so, "
             "calls to wrapped functions may likely fail.\n");
-      }  // GCOVR_EXCL_STOP
-      plt_got_written = 1;
+      }
+      plt_got_written = 1;  // GCOVR_EXCL_STOP
     } else if (plt_got_addr == got_addr + got_size) {
+      // This is a more common case.
       debug_printf(3,
                    "Setting library %s GOT and PLT table "
                    "from %p to +%lu to writeable\n",
