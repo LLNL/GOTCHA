@@ -77,6 +77,12 @@ In this case, tools can prioritize which tools go first or second at runtime to 
 If an tool uses multiple bindings then they have to set priority to different bindings identified using `tool_name` defined within the same tool.
 
 
+.. attention::
+
+    The `gotcha_wrap` function modifies the `gotcha_binding_t wrap_actions[]` provided by the user.
+    GOTCHA does not create a copy of the binding functions and is the responsibility of the user to maintain this binding.
+
+
 ----------------------------
 Set priority of tool binding
 ----------------------------
