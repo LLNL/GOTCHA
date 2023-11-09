@@ -15,23 +15,22 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include <stdio.h>
 #include <string.h>
-#include "tool2.h"
+
 #include "tool1.h"
+#include "tool2.h"
 
 extern int init_autotee(char *filename);
 extern int close_autotee();
 
 #define OUTPUT_FILE "tee.out"
 
-int main()
-{
-   int result;
+int main() {
+  int result;
 
-   result = init_tool1();
-   if (result != 0)
-      return -1;
+  result = init_tool1();
+  if (result != 0) return -1;
 
-   result = retX(10); 
-   printf("Result %d\n", result);
-   return (result==25) ? 0 : 1;
+  result = retX(10);
+  printf("Result %d\n", result);
+  return (result == 25) ? 0 : 1;
 }

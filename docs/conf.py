@@ -21,12 +21,12 @@
 
 project = u'Gotcha'
 copyright = u'2018, Lawrence Livermore National Security, LLC'
-author = u'David Poliakoff, Matt Legendre'
+author = u'Hariharan Devarajan, David Poliakoff, Matt Legendre'
 
 # The short X.Y version
 version = u'1.0'
 # The full version, including alpha/beta/rc tags
-release = u'1.0.4'
+release = u'1.0.5'
 
 
 # -- General configuration ---------------------------------------------------
@@ -80,12 +80,19 @@ html_theme = 'sphinx_rtd_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = { 'logo_only' : True }
+
+# Add any paths that contain custom themes here, relative to this directory.
+html_theme_path  = ["_themes"]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# The name of an image file (relative to this directory) to place at the top
+# of the sidebar.
+html_logo = 'images/gotcha-logo.png'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -97,6 +104,8 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = False
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -129,8 +138,12 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'Gotcha.tex', u'Gotcha Documentation',
-     u'David Poliakoff, Matt Legendre', 'manual'),
+     author, 'manual'),
 ]
+
+# The name of an image file (relative to this directory) to place at the top of
+# the title page.
+latex_logo = 'images/gotcha-logo.png'
 
 
 # -- Options for manual page output ------------------------------------------
@@ -150,6 +163,6 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'Gotcha', u'Gotcha Documentation',
-     author, 'Gotcha', 'One line description of project.',
+     author, 'Gotcha', 'GOTCHA is a library for wrapping function calls in shared libraries.',
      'Miscellaneous'),
 ]

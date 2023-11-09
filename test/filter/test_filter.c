@@ -16,69 +16,61 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
+
 #include "gotcha/gotcha.h"
 #include "num.h"
 
-int wrong_return_four()
-{
-    return 5;
-}
-int wrong_return_five()
-{
-    return 4;
-}
-int wrong_return_six()
-{
-    return 3;
-}
+int wrong_return_four() { return 5; }
+int wrong_return_five() { return 4; }
+int wrong_return_six() { return 3; }
 static gotcha_wrappee_handle_t buggy_return_four;
 static gotcha_wrappee_handle_t buggy_return_five;
 static gotcha_wrappee_handle_t buggy_return_six;
 struct gotcha_binding_t func_four[] = {
-        { "return_four", wrong_return_four, &buggy_return_four }
-};
+    {"return_four", wrong_return_four, &buggy_return_four}};
 struct gotcha_binding_t func_five[] = {
-        { "return_five", wrong_return_five, &buggy_return_five }
-};
+    {"return_five", wrong_return_five, &buggy_return_five}};
 struct gotcha_binding_t func_six[] = {
-        { "return_six", wrong_return_six, &buggy_return_six }
-};
+    {"return_six", wrong_return_six, &buggy_return_six}};
 
-int main()
-{
-    int result;
-    int had_error = 0;
-    result = gotcha_wrap(func_four, 1, "test_filter_four");
-    if(result == GOTCHA_FUNCTION_NOT_FOUND){
-        fprintf(stderr, "GOTCHA should find a function, but found it\n");
-        return -1;
-    }
-    result = return_four();
-    if (result != 5) {
-        fprintf(stderr, "ERROR: wrapper function should return 5\n");
-        had_error = -1;
-    }
-    gotcha_filter_libraries_by_name("libnum3.so");
-    result = gotcha_wrap(func_five, 1, "test_filter_five");
-    if(result == GOTCHA_FUNCTION_NOT_FOUND){
-        fprintf(stderr, "GOTCHA should find a function, but found it\n");
-        return -1;
-    }
-    result = return_five();
-    if (result != 5) {
-        fprintf(stderr, "ERROR: library function should return 5. no wrapping for exec\n");
-        had_error = -1;
-    }
-    gotcha_only_filter_last();
-    result = gotcha_wrap(func_six, 1, "test_filter_six");
-    if(result == GOTCHA_FUNCTION_NOT_FOUND){
-        fprintf(stderr, "GOTCHA should find a function, but found it\n");
-        return -1;
-    }
-    result = return_six();
-    if (result != 6) {
-        fprintf(stderr, "ERROR: library function should return 6 no wrapping for exec\n");
-        had_error = -1;
-    }
-    return had_error;
+int main() {
+  int result;
+  int had_error = 0;
+  result = gotcha_wrap(func_four, 1, "test_filter_four");
+  if (result == GOTCHA_FUNCTION_NOT_FOUND) {
+    fprintf(stderr, "GOTCHA should find a function, but found it\n");
+    return -1;
+  }
+  result = return_four();
+  if (result != 5) {
+    fprintf(stderr, "ERROR: wrapper function should return 5\n");
+    had_error = -1;
+  }
+  gotcha_filter_libraries_by_name("libnum3.so");
+  result = gotcha_wrap(func_five, 1, "test_filter_five");
+  if (result == GOTCHA_FUNCTION_NOT_FOUND) {
+    fprintf(stderr, "GOTCHA should find a function, but found it\n");
+    return -1;
+  }
+  result = return_five();
+  if (result != 5) {
+    fprintf(stderr,
+            "ERROR: library function should return 5. no wrapping for exec\n");
+    had_error = -1;
+  }
+  gotcha_only_filter_last();
+  result = gotcha_wrap(func_six, 1, "test_filter_six");
+  if (result == GOTCHA_FUNCTION_NOT_FOUND) {
+    fprintf(stderr, "GOTCHA should find a function, but found it\n");
+    return -1;
+  }
+  result = return_six();
+  if (result != 6) {
+    fprintf(stderr,
+            "ERROR: library function should return 6 no wrapping for exec\n");
+    had_error = -1;
+  }
+  gotcha_restore_library_filter_func();
+  gotcha_wrap(func_six, 1, NULL);
+  return had_error;
 }
