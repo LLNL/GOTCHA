@@ -14,7 +14,7 @@ set(XSIZE 1)
 set(YSIZE 1)
 
 set(CMAKE_BUILD_TYPE Debug)
-SET(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Werror -Wextra")
+SET(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror -Wextra")
 
 add_definitions(-DXSIZE=${XSIZE})
 add_definitions(-DYSIZE=${YSIZE})
