@@ -90,7 +90,7 @@ struct link_map *get_vdso_from_auxv() {
 
   ElfW(Phdr) *vdso_phdrs = NULL;
   ElfW(Half) vdso_phdr_num, p;
-  ElfW(Addr) vdso_dynamic;
+  ElfW(Addr) vdso_dynamic = 0;
 
   parse_auxv_contents();
   if (vdso_ehdr) {
