@@ -151,6 +151,7 @@ static void *dlopen_wrapper(const char *filename, int flags) {
 }
 
 static void *dlsym_wrapper(void *handle, const char *symbol_name) {
+  typeof(&dlopen_wrapper) orig_dlopen = gotcha_get_wrappee(orig_dlopen_handle);
   typeof(&dlsym_wrapper) orig_dlsym = gotcha_get_wrappee(orig_dlsym_handle);
   struct internal_binding_t *binding;
   debug_printf(1, "User called dlsym(%p, %s)\n", handle, symbol_name);
@@ -161,7 +162,8 @@ static void *dlsym_wrapper(void *handle, const char *symbol_name) {
     struct link_map *lib = gotchas_dlsym_rtld_next_lookup(
         symbol_name, __builtin_return_address(0));
     if (lib) {
-      void *symbol = orig_dlsym(lib, symbol_name);
+      void *handle = orig_dlopen(lib->l_name, RTLD_NOW);
+      void *symbol = orig_dlsym(handle, symbol_name);
       return symbol;
     }
     return NULL;
