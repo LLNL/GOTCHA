@@ -10,7 +10,7 @@ without even the IMPLIED WARRANTY OF MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the terms and conditions of the GNU Lesser General Public License
 for more details.  You should have received a copy of the GNU Lesser General
 Public License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "gotcha_auxv.h"
@@ -90,7 +90,7 @@ struct link_map *get_vdso_from_auxv() {
 
   ElfW(Phdr) *vdso_phdrs = NULL;
   ElfW(Half) vdso_phdr_num, p;
-  ElfW(Addr) vdso_dynamic;
+  ElfW(Addr) vdso_dynamic = 0;
 
   parse_auxv_contents();
   if (vdso_ehdr) {

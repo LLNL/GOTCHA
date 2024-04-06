@@ -6,11 +6,11 @@ on:
   push:
 
 jobs:
-  build-and-test:
+  build-and-test-ubuntu:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04 ]
+        os: [ubuntu-20.04, ubuntu-22.04]
 
     name: ${{ matrix.os }}
 
@@ -65,3 +65,22 @@ jobs:
           fi
           cat $FILE
           curl -v -F json_file=@$FILE https://coveralls.io/api/v1/jobs
+
+  build-and-test-fedora:
+    name: fedora
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup Podman
+        run: |
+          sudo apt update
+          sudo apt-get -y install podman
+          podman pull fedora:latest
+      - name: Get source
+        uses: actions/checkout@v3
+        with:
+          path: 'GOTCHA'
+      - name: Create container and run tests
+        run: |
+          cp GOTCHA/.github/docker/fedora.dockerfile .
+          podman build --tag fedora_latest_test --file=fedora.dockerfile          
