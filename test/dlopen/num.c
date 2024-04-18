@@ -16,7 +16,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 extern void mark_had_error();
 extern int return_five();
 
-int return_four() {
+extern int return_four() {
   /* Intentional bug, gotcha wrapping will correct this to return 4 */
   return 3;
 }

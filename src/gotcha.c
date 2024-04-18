@@ -479,6 +479,16 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_wrap(
 
   if (new_bindings_count) {
     update_all_library_gots(&new_bindings);
+    // update bindings that were not updated.
+    for (i = 0; i < num_actions; ++i) {
+      struct internal_binding_t *binding = bindings->internal_bindings + i;
+      if (!binding->found_symbol) {
+        removefrom_hashtable(&new_bindings, binding->user_binding->name);
+        addto_hashtable(&notfound_binding_table,
+                        (hash_key_t)binding->user_binding->name,
+                        (hash_data_t)binding);
+      }
+    }
     destroy_hashtable(&new_bindings);
   }
 
