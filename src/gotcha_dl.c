@@ -157,7 +157,8 @@ static void *dlsym_wrapper(void *handle, const char *symbol_name) {
   debug_printf(1, "User called dlsym(%p, %s)\n", handle, symbol_name);
   int result = lookup_hashtable(&function_hash_table, (hash_key_t)symbol_name,
                                 (hash_data_t *)&binding);
-  if (result != -1) return binding->user_binding->wrapper_pointer;
+  if (result != -1 && binding->found_symbol)
+    return binding->user_binding->wrapper_pointer;
   if (handle == RTLD_NEXT) {
     struct link_map *lib = gotchas_dlsym_rtld_next_lookup(
         symbol_name, __builtin_return_address(0));

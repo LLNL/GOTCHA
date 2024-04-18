@@ -216,6 +216,7 @@ static int update_lib_bindings(ElfW(Sym) * symbol KNOWN_UNUSED, char *name,
   result = lookup_hashtable(lookuptable, name, (void **)&internal_binding);
   if (result != 0) return -1;
   got_address = (void **)(lmap->l_addr + offset);
+  internal_binding->found_symbol = 1;
   writeAddress(got_address, internal_binding->user_binding->wrapper_pointer);
   debug_printf(3, "Remapped call to %s at 0x%lx in %s to wrapper at 0x%p\n",
                name, (lmap->l_addr + offset), LIB_NAME(lmap),

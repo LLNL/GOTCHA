@@ -39,6 +39,7 @@ typedef struct gotcha_binding_t {
   void *wrapper_pointer;  //!< A pointer to the wrapper function
   gotcha_wrappee_handle_t
       *function_handle;  //!< A pointer to the function being wrapped
+
 } gotcha_binding_t;
 
 /*!

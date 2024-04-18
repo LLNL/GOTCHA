@@ -82,6 +82,7 @@ struct internal_binding_t {
   struct binding_t *associated_binding_table;
   struct gotcha_binding_t *user_binding;
   struct internal_binding_t *next_binding;
+  int found_symbol; //!< Mark if symbol was found
   void *wrappee_pointer;
 };
 

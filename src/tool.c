@@ -107,6 +107,7 @@ binding_t *add_binding_to_tool(tool_t *tool,
     internal_bindings[i].user_binding = &user_binding[i];
     *(user_binding[i].function_handle) = &internal_bindings[i];
     internal_bindings[i].associated_binding_table = newbinding;
+    internal_bindings[i].found_symbol = 0;
   }
   newbinding->internal_bindings = internal_bindings;
   newbinding->internal_bindings_size = user_binding_size;
