@@ -4,3 +4,7 @@
 build
 tags
 **/tags
+*.core
+.cache
+.idea
+.vscode
