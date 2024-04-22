@@ -14,15 +14,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #define _GNU_SOURCE
+#include <assert.h>
 #include <dlfcn.h>
-#include <math.h>
 #include <pthread.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 int foo(void);
 int bar(void);
@@ -36,8 +31,11 @@ void dispatch_init(void) {
   fprintf(stderr, "Ed dispatch_init()\n");
 
   impl_lib = dlopen("libimpl.so", RTLD_NOW);
+  assert(impl_lib);
   impl_foo = dlsym(impl_lib, "foo");
+  assert(impl_foo);
   impl_bar = dlsym(impl_lib, "bar");
+  assert(impl_bar);
 
   int ret = impl_bar();
 

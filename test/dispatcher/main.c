@@ -14,17 +14,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #define _GNU_SOURCE
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <gotcha/gotcha.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 int foo(void);
 int bar(void);
-#include <gotcha/gotcha.h>
 
 static gotcha_wrappee_handle_t handle_foo;
 static gotcha_wrappee_handle_t handle_bar;
