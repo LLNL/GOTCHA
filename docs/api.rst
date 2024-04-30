@@ -178,5 +178,27 @@ The default filter of gotcha selects all libraries loaded. This function set the
 
 .. explicit external hyperlink targets
 
+---------------------------
+Using Gotcha Version Macros
+---------------------------
+
+The source version of GOTCHA is defined by the `GOTCHA_VERSION` macro which uses the XYYYZZ format.
+Here, X signifies the major version, Y is the minor version, and Z is the patch.
+Additionally, we define `GOTCHA_VERSION_MAJOR`, `GOTCHA_VERSION_MINOR`, and `GOTCHA_VERSION_PATCH` macros for convienience.
+The codes can use the macros like
+
+
+.. code-block:: c
+
+    #if GOTCHA_VERSION > 100006 // this will check of version greater than 1.0.6
+    #endif
+
+    #if GOTCHA_VERSION_MAJOR > 1 // this will check of version greater than 2.0.0
+    #endif
+
+
+
+
+
 .. _`gnu constructor`: https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Function-Attributes.html
 .. _symbol: https://refspecs.linuxfoundation.org/LSB_3.0.0/LSB-PDA/LSB-PDA.junk/symversion.html
