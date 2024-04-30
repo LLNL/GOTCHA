@@ -196,6 +196,8 @@ The codes can use the macros like
     #if GOTCHA_VERSION_MAJOR > 1 // this will check of version greater than 2.0.0
     #endif
 
+    #if GOTCHA_VERSION > GOTCHA_GET_VERSION(1,0,6)  // this will check of version greater than 1.0.6
+    #endif
 
 
 
