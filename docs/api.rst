@@ -183,6 +183,7 @@ Using Gotcha Version Macros
 ---------------------------
 
 The source version of GOTCHA is defined by the `GOTCHA_VERSION` macro which uses the XYYYZZ format.
+**Available since version 1.0.7.**  
 Here, X signifies the major version, Y is the minor version, and Z is the patch.
 Additionally, we define `GOTCHA_VERSION_MAJOR`, `GOTCHA_VERSION_MINOR`, and `GOTCHA_VERSION_PATCH` macros for convienience.
 The codes can use the macros like
