@@ -113,6 +113,7 @@ static int per_binding(hash_key_t key, hash_data_t data,
                binding->user_binding->name,
                binding->associated_binding_table->tool->tool_name);
 
+  if (!binding->user_binding->name) return 0;
   while (binding->next_binding) {
     binding = binding->next_binding;  // GCOVR_EXCL_START
     debug_printf(3,
