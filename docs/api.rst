@@ -83,6 +83,20 @@ If an tool uses multiple bindings then they have to set priority to different bi
     GOTCHA does not create a copy of the binding functions and is the responsibility of the user to maintain this binding.
 
 
+------------------------
+Unwrap the binding calls
+------------------------
+
+Remove the tool from GOTCHA wrapping to be used as a final routine.
+
+.. code-block:: c
+
+    gotcha_error_t gotcha_unwrap("my_tool_name");
+
+This will allow users to remove their tool. 
+In this case, GOTCHA will look for existing function bindings and move it to the next available tool. 
+If none, the binding would be simply removed.
+
 ----------------------------
 Set priority of tool binding
 ----------------------------
