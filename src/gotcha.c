@@ -537,6 +537,7 @@ GOTCHA_EXPORT void *gotcha_get_wrappee(gotcha_wrappee_handle_t handle) {
 }
 
 GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name) {
+  debug_printf(1, "Unwrapping Gotcha tool %s\n", tool_name);
   struct tool_t *tool_instance = get_tool(tool_name);
   if (tool_instance == NULL) return GOTCHA_INVALID_TOOL;
   for (int i = 0; i < tool_instance->binding->internal_bindings_size; i++) {
@@ -549,6 +550,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name) {
         lookup_hashtable(&function_hash_table, (void *)name, (void **)&head);
     if (hash_result == 0) {
       if (head == binding) {
+        debug_printf(1, "Found function %s wrapped by tool\n", name);
         if (head->next_binding == NULL) {
           // This is the only binding remove binding from hash table
           removefrom_hashtable(&function_hash_table, (void *)name);
@@ -564,6 +566,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name) {
         lookup_hashtable(&notfound_binding_table, (void *)name, (void **)&head);
     if (hash_result == 0) {
       if (head == binding) {
+        debug_printf(1, "Found function %s not yet wrapped by tool\n", name);
         if (head->next_binding == NULL) {
           // This is the only binding remove binding from hash table
           removefrom_hashtable(&notfound_binding_table, (void *)name);
@@ -576,6 +579,7 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name) {
       }
     }
   }
+  debug_printf(1, "Removing tool %s from list\n", tool_name);
   // Remove tool from our list
   remove_tool_from_list(tool_instance);
   reorder_tool(tool_instance);
