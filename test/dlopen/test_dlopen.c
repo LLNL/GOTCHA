@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define LIB_NAME QUOTE(LIB_NAME_RAW)
 #define LIB2_NAME QUOTE(LIB2_NAME_RAW)
 int correct_return_four() { return 4; }
+int incorrect_return_four() { return 10; }
 
 int return_five() {
   /* Intentional bug, gotcha will correct this to return 5*/
@@ -41,10 +42,14 @@ int return_five() {
 int correct_return_five() { return 5; }
 
 static gotcha_wrappee_handle_t buggy_return_four;
+static gotcha_wrappee_handle_t buggy_return_four2;
 static gotcha_wrappee_handle_t buggy_return_five;
 struct gotcha_binding_t funcs[] = {
     {"return_four", correct_return_four, &buggy_return_four},
     {"return_five", correct_return_five, &buggy_return_five}};
+
+struct gotcha_binding_t funcs2[] = {
+    {"return_four", incorrect_return_four, &buggy_return_four2}};
 
 int main() {
   void *libnum;
@@ -52,7 +57,7 @@ int main() {
   int (*test_retfive)(void);
   int (*retdummy)(void);
   int had_error = 0;
-  int result;
+  int result = GOTCHA_SUCCESS;
 
   result = gotcha_wrap(funcs, 2, "dlopen_test");
   if (result != GOTCHA_FUNCTION_NOT_FOUND) {
@@ -124,6 +129,38 @@ int main() {
   if (retdummy != NULL) {
     fprintf(stderr,
             "ERROR: call to return_dummy should not be found in RTLD_NEXT\n");
+    had_error = -1;
+  }
+
+  result = gotcha_wrap(funcs2, 1, "dummy_dlopen_test");
+
+  result = gotcha_unwrap("dlopen_test");
+  if (result != GOTCHA_SUCCESS) {
+    fprintf(stderr,
+            "ERROR: we should be able to successfully remove the tool\n");
+    return -1;
+  }
+  retfour = (int (*)(void))dlsym(libnum, "return_four");
+  if (retfour() != 10) {
+    fprintf(
+        stderr,
+        "ERROR: dlsym should return original function with value 3 not %d\n",
+        retfour());
+    had_error = -1;
+  }
+  result = gotcha_unwrap("dummy_dlopen_test");
+  if (result != GOTCHA_SUCCESS) {
+    fprintf(stderr,
+            "ERROR: we should be able to successfully remove the tool\n");
+    return -1;
+  }
+
+  retfour = (int (*)(void))dlsym(libnum, "return_four");
+  if (retfour() != 6) {
+    fprintf(
+        stderr,
+        "ERROR: dlsym should return original function with value 3 not %d\n",
+        retfour());
     had_error = -1;
   }
   return had_error;

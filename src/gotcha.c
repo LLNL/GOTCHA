@@ -535,3 +535,52 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char *tool_name,
 GOTCHA_EXPORT void *gotcha_get_wrappee(gotcha_wrappee_handle_t handle) {
   return ((struct internal_binding_t *)handle)->wrappee_pointer;
 }
+
+GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name) {
+  struct tool_t *tool_instance = get_tool(tool_name);
+  if (tool_instance == NULL) return GOTCHA_INVALID_TOOL;
+  for (int i = 0; i < tool_instance->binding->internal_bindings_size; i++) {
+    struct internal_binding_t *binding =
+        tool_instance->binding->internal_bindings + i;
+    const char *name = binding->user_binding->name;
+    struct internal_binding_t *head;
+    int hash_result;
+    hash_result =
+        lookup_hashtable(&function_hash_table, (void *)name, (void **)&head);
+    if (hash_result == 0) {
+      if (head == binding) {
+        if (head->next_binding == NULL) {
+          // This is the only binding remove binding from hash table
+          removefrom_hashtable(&function_hash_table, (void *)name);
+        } else {
+          // If it has a successor then add the successor tool to the hash table
+          removefrom_hashtable(&function_hash_table, (void *)name);
+          addto_hashtable(&function_hash_table, (void *)name,
+                          (void *)head->next_binding);
+        }
+      }
+    }
+    hash_result =
+        lookup_hashtable(&notfound_binding_table, (void *)name, (void **)&head);
+    if (hash_result == 0) {
+      if (head == binding) {
+        if (head->next_binding == NULL) {
+          // This is the only binding remove binding from hash table
+          removefrom_hashtable(&notfound_binding_table, (void *)name);
+        } else {
+          // If it has a successor then add the successor tool to the hash table
+          removefrom_hashtable(&notfound_binding_table, (void *)name);
+          addto_hashtable(&notfound_binding_table, (void *)name,
+                          (void *)head->next_binding);
+        }
+      }
+    }
+  }
+  // Remove tool from our list
+  remove_tool_from_list(tool_instance);
+  reorder_tool(tool_instance);
+  tool_instance->binding = NULL;
+  tool_instance->parent_tool = NULL;
+  destroy_hashtable(&tool_instance->child_tools);
+  return GOTCHA_SUCCESS;
+}

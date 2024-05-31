@@ -16,6 +16,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 extern void mark_had_error();
 extern int return_five();
 
-int return_four() { return 4; }
+int return_four() { return 6; }
 
 int test_return_five() { return return_five(); }

@@ -79,6 +79,10 @@ START_TEST(auto_tool_creation) {
   for (lib = _r_debug.r_map; lib != 0; lib = lib->l_next) {
     remove_library(lib);
   }
+  int result = gotcha_unwrap("dummy_tool_name");
+  ck_assert_msg(result == GOTCHA_INVALID_TOOL, "The tool should not be found.");
+  result = gotcha_unwrap("sample_autocreate_tool");
+  ck_assert_msg(result == GOTCHA_SUCCESS, "The tool should be found.");
 }
 END_TEST
 

@@ -125,11 +125,55 @@ GOTCHA_EXPORT enum gotcha_error_t gotcha_get_priority(const char *tool_name,
  */
 GOTCHA_EXPORT void *gotcha_get_wrappee(gotcha_wrappee_handle_t handle);
 
+/*!
+ * \fn void gotcha_filter_libraries_by_name(const char *nameFilter);
+ *
+ * \brief This API allows GOTCHA to include only libraries given specified by
+ * the user. This could be a partial match of string contains as defined by
+ * strstr function in C.
+ *
+ * \param nameFilter the filter name
+ */
 GOTCHA_EXPORT void gotcha_filter_libraries_by_name(const char *nameFilter);
+
+/*!
+ * \fn void gotcha_only_filter_last();
+ *
+ * \brief This API allows GOTCHA to include only the last library defined in the
+ * linker of the tool.
+ */
 GOTCHA_EXPORT void gotcha_only_filter_last();
+
+/*!
+ * \fn void gotcha_set_library_filter_func(int (*new_func)(struct link_map *));
+ *
+ * \brief This API allows users to define a function that selected the libraries
+ * that user wants to intercept. The function should take struct link_map* as
+ * input and return true if it should be wrapped by GOTCHA. TIP: the library
+ * name can be accessed by map->l_name.
+ *
+ * \param new_func has the function signature of int (*new_func)(struct link_map
+ * *)
+ */
 GOTCHA_EXPORT void gotcha_set_library_filter_func(
     int (*new_func)(struct link_map *));
+
+/*!
+ * \fn void gotcha_restore_library_filter_func();
+ *
+ * \brief The default filter of gotcha selects all libraries loaded. This
+ * function set the default filter back for GOTCHA.
+ */
 GOTCHA_EXPORT void gotcha_restore_library_filter_func();
+
+/*!
+ * \fn enum gotcha_error_t gotcha_unwrap(const char *tool_name);
+ *
+ * \brief remove the tool from GOTCHA wrapping to be used as a final routine.
+ *
+ * \param tool_name, The tool name to remove
+ */
+GOTCHA_EXPORT enum gotcha_error_t gotcha_unwrap(const char *tool_name);
 
 #if defined(__cplusplus)
 }
