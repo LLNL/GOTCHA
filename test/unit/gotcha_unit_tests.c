@@ -138,6 +138,10 @@ START_TEST(symbol_wrap_test) {
   ck_assert_msg((tools != NULL), "tools should exists");
   binds = get_tool_bindings(tools);
   ck_assert_msg((bindings != NULL), "should return tool's bindings");
+  ck_assert_msg(gotcha_unwrap("internal_test_tool") == GOTCHA_SUCCESS,
+                "should be able to unwrap 'internal_test_tool' tool");
+  int y = simpleFunc();
+  ck_assert_msg((y == TESTING_LIB_RET_VAL), "no wrapping should occur");
   gotcha_wrap(bindings, 1, "internal_test_tool2");
   ck_assert_msg((1), "should always pass");
   gotcha_wrap(bindings, 1, "internal_test_tool3");
@@ -153,10 +157,6 @@ START_TEST(symbol_wrap_test) {
   }
   tools = get_tool_list();
   ck_assert_msg((tools == NULL), "tools should not exists");
-  ck_assert_msg(gotcha_unwrap("internal_test_tool") == GOTCHA_SUCCESS,
-                "should be able to unwrap 'internal_test_tool' tool");
-  int y = simpleFunc();
-  ck_assert_msg((y == TESTING_LIB_RET_VAL), "no wrapping should occur");
 }
 END_TEST
 
