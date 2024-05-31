@@ -153,6 +153,10 @@ START_TEST(symbol_wrap_test) {
   }
   tools = get_tool_list();
   ck_assert_msg((tools == NULL), "tools should not exists");
+  ck_assert_msg(gotcha_unwrap("internal_test_tool") == GOTCHA_SUCCESS,
+                "should be able to unwrap 'internal_test_tool' tool");
+  int y = simpleFunc();
+  ck_assert_msg((y == TESTING_LIB_RET_VAL), "no wrapping should occur");
 }
 END_TEST
 
