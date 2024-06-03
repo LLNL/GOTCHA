@@ -558,6 +558,22 @@ Suite *gotcha_hash_suite() {
   return s;
 }
 
+START_TEST(gotcha_version_check) {
+  ck_assert_msg(GOTCHA_GET_VERSION(1, 0, 3) > GOTCHA_GET_VERSION(1, 0, 2),
+                "Check GOTCHA_GET_VERSION failed");
+  ck_assert_msg(GOTCHA_VERSION >= GOTCHA_GET_VERSION(1, 0, 6),
+                "Check GOTCHA_VERSION failed");
+}
+END_TEST
+
+Suite *gotcha_version_suite() {
+  Suite *s = suite_create("Gotcha Version");
+  TCase *version_case = configured_case_create("Basic tests");
+  tcase_add_test(version_case, gotcha_version_check);
+  suite_add_tcase(s, version_case);
+  return s;
+}
+
 ////////////Launch///Tests////////////
 
 int main() {
@@ -578,9 +594,14 @@ int main() {
   SRunner *hash_runner = srunner_create(hash_suite);
   srunner_run_all(hash_runner, CK_NORMAL);
   num_fails += srunner_ntests_failed(hash_runner);
+  Suite *version_suite = gotcha_version_suite();
+  SRunner *version_runner = srunner_create(version_suite);
+  srunner_run_all(version_runner, CK_NORMAL);
+  num_fails += srunner_ntests_failed(version_runner);
   srunner_free(core_runner);
   srunner_free(libc_runner);
   srunner_free(auxv_runner);
   srunner_free(hash_runner);
+  srunner_free(version_runner);
   return num_fails;
 }

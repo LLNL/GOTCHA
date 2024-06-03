@@ -30,9 +30,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef GOTCHA_H
 #define GOTCHA_H
 
+#include <gotcha/gotcha_config.h>
+#include <gotcha/gotcha_types.h>
 #include <link.h>
-
-#include "gotcha/gotcha_types.h"
 
 #if defined(__cplusplus)
 extern "C" {
