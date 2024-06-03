@@ -13,11 +13,46 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-extern int return_five();
+#define _GNU_SOURCE
+#include <gotcha/gotcha.h>
+#include <stdio.h>
 
-int return_four() {
-  /* Intentional bug, gotcha wrapping will correct this to return 4 */
-  return 3;
+int foo(void);
+int bar(void);
+
+static gotcha_wrappee_handle_t handle_foo;
+static gotcha_wrappee_handle_t handle_bar;
+
+static int do_foo(void) {
+  fprintf(stderr, "Ew foo()\n");
+
+  typeof(&do_foo) orig_foo = gotcha_get_wrappee(handle_foo);
+  int ret = orig_foo();
+
+  fprintf(stderr, "Lw foo() = %d\n", ret);
+
+  return ret;
 }
 
-int test_return_five() { return return_five(); }
+static int do_bar(void) {
+  fprintf(stderr, "Ew bar()\n");
+
+  typeof(&do_bar) orig_bar = gotcha_get_wrappee(handle_bar);
+  int ret = orig_bar();
+
+  fprintf(stderr, "Lw bar() = %d\n", ret);
+
+  return ret;
+}
+
+static struct gotcha_binding_t bindings[] = {
+    {"foo", do_foo, &handle_foo},
+    {"bar", do_bar, &handle_bar},
+};
+
+int main(int ac, char *av[]) {
+  gotcha_wrap(bindings, 2, "test");
+  printf("%d\n", foo());
+
+  return 0;
+}

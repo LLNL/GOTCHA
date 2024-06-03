@@ -13,11 +13,19 @@ Public License along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-extern int return_five();
+#define _GNU_SOURCE
+#include <stdio.h>
 
-int return_four() {
-  /* Intentional bug, gotcha wrapping will correct this to return 4 */
-  return 3;
+int foo(void) {
+  fprintf(stderr, "Ei foo()\n");
+  fprintf(stderr, "Li foo()\n");
+
+  return 42;
 }
 
-int test_return_five() { return return_five(); }
+int bar(void) {
+  fprintf(stderr, "Ei bar()\n");
+  fprintf(stderr, "Li bar()\n");
+
+  return 23;
+}
