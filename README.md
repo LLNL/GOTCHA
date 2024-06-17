@@ -1,4 +1,4 @@
-GOTCHA v1.0.6
+GOTCHA v1.0.7
 ============
 [![GOTCHA Build and Test](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/LLNL/GOTCHA/badge.svg?branch=develop)](https://coveralls.io/github/LLNL/GOTCHA?branch=develop)
