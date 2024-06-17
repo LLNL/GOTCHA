@@ -10,6 +10,9 @@ set(LIBTOOL_INTERFACE 2)
 set(LIBTOOL_REVISION 3)
 set(LIBTOOL_AGE 2)
 
+set(GOTCHA_VERSION "(1, 0, 7)")
+
+
 set(DEFAULT_SYMBOL_VISIBILITY hidden)
 
 if(GOTCHA_ENABLE_TESTS)
@@ -22,6 +25,7 @@ if(GOTCHA_ENABLE_TESTS)
   endif()
 endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 add_subdirectory(include)
 add_subdirectory(src)
 if(GOTCHA_ENABLE_TESTS)
@@ -50,3 +54,10 @@ configure_package_config_file(
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config-version.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/gotcha")
+
+# Write the configure file
+configure_file("${CMAKE_SOURCE_DIR}/cmake/gotcha_config.h.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h" @ONLY)
+install(
+                FILES "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h"
+                DESTINATION "${gotcha_INSTALL_INCLUDE_DIR}/gotcha/gotcha_config.h")
