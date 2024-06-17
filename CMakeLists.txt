@@ -60,4 +60,4 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/gotcha_config.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h" @ONLY)
 install(
                 FILES "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h"
-                DESTINATION "${gotcha_INSTALL_INCLUDE_DIR}/gotcha/gotcha_config.h")
+                DESTINATION "${gotcha_INSTALL_INCLUDE_DIR}/gotcha")
