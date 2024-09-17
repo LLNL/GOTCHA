@@ -32,6 +32,7 @@ enum gotcha_config_key_t { GOTCHA_PRIORITY };
 struct gotcha_configuration_t {
   int priority;
 };
+#define EMPTY_CONFIGURATION {0}
 
 /**
  * A per-library structure
