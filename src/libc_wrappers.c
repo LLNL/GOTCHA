@@ -427,8 +427,8 @@ int gotcha_int_printf(int fd, const char *format, ...) {
     }
 
     if (*str == 'd' || *str == 'i') {
-      signed long val;
-      char numstr[64];
+      signed long val = 0;
+      char numstr[64] = {'\0'};
       if (char_width)
         val = (signed long)(signed char)va_arg(args, signed int);
       else if (short_width)
@@ -445,8 +445,8 @@ int gotcha_int_printf(int fd, const char *format, ...) {
       add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer),
                     &num_printed, 1);
     } else if (*str == 'u') {
-      unsigned long val;
-      char numstr[64];
+      unsigned long val = 0;
+      char numstr[64] = {'\0'};
       if (char_width)
         val = (unsigned long)(unsigned char)va_arg(args, unsigned int);
       else if (short_width)
@@ -463,8 +463,8 @@ int gotcha_int_printf(int fd, const char *format, ...) {
       add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer),
                     &num_printed, 1);
     } else if (*str == 'x' || *str == 'X' || *str == 'p') {
-      unsigned long val;
-      char numstr[64];
+      unsigned long val = 0;
+      char numstr[64] = {'\0'};
       if (*str != 'p') {
         if (char_width)
           val = (unsigned long)(unsigned char)va_arg(args, unsigned int);
@@ -487,7 +487,7 @@ int gotcha_int_printf(int fd, const char *format, ...) {
       add_to_buffer(numstr, fd, &buffer_pos, buffer, sizeof(buffer),
                     &num_printed, 1);
     } else if (*str == 'c') {
-      char cbuf[2];
+      char cbuf[2] = {'\0'};
       cbuf[0] = (unsigned char)va_arg(args, unsigned int);
       cbuf[1] = '\0';
       add_to_buffer(cbuf, fd, &buffer_pos, buffer, sizeof(buffer), &num_printed,
@@ -500,7 +500,7 @@ int gotcha_int_printf(int fd, const char *format, ...) {
       add_to_buffer("%", fd, &buffer_pos, buffer, sizeof(buffer), &num_printed,
                     1);
     } else {
-      char s[3];
+      char s[3] = {'\0'};
       s[0] = '%';
       s[1] = *str;
       s[2] = '\0';
