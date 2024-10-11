@@ -39,7 +39,7 @@ int parse_auxv_contents() {
   char buffer[BUFFER_LEN] = {'\0'};
   const ssize_t buffer_size = BUFFER_LEN;
   ssize_t offset = 0, result = 0;
-  ElfW(auxv_t) * auxv = NULL, *a = NULL;
+  ElfW(auxv_t) *auxv = NULL, *a = NULL;
   static int parsed_auxv = 0;
 
   if (parsed_auxv) return parsed_auxv == -1 ? parsed_auxv : 0;

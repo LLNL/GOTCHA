@@ -15,7 +15,8 @@ struct Addrs {
   struct link_map *lmap;   // output
   int found;
 };
-#define EMPTY_ADDRS {0, NULL, 0}
+#define EMPTY_ADDRS \
+  {0, NULL, 0}
 /**
  * This is a callback to get headers for each library.
  * We check if the caller's virtual address is between base address and the

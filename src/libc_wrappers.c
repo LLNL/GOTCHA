@@ -392,7 +392,8 @@ int gotcha_int_printf(int fd, const char *format, ...) {
   va_list args;
   const char *str = format;
   int buffer_pos = 0;
-  int char_width = 0, short_width = 0, long_width = 0, long_long_width = 0, size_width = 0;
+  int char_width = 0, short_width = 0, long_width = 0, long_long_width = 0;
+  int size_width = 0;
   int num_printed = 0;
   char buffer[4096] = {'\0'};
 
