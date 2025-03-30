@@ -68,7 +68,8 @@ int main() {
   /* Load the first libnum.so */
   libnum = dlopen(LIB_NAME, RTLD_NOW);
   if (!libnum) {
-    fprintf(stderr, "ERROR: Test failed to dlopen libnum.so with %s\n", dlerror());
+    fprintf(stderr, "ERROR: Test failed to dlopen libnum.so with %s\n",
+            dlerror());
     return -1;
   }
 
