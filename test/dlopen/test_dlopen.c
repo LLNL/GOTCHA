@@ -118,7 +118,7 @@ int main() {
     had_error = -1;
   }
   test_retfive = (int (*)(void))dlsym(RTLD_DEFAULT, "test_return_five");
-  if (test_retfive == NULL || test_retfive() != 5) {
+  if (test_retfive != NULL) {
     fprintf(stderr,
             "ERROR2: call to return_five in libnum.so was not wrapped "
             "by correct_return_five\n");
