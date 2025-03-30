@@ -86,7 +86,7 @@ int main() {
   test_retfive = (int (*)(void))dlsym(libnum, "test_return_five");
   if (test_retfive() != 5) {
     fprintf(stderr,
-            "ERROR: call to return_five in libnum.so was not wrapped "
+            "ERROR1: call to return_five in libnum.so was not wrapped "
             "by correct_return_five\n");
     had_error = -1;
   }
@@ -120,7 +120,7 @@ int main() {
   test_retfive = (int (*)(void))dlsym(RTLD_DEFAULT, "test_return_five");
   if (test_retfive == NULL || test_retfive() != 5) {
     fprintf(stderr,
-            "ERROR: call to return_five in libnum.so was not wrapped "
+            "ERROR2: call to return_five in libnum.so was not wrapped "
             "by correct_return_five\n");
     had_error = -1;
   }
@@ -128,7 +128,7 @@ int main() {
   retsix = (int (*)(void))dlsym(RTLD_DEFAULT, "return_six");
   if (retsix == NULL || retsix() != 6) {
     fprintf(stderr,
-            "ERROR: call to return_five in libnum2.so was not wrapped "
+            "ERROR3: call to return_five in libnum2.so was not wrapped "
             "by correct_return_five\n");
     had_error = -1;
   }
@@ -145,7 +145,7 @@ int main() {
   /* Does the dlsym implementation find the second occurrence of the
    * symbol */
   test_retfive = (int (*)(void))dlsym(RTLD_NEXT, "test_return_five");
-  if (test_retfive == NULL || test_retfive() != 5) {
+  if (test_retfive != NULL || test_retfive() != 5) {
     fprintf(stderr,
             "ERROR: call to return_four should not be found in "
             "RTLD_NEXT from libnum2.so and return 4\n");
