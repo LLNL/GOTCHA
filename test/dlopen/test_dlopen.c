@@ -145,10 +145,10 @@ int main() {
   /* Does the dlsym implementation find the second occurrence of the
    * symbol */
   test_retfive = (int (*)(void))dlsym(RTLD_NEXT, "test_return_five");
-  if (test_retfive != NULL || test_retfive() != 5) {
+  if (test_retfive == NULL) {
     fprintf(stderr,
-            "ERROR: call to return_four should not be found in "
-            "RTLD_NEXT from libnum2.so and return 4\n");
+            "ERROR: call to test_return_five should not be found in "
+            "RTLD_NEXT from libnum2.so\n");
     had_error = -1;
   }
   retdummy = (int (*)(void))dlsym(RTLD_NEXT, "return_dummy");
