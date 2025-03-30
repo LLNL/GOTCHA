@@ -68,7 +68,7 @@ int main() {
   /* Load the first libnum.so */
   libnum = dlopen(LIB_NAME, RTLD_NOW);
   if (!libnum) {
-    fprintf(stderr, "ERROR: Test failed to dlopen libnum.so\n");
+    fprintf(stderr, "ERROR: Test failed to dlopen libnum.so with %s\n", dlerror());
     return -1;
   }
 
@@ -117,7 +117,7 @@ int main() {
     had_error = -1;
   }
   test_retfive = (int (*)(void))dlsym(RTLD_DEFAULT, "test_return_five");
-  if (test_retfive != NULL) {
+  if (test_retfive == NULL || test_retfive() != 5) {
     fprintf(stderr,
             "ERROR: call to return_five in libnum.so was not wrapped "
             "by correct_return_five\n");
