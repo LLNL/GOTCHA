@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
+option(GOTCHA_ENABLE_EXAMPLE "Enable example" Off)
 option(GOTCHA_ENABLE_WARNING_ERROR "Enable throw error for build warning" Off)
 project(gotcha)
 include(CheckCXXCompilerFlag)
@@ -49,14 +50,14 @@ configure_package_config_file(
   "cmake/config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/gotcha"
-  PATH_VARS gotcha_INSTALL_INCLUDE_DIR PATH_VARS gotcha_INSTALL_LIBRARY_DIR)
+  PATH_VARS gotcha_INSTALL_INCLUDE_DIR gotcha_INSTALL_LIBRARY_DIR)
 
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/gotcha-config-version.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/gotcha")
 
 # Write the configure file
-configure_file("${CMAKE_SOURCE_DIR}/cmake/gotcha_config.h.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/gotcha_config.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h" @ONLY)
 install(
                 FILES "${CMAKE_CURRENT_BINARY_DIR}/include/gotcha/gotcha_config.h"
