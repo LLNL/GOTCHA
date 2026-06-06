@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 option(GOTCHA_ENABLE_EXAMPLE "Enable example" Off)
 option(GOTCHA_ENABLE_WARNING_ERROR "Enable throw error for build warning" Off)
@@ -9,9 +9,9 @@ CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 
 set(LIBTOOL_INTERFACE 2)
 set(LIBTOOL_REVISION 4)
-set(LIBTOOL_AGE 2)
+set(LIBTOOL_AGE 3)
 
-set(GOTCHA_VERSION "(1, 0, 8)")
+set(GOTCHA_VERSION "(1, 0, 9)")
 
 
 set(DEFAULT_SYMBOL_VISIBILITY hidden)
