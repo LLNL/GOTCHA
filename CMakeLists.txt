@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 option(GOTCHA_ENABLE_TESTS "Enable internal tests" Off)
 option(GOTCHA_ENABLE_EXAMPLE "Enable example" Off)
 option(GOTCHA_ENABLE_WARNING_ERROR "Enable throw error for build warning" Off)
