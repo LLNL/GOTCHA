@@ -1,5 +1,5 @@
-GOTCHA v1.0.8
-============
+GOTCHA v1.0.10
+==============
 [![GOTCHA Build and Test](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/LLNL/GOTCHA/actions/workflows/build-and-test.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/LLNL/GOTCHA/badge.svg?branch=develop)](https://coveralls.io/github/LLNL/GOTCHA?branch=develop)
 [![Documentation Status](https://readthedocs.org/projects/gotcha/badge/?version=latest)](https://gotcha.readthedocs.io/en/latest/?badge=latest)
