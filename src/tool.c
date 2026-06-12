@@ -96,12 +96,14 @@ binding_t *add_binding_to_tool(tool_t *tool,
                                struct gotcha_binding_t *user_binding,
                                int user_binding_size) {
   binding_t *newbinding = NULL;
+  struct internal_binding_t *internal_bindings = NULL;
   int result = 0, i = 0;
   newbinding = (binding_t *)gotcha_malloc(sizeof(binding_t));
+  if (!newbinding) goto error;
   newbinding->tool = tool;
-  struct internal_binding_t *internal_bindings =
-      (struct internal_binding_t *)gotcha_malloc(
-          sizeof(struct internal_binding_t) * user_binding_size);
+  internal_bindings = (struct internal_binding_t *)gotcha_malloc(
+      sizeof(struct internal_binding_t) * user_binding_size);
+  if (!internal_bindings) goto error;
   for (i = 0; i < user_binding_size; i++) {
     internal_bindings[i].next_binding = NULL;
     internal_bindings[i].user_binding = &user_binding[i];
@@ -139,7 +141,8 @@ binding_t *add_binding_to_tool(tool_t *tool,
                user_binding_size, tool->tool_name);
   return newbinding;
 
-error:  // GCOVR_EXCL_START
+error:
+  if (internal_bindings) gotcha_free(internal_bindings);
   if (newbinding) gotcha_free(newbinding);
   return NULL;
 }  // GCOVR_EXCL_STOP

@@ -96,6 +96,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size) {
   newtable.keycmp = table->keycmp;
   newtable.table =
       (hash_entry_t *)gotcha_malloc(new_size * sizeof(hash_entry_t));
+  if (!newtable.table) return -1;
   newtable.head = NULL;
   gotcha_memset(newtable.table, 0, new_size * sizeof(hash_entry_t));
 
@@ -105,6 +106,7 @@ int grow_hashtable(hash_table_t *table, size_t new_size) {
     result = insert(&newtable, table->table[i].key, table->table[i].data,
                     table->table[i].hash_value);
     if (!result) {
+      gotcha_free(newtable.table);
       return -1;  // GCOVR_EXCL_LINE this is unreachable code
     }
   }
