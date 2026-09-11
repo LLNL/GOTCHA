@@ -89,6 +89,7 @@ int init_autotee(const char *teefile) {
 int close_autotee() {
   if (tee_FILE) {
     fclose(tee_FILE);
+    tee_FILE = NULL;
     tee_fd = -1;
   }
   return 0;
